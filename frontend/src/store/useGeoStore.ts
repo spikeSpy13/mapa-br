@@ -9,7 +9,7 @@ import { cdUfSchema, cdRegiaoSchema } from '../types/contract';
 
 export type NivelDrillDown = Navigation['level'];
 const metricSchema = z.enum(['renda_media_responsavel', 'pib_per_capita', 'pib_total_bi',
-  'populacao', 'cobertura_renda_proporcao', 'setores_sob_sigilo']);
+  'populacao', 'domicilios', 'cobertura_renda_proporcao', 'setores_sob_sigilo']);
 export type MetricaAtiva = z.infer<typeof metricSchema>;
 
 export interface GeoState {

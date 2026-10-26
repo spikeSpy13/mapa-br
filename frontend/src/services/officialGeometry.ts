@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { FeatureCollection, Polygon, MultiPolygon } from 'geojson';
-import { DataLoader } from './dataLoader';
+import { DataLoader, DataHttpError } from './dataLoader';
+import { buildSectorToGroupMap } from './sectorJoin';
+import { loadOfficialDemography, type OfficialStatistics } from './officialDemography';
 import type { MapGeometry } from '../types/geometry';
 import { cdUfSchema, cdMunSchema, cdSetorSchema } from '../types/contract';
 import { validateNavigation, type Navigation } from '../state/navigation';
@@ -9,9 +11,9 @@ const asset = z.object({ arquivo: z.string().min(1), inventario: z.string().min(
 const inventorySchema = z.object({ ids: z.array(z.string()).min(1) }).strict();
 export const catalogSchema = z.object({
   schema_version: z.literal('cartografia-1'), referencia: z.literal('Censo 2022'),
-  estatisticas: z.literal('indisponiveis'), ufs: asset,
+  estatisticas: z.enum(['indisponiveis', 'demografia-1']), demografia: z.string().min(1).optional(), ufs: asset,
   municipios: z.record(asset), setores: z.record(asset),
-}).strict();
+}).strict().superRefine((c, ctx) => { if ((c.estatisticas === 'demografia-1') !== !!c.demografia) ctx.addIssue({ code: 'custom', message: 'Catálogo demográfico inconsistente' }); });
 export type OfficialCatalog = z.infer<typeof catalogSchema>;
 const point = z.tuple([z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90)]);
 const ring = z.array(point).min(4).refine(p => p[0]![0] === p.at(-1)![0] && p[0]![1] === p.at(-1)![1], 'Anel aberto');
@@ -28,7 +30,7 @@ export const officialCollectionSchema = z.object({
 }).strict();
 export type OfficialCollection = z.infer<typeof officialCollectionSchema>;
 export interface CartographyState {
-  kind: 'cartografia'; statistics: { status: 'indisponiveis' };
+  kind: 'cartografia'; statistics: OfficialStatistics;
   country: OfficialCollection; geometry: MapGeometry; title: string;
   unavailableGeometry?: string;
 }
@@ -62,8 +64,16 @@ export async function loadOfficialCartography(loader: DataLoader, nav: Navigatio
     validateInventory(collection, field, inventory.ids, nav); return { collection, url };
   };
   const { collection: country } = await read(catalog.ufs, 'cd_uf');
-  const state = (collection: OfficialCollection, field: 'cd_uf' | 'cd_mun' | 'cd_setor', title: string, unavailableGeometry?: string): CartographyState =>
-    ({ kind: 'cartografia', statistics: { status: 'indisponiveis' }, country, geometry: geometry(collection, field), title, unavailableGeometry });
+  const state = async (collection: OfficialCollection, field: 'cd_uf' | 'cd_mun' | 'cd_setor', title: string, unavailableGeometry?: string): Promise<CartographyState> => {
+    let geo = geometry(collection, field);
+    const statistics = await loadOfficialDemography(loader, catalog.demografia, nav, geo, signal);
+    if (nav.level === 'bairro') {
+      if (statistics.status !== 'disponiveis' || !statistics.bairros?.[nav.id_agregacao]) throw new Error('Correspondência com bairros não auditada ou bairro fora do inventário.');
+      geo = { ...geo, rowByFeature: buildSectorToGroupMap(Object.entries(statistics.bairros).map(([id_agregacao, b]) => ({ ...b, id_agregacao }))) };
+      title = statistics.bairros[nav.id_agregacao]!.nome;
+    }
+    return { kind: 'cartografia', statistics, country, geometry: geo, title, unavailableGeometry };
+  };
   if (nav.level === 'pais') return state(country, 'cd_uf', 'Brasil');
   if (nav.level === 'regiao') {
     const features = country.features.filter(f => f.properties.cd_regiao === nav.cd_regiao);
@@ -78,11 +88,16 @@ export async function loadOfficialCartography(loader: DataLoader, nav: Navigatio
     if (nav.level !== 'uf') throw new Error('Geometria municipal indisponível para esta UF nesta entrega.');
     return state({ ...country, features: [uf] }, 'cd_uf', uf.properties.nm_uf, 'Geometria municipal indisponível para esta UF nesta entrega.');
   }
-  const { collection: municipalities, url: ufUrl } = await read(municipalEntry, 'cd_mun');
+  let municipal;
+  try { municipal = await read(municipalEntry, 'cd_mun'); }
+  catch (error) {
+    if (nav.level !== 'uf' || !(error instanceof DataHttpError) || error.status !== 404) throw error;
+    return state({ ...country, features: [uf] }, 'cd_uf', uf.properties.nm_uf, 'Geometria municipal indisponível localmente. O contorno e o resumo da UF foram preservados.');
+  }
+  const { collection: municipalities, url: ufUrl } = municipal;
   if (nav.level === 'uf') return state(municipalities, 'cd_mun', uf.properties.nm_uf);
   const municipality = municipalities.features.find(f => f.properties.cd_mun === nav.cd_mun);
   if (!municipality) throw new Error('Município fora do inventário desta UF.');
-  if (nav.level === 'bairro') throw new Error('Correspondência com bairros não auditada. Selecione um setor censitário.');
   const sectorsEntry = catalog.setores[nav.cd_mun];
   if (!sectorsEntry) {
     if (nav.level === 'setor') throw new Error('Geometria setorial indisponível para este município nesta entrega.');

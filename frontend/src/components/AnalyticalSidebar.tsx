@@ -1,3 +1,6 @@
+import { TerritoryInspector } from './TerritoryInspector';
+import type { MapRow } from './MapViewport';
+import type { useTerritoryPreview } from './useTerritoryPreview';
 import { TsePanel, type TseState } from './TsePanel';
 import type { LoadedData } from '../services/dataLoader';
 import type { Navigation } from '../state/navigation';
@@ -45,10 +48,11 @@ interface Props {
   data?: LoadedData; values: IndicadoresMacroECenso | null | undefined; bairro?: BairroDetalhe;
   title?: string; nav: Navigation; demo: boolean; rows: Row[]; ranking: Row[]; metric: Metric;
   search: string; setSearch: (search: string) => void; navigate: (nav: Navigation) => void;
+  mapRows: MapRow[]; hover: ReturnType<typeof useTerritoryPreview>;
   tse: TseState; resourceStatus: 'loading' | 'error' | 'ready'; max: number;
 }
 export function AnalyticalSidebar({ data, values, bairro, title, nav, demo, rows, ranking, metric,
-  search, setSearch, navigate, resourceStatus, max, tse }: Props) {
+  search, setSearch, navigate, resourceStatus, max, tse, mapRows, hover }: Props) {
   return <aside className="analytics" aria-label="Painel analítico">
         <div className="section-heading"><div><span className="eyebrow">LEITURA DO TERRITÓRIO</span><h2>{title ?? 'Indicadores'}</h2></div><span className="data-tag">{demo ? 'SIMULAÇÃO' : 'RECORTE'}</span></div>
         <TsePanel state={tse} group={nav.level === 'bairro' ? nav.id_agregacao : null} />
@@ -81,12 +85,13 @@ export function AnalyticalSidebar({ data, values, bairro, title, nav, demo, rows
             <section className="ranking"><div className="section-heading"><h3>{nav.level === 'pais' || nav.level === 'regiao' ? 'Comparar UFs' : nav.level === 'uf' ? 'Comparar municípios' : 'Bairros e agrupamentos'}</h3><span>{rows.length} territórios</span></div>
               {rows.length > 0 && <input aria-label="Buscar território" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar nome ou código…" />}
               <div className="ranking-label"><span>TERRITÓRIO</span><span>{metricLabels[metric].toUpperCase()}</span></div>
-              <div className="ranking-rows">{ranking.map((r, i) => <button key={r.id} className="ranking-row" onClick={() => navigate(r.nav)}>
+              <div ref={hover.listRef} className="ranking-rows">{ranking.map((r, i) => <button key={r.id} className={`ranking-row territory-interactive${hover.preview?.id === r.id ? ' is-hovered' : ''}`} data-territory-id={r.id} {...hover.handlers(r.id)} onClick={() => navigate(r.nav)}>
                 <span className="rank-number">{String(i + 1).padStart(2, '0')}</span><span className="rank-name"><strong>{r.name}</strong><small>{r.badge ?? r.code}</small></span>
                 <span className="rank-value">{format(measure(r.values, metric), metric)}<i style={{ width: `${max && measure(r.values, metric) != null ? measure(r.values, metric)! / max * 100 : 0}%` }} /></span><span>↗</span>
               </button>)}{!ranking.length && <p className="muted">{rows.length ? 'Nenhum território corresponde à busca.' : 'Sem desdobramento neste recorte.'}</p>}</div>
             </section><Scatter rows={rows} select={navigate} />
           </>}
+          <TerritoryInspector rows={mapRows} preview={hover.preview} selected={nav.level === 'bairro' ? nav.id_agregacao : null} metric={metric} />
           <details className="source-details"><summary>Fonte, períodos e rastreabilidade</summary>
             <p>{data.index.metadata.aviso}</p><p>Universo: {data.index.metadata.universo_renda}</p>
             <p>Renda: {data.index.metadata.indicadores.renda_media_responsavel?.periodo_referencia ?? 'sem período estatístico real'} · PIB: {data.index.metadata.indicadores.pib_mil_reais?.periodo_referencia ?? 'sem período estatístico real'}</p>

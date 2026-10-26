@@ -226,3 +226,73 @@ MAPA_BR_EVIDENCE_DIR=/caminho/evidencias npm run test:e2e -- official.spec.ts
 A integração oficial verifica 27 UFs, 295 municípios, 1.004 setores, histórico,
 retorno, resposta atrasada, ausência de chamadas aos dados simulados, mensagens
 de indisponibilidade, viewport móvel e sequência das requisições na rede.
+
+## População e domicílios oficiais (demografia-1)
+
+Após a cartografia, execute na raiz:
+
+```bash
+.venv/bin/python etl_pipeline/prepare_census_demography.py
+```
+
+Isso habilita população e domicílios sem alterar as fixtures demonstrativas.
+Brasil, cinco regiões e 27 UFs usam consolidados diretos SIDRA; municípios SC
+carregam sob demanda; os 1.004 setores de Florianópolis carregam só ao abrir o
+município. O painel indica fonte, unidade, edição e referência de 2022.
+O contrato parcial e as instruções anteriores de modo sem indicadores passam a
+seguir [CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md), com fontes,
+auditoria, limites e comandos completos para Mac. Rode o build após o preparo.
+
+## Prévias, seleção e tooltips (proposta Gemini integrada)
+
+O anexo Gemini foi usado como proposta de interação, adaptada à demografia atual.
+Prévia temporária tem contorno verde (âmbar quando há sigilo); seleção persistente
+permanece rosa e identificada na lista/painel. Hover e foco não alteram URL, KPIs,
+seleção nem escala. A lista e os cartões da demo também destacam o mapa. No sentido mapa → lista,
+somente o contêiner da lista rola para revelar a linha, sem mover a página ou o foco. Tab
+pré-visualiza, Enter/Espaço abre e Escape limpa a prévia, preservando o foco.
+Em toque, um tap abre o território; não há exigência de hover ou segundo tap.
+Pontos TSE têm prioridade sobre o polígono, com tooltip próprio também ao tocar.
+
+A troca de território, saída do mapa, movimento da câmera e Escape limpam estados
+transitórios. Os tooltips são medidos e limitados ao mapa, com resumo textual
+acessível e valores exatamente como divulgados (zero, ausência e sigilo distintos).
+Uma instância MapLibre é preservada; movimentos são agrupados por frame e apenas
+as feições do grupo anterior/novo recebem o estado de hover. Não há novos caches,
+fontes, contratos de dados ou dependências. Grupos da demo realçam todos os seus
+setores; não são bairros reais nem geometrias dissolvidas.
+
+No Mac, Node 24 e dados/malhas já preparados conforme
+[CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md), execute em `frontend/`:
+
+```bash
+npm ci
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+npm run dev
+```
+
+`interactions.spec.ts` cobre hover bidirecional, seleção independente, Escape,
+limpeza na troca de território, toque em lista/polígono, tooltip TSE e estados
+zero/ausência/sigilo. As suites anteriores também validam os indicadores oficiais
+e a demo. Capturas em `/tmp/mapa-br-interactions`, ou escolha um diretório com
+`MAPA_BR_EVIDENCE_DIR=/tmp/minhas-capturas npm run test:e2e`. A verificação de toque
+é automatizada no Chromium; Safari/iOS e leitores de tela reais não foram testados.
+
+
+## Bairros declarados do Censo 2022
+
+A entrega de indicadores existente foi preservada e revalidada. A preparação
+`prepare_census_demography.py` agora confere CD_SETOR/CD_BAIRRO/NM_BAIRRO no CSV
+básico e no DBF oficial da mesma referência censitária. Em Florianópolis há 87
+bairros declarados e 109 setores sem bairro informado, conservados num grupo
+explícito. Os 88 grupos particionam os 1.004 setores e reconciliam com o município.
+
+No painel municipal, abra “Bairros declarados e setores sem bairro”. A seleção
+usa a malha setorial existente e o mesmo índice de grupos da demo; não há dissolve
+ou nova geometria de bairro. Setores continuam com seus próprios indicadores
+no modo individual. Zero/ausência/sigilo e os controles visuais existentes foram
+mantidos. Fontes, limitações e comandos para atualizar **mapa-br-spike** no Mac
+estão em [CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md).

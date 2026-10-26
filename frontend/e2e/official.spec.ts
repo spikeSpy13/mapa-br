@@ -18,14 +18,16 @@ test('oficial: Brasil → SC → Florianópolis, setores, histórico e rede prog
   const map = page.getByTestId('official-map');
   await expect(map).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
   await expect(map).toHaveAttribute('data-feature-count', '27');
-  expect(network.map(r => r.path)).toEqual(['/geo/official/catalogo.json', '/geo/official/ufs.geojson', '/geo/official/ufs.inventory.json']);
-  await expect(page.getByRole('combobox', { name: 'Colorir por' })).toBeDisabled();
+  expect(network.map(r => r.path)).toEqual(['/geo/official/catalogo.json', '/geo/official/ufs.geojson', '/geo/official/ufs.inventory.json', '/geo/official/statistics/brasil.json']);
+  await expect(page.getByRole('combobox', { name: 'Colorir por' })).toBeEnabled();
+  await expect(page.getByTestId('official-populacao')).toHaveText('203.080.756');
+  await expect(page.getByTestId('official-domicilios')).toHaveText('90.704.582');
   await page.screenshot({ path: `${output}/01-brasil-oficial.png`, fullPage: true });
   await page.getByRole('combobox', { name: 'Selecionar UF' }).selectOption('42');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Santa Catarina');
   await expect(map).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
   await expect(map).toHaveAttribute('data-feature-count', '295');
-  expect(network.map(r => r.path)).toEqual(['/geo/official/catalogo.json', '/geo/official/ufs.geojson', '/geo/official/ufs.inventory.json', '/geo/official/municipios/42.geojson', '/geo/official/municipios/42.inventory.json']);
+  expect(network.map(r => r.path)).toEqual(['/geo/official/catalogo.json', '/geo/official/ufs.geojson', '/geo/official/ufs.inventory.json', '/geo/official/statistics/brasil.json', '/geo/official/municipios/42.geojson', '/geo/official/municipios/42.inventory.json', '/geo/official/statistics/uf/42.json']);
   await page.screenshot({ path: `${output}/02-santa-catarina-municipios.png`, fullPage: true });
   await page.getByRole('searchbox', { name: 'Buscar nome ou código' }).fill('Florianópolis');
   await page.getByRole('button', { name: /Florianópolis 4205407/ }).click();
@@ -33,7 +35,7 @@ test('oficial: Brasil → SC → Florianópolis, setores, histórico e rede prog
   await expect(map).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
   await expect(map).toHaveAttribute('data-feature-count', '1004');
   await expect(page.getByRole('alert')).toHaveCount(0);
-  const expected = ['/geo/official/catalogo.json', '/geo/official/ufs.geojson', '/geo/official/ufs.inventory.json', '/geo/official/municipios/42.geojson', '/geo/official/municipios/42.inventory.json', '/geo/official/setores/42/4205407.geojson', '/geo/official/setores/42/4205407.inventory.json'];
+  const expected = ['/geo/official/catalogo.json', '/geo/official/ufs.geojson', '/geo/official/ufs.inventory.json', '/geo/official/statistics/brasil.json', '/geo/official/municipios/42.geojson', '/geo/official/municipios/42.inventory.json', '/geo/official/statistics/uf/42.json', '/geo/official/setores/42/4205407.geojson', '/geo/official/setores/42/4205407.inventory.json', '/geo/official/statistics/municipios/42/4205407.json'];
   expect(network.map(r => r.path)).toEqual(expected);
   await page.screenshot({ path: `${output}/03-florianopolis-setores.png`, fullPage: true });
   const sector = page.getByRole('button', { name: /^Setor / }).first();
@@ -53,7 +55,7 @@ test('oficial: Brasil → SC → Florianópolis, setores, histórico e rede prog
   expect(network.map(r => r.path)).toEqual(expected);
   expect(external).toEqual([]); expect(errors).toEqual([]);
   expect(network.some(r => /demo|processed/.test(r.path))).toBe(false);
-  await expect(page.getByText(/Indicadores indisponíveis para este recorte/)).toBeVisible();
+  await expect(page.getByTestId('official-populacao')).toHaveText('7.610.361');
   writeFileSync(`${output}/rede-navegacao-oficial.json`, JSON.stringify({ requests: network, external, errors, checks: ['27 UFs', '295 municípios', '1004 setores', 'seleção, retorno e histórico', 'cache sem novas requisições', 'sem estatísticas ou rede externa'] }, null, 2));
 });
 
@@ -125,4 +127,62 @@ test('clique nos contornos reais abre SC, Florianópolis e um setor', async ({ p
   await clickCoordinate(page, 'setores/42/4205407.geojson', [-48.45, -27.6]);
   await expect(page).toHaveURL(/level=setor/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Setor 4205407/);
+});
+
+test('demografia oficial: regiões, municípios, setores, legenda e retorno sem dados simulados', async ({ page }) => {
+  const requests: string[] = [], external: string[] = [];
+  page.on('request', r => { const u = new URL(r.url()); if (u.protocol.startsWith('http')) { requests.push(u.pathname); if (!['localhost', '127.0.0.1'].includes(u.hostname)) external.push(u.href); } });
+  await page.goto('/');
+  await expect(page.getByTestId('official-populacao')).toHaveText('203.080.756');
+  await expect(page.getByTestId('official-domicilios')).toHaveText('90.704.582');
+  expect(requests.some(p => /setores|statistics\/municipios|statistics\/uf/.test(p))).toBe(false);
+  const index = JSON.parse(readFileSync('public/geo/official/statistics/brasil.json', 'utf8'));
+  const format = (n: number) => new Intl.NumberFormat('pt-BR').format(n);
+  for (const [id, r] of Object.entries(index.regioes) as [string, { nome: string; indicadores: { populacao: { valor: number }; domicilios: { valor: number } } }][]) {
+    await page.getByRole('button', { name: r.nome, exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(r.nome);
+    await expect(page.getByTestId('official-populacao')).toHaveText(format(r.indicadores.populacao.valor));
+    await expect(page.getByTestId('official-domicilios')).toHaveText(format(r.indicadores.domicilios.valor));
+    expect(id).toMatch(/^[1-5]$/);
+  }
+  for (const [code, indicators] of Object.entries(index.ufs) as [string, { populacao: { valor: number }; domicilios: { valor: number } }][]) {
+    await page.getByRole('combobox', { name: 'Selecionar UF' }).selectOption(code);
+    await expect(page.getByTestId('official-populacao')).toHaveText(format(indicators.populacao.valor));
+    await expect(page.getByTestId('official-domicilios')).toHaveText(format(indicators.domicilios.valor));
+  }
+  await page.getByRole('combobox', { name: 'Selecionar UF' }).selectOption('42');
+  await expect(page.getByTestId('official-populacao')).toHaveText('7.610.361');
+  await page.getByRole('searchbox', { name: 'Buscar nome ou código' }).fill('Florianópolis');
+  await page.getByRole('button', { name: /Florianópolis 4205407/ }).click();
+  await expect(page.getByTestId('official-populacao')).toHaveText('537.211');
+  await expect(page.getByTestId('official-domicilios')).toHaveText('285.000');
+  await expect(page.getByTestId('official-map')).toHaveAttribute('data-ready', 'true');
+  await page.screenshot({ path: `${output}/06-florianopolis-populacao.png`, fullPage: true });
+  const detail = JSON.parse(readFileSync('public/geo/official/statistics/municipios/42/4205407.json', 'utf8'));
+  const sectorRows = page.getByRole('region', { name: 'Lista de territórios' }).getByRole('button');
+  // Every displayed sector must use its own indicator, including zero.
+  for (const metric of ['populacao', 'domicilios']) {
+    const before = requests.length;
+    await page.getByRole('combobox', { name: 'Colorir por' }).selectOption(metric);
+    await expect(page.getByTestId('official-legend')).toContainText(metric === 'populacao' ? 'População' : 'Domicílios');
+    const texts = await sectorRows.allTextContents();
+    expect(texts).toHaveLength(1004);
+    for (const text of texts) {
+      const code = text.match(/Setor ([0-9]{15})/)![1]!;
+      expect(text).toContain(format(detail.setores[code][metric].valor));
+    }
+    expect(requests.length).toBe(before);
+  }
+  await page.screenshot({ path: `${output}/07-florianopolis-domicilios.png`, fullPage: true });
+  await page.getByRole('button', { name: /^Setor 420540705000001 / }).click();
+  await expect(page.getByTestId('official-populacao')).toHaveText('430');
+  await expect(page.getByTestId('official-domicilios')).toHaveText('266');
+  await expect(page.getByTestId('official-sources')).toContainText('v0001');
+  await expect(page.getByTestId('official-sources')).toContainText('20260520');
+  await expect(page.getByTestId('official-map')).toHaveAttribute('data-ready', 'true');
+  await page.screenshot({ path: `${output}/08-setor-indicadores.png`, fullPage: true });
+  await page.getByRole('button', { name: /Voltar nível/ }).click();
+  await expect(page.getByTestId('official-populacao')).toHaveText('537.211');
+  await expect(page.getByRole('combobox', { name: 'Colorir por' })).toHaveValue('domicilios');
+  expect(external).toEqual([]); expect(requests.some(p => /demo|processed/.test(p))).toBe(false);
 });

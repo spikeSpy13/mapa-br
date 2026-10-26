@@ -10,6 +10,7 @@ export const METRICAS_CATALOGO: Record<MetricaAtiva, MetricaMeta> = {
   renda_media_responsavel: { id: 'renda_media_responsavel', label: 'Renda do responsável', unidade: 'moeda', disponivelEmBairro: true, descricao: 'Média ponderada pelo universo válido de responsáveis; exclui renda ausente ou sob sigilo.' },
   pib_per_capita: { id: 'pib_per_capita', label: 'PIB por habitante', unidade: 'moeda', disponivelEmBairro: false, descricao: 'PIB do recorte dividido pela população censitária; conferir os períodos das fontes.' },
   pib_total_bi: { id: 'pib_total_bi', label: 'PIB total (bilhões)', unidade: 'moeda_bi', disponivelEmBairro: false, descricao: 'PIB a preços correntes em bilhões de reais; disponível até município.' },
+  domicilios: { id: 'domicilios', label: 'Domicílios', unidade: 'inteiro', disponivelEmBairro: true, descricao: 'Total físico de domicílios de todas as espécies, incluindo vagos e de uso ocasional.' },
   populacao: { id: 'populacao', label: 'População', unidade: 'inteiro', disponivelEmBairro: true, descricao: 'Moradores contabilizados no recorte.' },
   cobertura_renda_proporcao: { id: 'cobertura_renda_proporcao', label: 'Cobertura da renda', unidade: 'proporcao', disponivelEmBairro: true, descricao: 'Responsáveis com renda divulgada / universo conhecido; denominador suprimido implica cobertura desconhecida.' },
   setores_sob_sigilo: { id: 'setores_sob_sigilo', label: 'Setores sob sigilo', unidade: 'inteiro', disponivelEmBairro: true, descricao: 'Quantidade de setores com renda sob sigilo estatístico.' },

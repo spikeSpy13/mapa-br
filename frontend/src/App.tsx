@@ -14,6 +14,7 @@ import { GeoStoreProvider, useGeoStore } from './store/useGeoStore';
 import type { MetricaAtiva } from './store/useGeoStore';
 import './styles.css';
 import { OfficialExplorer } from './components/OfficialExplorer';
+import { useTerritoryPreview } from './components/useTerritoryPreview';
 
 const MapViewport = lazy(() => import('./components/MapViewport'));
 
@@ -57,6 +58,7 @@ function Explorer({ loader }: { loader: DataLoader }) {
     registrarRegioes, voltarNivel } = useGeoStore(state => state);
   const { resource, index, retry } = useData(loader, nav);
   const [showTse, setShowTse] = useState(false);
+  const hover = useTerritoryPreview(navigationSearch(nav));
   useEffect(() => {
     if (index) registrarRegioes(index.ufs.map(uf => uf.metadata));
   }, [index, registrarRegioes]);
@@ -78,23 +80,33 @@ function Explorer({ loader }: { loader: DataLoader }) {
     nav.level === 'uf' ? ufEntry?.metadata.nm_uf : nav.level === 'municipio' ? municipality?.nm_mun : bairro?.nm_bairro;
   const values = nav.level === 'pais' ? data?.index.resumo_brasil : nav.level === 'regiao' ? region?.indicadores :
     nav.level === 'uf' ? data?.uf?.resumo_uf ?? ufEntry?.resumo_uf : nav.level === 'municipio' ? municipality?.indicadores : bairro;
-  let rows: Row[] = [];
-  if (data && (nav.level === 'pais' || nav.level === 'regiao')) rows = data.index.ufs
-    .filter(u => nav.level !== 'regiao' || u.metadata.cd_regiao === nav.cd_regiao)
-    .map(u => ({ id: u.metadata.cd_uf, code: u.metadata.sigla_uf, name: u.metadata.nm_uf, values: u.resumo_uf,
-      nav: { level: 'uf', cd_uf: u.metadata.cd_uf }, badge: u.dados_disponiveis && u.arquivo ? 'Detalhe disponível' : 'Resumo' }));
-  else if (data?.uf && nav.level === 'uf') rows = data.uf.municipios_resumo.map(m => ({
-    id: m.cd_mun, code: m.cd_mun, name: m.nm_mun, values: m.indicadores,
-    nav: { level: 'municipio', cd_uf: nav.cd_uf, cd_mun: m.cd_mun } }));
-  else if (municipality && (nav.level === 'municipio' || nav.level === 'bairro')) rows = municipality.bairros.map(b => ({
-    id: b.id_agregacao, code: b.id_agregacao, name: b.nm_bairro, values: b,
-    nav: { level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: b.id_agregacao },
-    badge: b.origem_malha === 'ibge_bairro_oficial' ? 'Bairro oficial' : 'Setores agregados',
-  }));
+  const rows: Row[] = useMemo(() => {
+    let rows: Row[] = [];
+    if (data && (nav.level === 'pais' || nav.level === 'regiao')) rows = data.index.ufs
+      .filter(u => nav.level !== 'regiao' || u.metadata.cd_regiao === nav.cd_regiao)
+      .map(u => ({ id: u.metadata.cd_uf, code: u.metadata.sigla_uf, name: u.metadata.nm_uf, values: u.resumo_uf,
+        nav: { level: 'uf', cd_uf: u.metadata.cd_uf }, badge: u.dados_disponiveis && u.arquivo ? 'Detalhe disponível' : 'Resumo' }));
+    else if (data?.uf && nav.level === 'uf') rows = data.uf.municipios_resumo.map(m => ({
+      id: m.cd_mun, code: m.cd_mun, name: m.nm_mun, values: m.indicadores,
+      nav: { level: 'municipio', cd_uf: nav.cd_uf, cd_mun: m.cd_mun } }));
+    else if (municipality && (nav.level === 'municipio' || nav.level === 'bairro')) rows = municipality.bairros.map(b => ({
+      id: b.id_agregacao, code: b.id_agregacao, name: b.nm_bairro, values: b,
+      nav: { level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: b.id_agregacao },
+      badge: b.origem_malha === 'ibge_bairro_oficial' ? 'Bairro oficial' : 'Setores agregados',
+    }));
+    return rows;
+  }, [data, nav]);
   const mapMetric = metricaDoMapa(nav, metric);
   const colorRows = rows.length ? rows : ufEntry ? [{ values: ufEntry.resumo_uf }] : [];
   const numeric = colorRows.flatMap(r => measure(r.values, mapMetric) === null ? [] : [measure(r.values, mapMetric)!]);
-  const { obterCor: color, min, max } = criarEscalaCoropletica(numeric);
+  const { obterCor: color, min, max } = useMemo(() => criarEscalaCoropletica(numeric), [rows, ufEntry, mapMetric]);
+  const mapRows = useMemo(() => (rows.length ? rows : ufEntry ? [{ id: ufEntry.metadata.cd_uf, name: ufEntry.metadata.nm_uf,
+            values: ufEntry.resumo_uf, nav: { level: 'uf' as const, cd_uf: ufEntry.metadata.cd_uf } }] : []).map(r => ({
+              id: r.id, name: r.name, nav: r.nav, fill: color(measure(r.values, mapMetric)),
+              sigilo: (r.values?.setores_sob_sigilo ?? 0) > 0,
+              value: format(measure(r.values, mapMetric), mapMetric),
+              coverage: measure(r.values, 'cobertura_renda_proporcao'),
+            })), [rows, ufEntry, mapMetric, color]);
   const ranking = [...rows].filter(r => `${r.name} ${r.code}`.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))
     .sort((a, b) => (measure(b.values, mapMetric) ?? -1) - (measure(a.values, mapMetric) ?? -1) || a.name.localeCompare(b.name, 'pt-BR'));
   const cartogram = nav.level === 'pais' || nav.level === 'regiao';
@@ -133,22 +145,16 @@ function Explorer({ loader }: { loader: DataLoader }) {
         {metric !== mapMetric && <p role="status" className="metric-fallback">O IBGE não calcula PIB para bairros/setores. O mapa e a comparação intramunicipal usam Renda do responsável. A seleção de PIB será retomada ao voltar à UF.</p>}
         {index && cartogram && <div className="region-pills" aria-label="Regiões">{index.regioes.map(r => <button key={r.cd_regiao}
           aria-pressed={nav.level === 'regiao' && nav.cd_regiao === r.cd_regiao} onClick={() => navigate({ level: 'regiao', cd_regiao: r.cd_regiao })}>{r.nm_regiao}</button>)}</div>}
-        {index && demo && <Suspense fallback={<p role="status">Preparando mapa local…</p>}><MapViewport loader={loader} data={data} nav={nav} select={navigate} metric={mapMetric} tse={tseState.payload}
-          rows={(rows.length ? rows : ufEntry ? [{ id: ufEntry.metadata.cd_uf, name: ufEntry.metadata.nm_uf,
-            values: ufEntry.resumo_uf, nav: { level: 'uf' as const, cd_uf: ufEntry.metadata.cd_uf } }] : []).map(r => ({
-              id: r.id, name: r.name, nav: r.nav, fill: color(measure(r.values, mapMetric)),
-              sigilo: (r.values?.setores_sob_sigilo ?? 0) > 0,
-              value: format(measure(r.values, mapMetric), mapMetric),
-              coverage: measure(r.values, 'cobertura_renda_proporcao'),
-            }))} /></Suspense>}
+        {index && demo && <Suspense fallback={<p role="status">Preparando mapa local…</p>}><MapViewport loader={loader} data={data} nav={nav} select={navigate} metric={mapMetric} tse={tseState.payload} preview={hover.preview} onMapPreview={hover.fromMap}
+          rows={mapRows} /></Suspense>}
         {resource.status === 'loading' ? <div className="empty-map" role="status"><span className="loading-pulse" />Carregando o recorte selecionado…</div> :
           resource.status === 'error' ? <div className="empty-map" role="alert"><h2>Não foi possível abrir este recorte</h2><p>{resource.error}</p><button onClick={retry}>Tentar novamente</button><button onClick={() => navigate({ level: 'pais' })}>Voltar ao Brasil</button></div> :
           cartogram ? <div className="cartogram-wrap"><div className="cartogram" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
-            {rows.map(r => { const p = position[r.code]; const shade = color(measure(r.values, mapMetric)); return p ? <button key={r.id} className="uf-tile" aria-label={`${r.name} (${r.code})`}
+            {rows.map(r => { const p = position[r.code]; const shade = color(measure(r.values, mapMetric)); return p ? <button key={r.id} className={`uf-tile${hover.preview?.id === r.id ? ' is-hovered' : ''}`} {...hover.handlers(r.id)} data-territory-id={r.id} aria-label={`${r.name} (${r.code})`}
               onClick={() => navigate(r.nav)} style={{ gridColumn: p[0] - left + 1, gridRow: p[1] - top + 1, backgroundColor: shade, color: palette.slice(3).includes(shade) ? '#071c14' : '#effff6' }}>
               <strong>{r.code}</strong><small>{r.badge === 'Detalhe disponível' ? '↳' : '·'}</small></button> : null; })}
           </div></div> : <div className="territory-cards">{rows.length ? rows.map(r => <button key={r.id} onClick={() => navigate(r.nav)}
-            className={`territory-card ${nav.level === 'bairro' && nav.id_agregacao === r.id ? 'selected' : ''}`} aria-pressed={nav.level === 'bairro' && nav.id_agregacao === r.id}>
+            {...hover.handlers(r.id)} data-territory-id={r.id} className={`territory-card ${hover.preview?.id === r.id ? 'is-hovered' : ''} ${nav.level === 'bairro' && nav.id_agregacao === r.id ? 'selected' : ''}`} aria-pressed={nav.level === 'bairro' && nav.id_agregacao === r.id}>
             <span className="territory-swatch" style={{ backgroundColor: color(measure(r.values, mapMetric)) }} /><small>{r.badge ?? 'Município'}</small>
             <strong>{r.name}</strong><span>{format(measure(r.values, mapMetric), mapMetric)}</span><code>{r.code}</code></button>) :
             <div className="empty-map"><h2>{demo ? 'Detalhamento municipal não disponível nesta amostra' : 'Resumo disponível'}</h2><p>O desdobramento municipal não faz parte do recorte carregado.</p></div>}</div>}
@@ -158,7 +164,7 @@ function Explorer({ loader }: { loader: DataLoader }) {
           {reverse && <span className="map-note">{number.format(reverse.size)} setores vinculados aos grupos deste município</span>}</div>
       </section>
       <AnalyticalSidebar data={data} values={values} bairro={bairro} title={title} nav={nav} demo={demo}
-        rows={rows} ranking={ranking} metric={mapMetric} search={search} setSearch={setSearch}
+        rows={rows} ranking={ranking} metric={mapMetric} mapRows={mapRows} hover={hover} search={search} setSearch={setSearch}
         navigate={navigate} resourceStatus={resource.status} max={max ?? 0} tse={tseState} />
     </main><footer className="page-footer"><span>MAPA BR / TERRITÓRIO EM PERSPECTIVA</span><span>País → Região → UF → Município → Bairro / Setor</span></footer>
   </div>;

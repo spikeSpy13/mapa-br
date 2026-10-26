@@ -3,7 +3,7 @@ import { cdSetorSchema } from '../types/contract';
 
 // A mesma malha de setores serve os dois tipos de grupo. Nenhum dissolve
 // ou conversão numérica de CD_SETOR é necessário no cliente.
-export function buildSectorToGroupMap(bairros: readonly BairroDetalhe[]): Map<string, string> {
+export function buildSectorToGroupMap(bairros: readonly Pick<BairroDetalhe, 'cd_setores' | 'id_agregacao'>[]): Map<string, string> {
   const result = new Map<string, string>();
   for (const bairro of bairros) {
     for (const code of bairro.cd_setores) {

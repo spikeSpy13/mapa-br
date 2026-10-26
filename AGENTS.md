@@ -363,3 +363,37 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
   votos pela área ou fabricar centroides. Hover/click do ponto não aciona o
   polígono inferior. TsePanel cruza por id_agregacao e mostra aviso metodológico,
   distinguindo votos em locais do perímetro de residência dos eleitores.
+
+## Demografia oficial — entrega demografia-1
+
+- Ler `etl_pipeline/CENSUS_DEMOGRAPHY.md`. Esta entrega substitui as indicações
+  anteriores de ausência de população/domicílios no modo oficial. Renda permanece
+  bloqueada e fora do escopo. O antigo 403 já não descreve o ambiente atual.
+- `prepare_census_demography.py` reutiliza cache/download do 03, códigos e
+  validação numérica existentes; não chamar o agregador de renda com dados
+  inventados. Contrato `types/demography.ts`: apenas população/domicílios com
+  status explícito, separado do contrato demo 2.0, que permanece inalterado.
+- Brasil/regiões/UFs vêm diretamente das tabelas consolidadas SIDRA 4714/93 e
+  4711/617/c3=59993. Não substituir por soma do recorte. Municípios SC usam os
+  mesmos consolidados; setores somente Florianópolis, básico 20260520, v0001/v0002.
+- Preparar geometrias, depois demografia, depois build. As saídas ficam em
+  `frontend/public/geo/official/statistics` (ignoradas), particionadas por nível.
+  Não modificar outras cópias (inclusive a do André). Não publicar sem pedido.
+- Loader oficial usa o mesmo DataLoader/React Query, sem novo cache. Cor/legenda
+  e seleção reutilizam geoStats, store e MapViewport. Sigilo/ausência são null,
+  zero divulgado é zero. Falta de renda não impede demografia independente.
+
+
+## Bairros declarados — extensão auditada de demografia-1
+
+- A correspondência de Florianópolis agora está conferida: CD_SETOR, CD_BAIRRO
+  e NM_BAIRRO iguais entre CSV básico 20260520 e DBF SC_setores_CD2022, tipos
+  textuais e definições verificadas na aba Setor do dicionário da malha fixado.
+- 87 bairros declarados/895 setores, mais 109 sem bairro, mantidos em grupo com
+  cd_bairro=null. Não inferir vínculos por nome/prefixo nem remover setores zero.
+  A partição de 1.004 setores e os totais municipal/SIDRA precisam reconciliar.
+- Ler a seção atualizada em CENSUS_DEMOGRAPHY.md. O vínculo é atributivo oficial;
+  não afirmar criação de limites próprios de bairros ou auditoria espacial nova.
+- O detalhe municipal possui bairros/vinculo_bairro opcionais; fonte e partição
+  são validadas juntas. Reusar sectorJoin e MapViewport para seleção de grupos.
+  O panorama nacional continua vindo diretamente do SIDRA, sem depender do recorte.

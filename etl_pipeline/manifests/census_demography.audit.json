@@ -1,0 +1,169 @@
+{
+  "status": "approved_demography_only",
+  "generated_at": "2026-10-26T12:29:48.255967+00:00",
+  "consolidados_diretos": {
+    "brasil": {
+      "populacao": {
+        "valor": 203080756,
+        "status": "divulgada"
+      },
+      "domicilios": {
+        "valor": 90704582,
+        "status": "divulgada"
+      }
+    },
+    "sc": {
+      "populacao": {
+        "valor": 7610361,
+        "status": "divulgada"
+      },
+      "domicilios": {
+        "valor": 3475161,
+        "status": "divulgada"
+      }
+    }
+  },
+  "reconciliation": {
+    "setores": 1004,
+    "municipio": {
+      "populacao": 537211,
+      "domicilios": 285000
+    },
+    "sidra_igual_setores": true
+  },
+  "bairros": {
+    "status": "approved_declared_membership",
+    "fonte": {
+      "metodo": "atributos_oficiais_csv_dbf",
+      "campos": [
+        "CD_SETOR",
+        "CD_BAIRRO",
+        "NM_BAIRRO"
+      ],
+      "membro_dbf": "SC_setores_CD2022.dbf",
+      "recibos": {
+        "basico": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+          "bytes": 15418417,
+          "sha256_local": "ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63",
+          "downloaded_at": "2026-10-26T11:39:56.679006+00:00"
+        },
+        "setores_sc": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/setores/shp/UF/SC/SC_setores_CD2022.zip",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/setores/shp/UF/SC/SC_setores_CD2022.zip",
+          "bytes": 75317836,
+          "sha256_local": "6914fcc25bc8880565778582ff4753cb54b23294be4882a3f372138b4bd3239b",
+          "downloaded_at": "2026-10-26T11:39:55.506314+00:00"
+        },
+        "dicionario_malha": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/Dicionario_de_dados_malha_agregados.xlsx",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/Dicionario_de_dados_malha_agregados.xlsx",
+          "bytes": 18860,
+          "sha256_local": "0dffb669ee90e1ffb86a7c8666cc066d5121d44b494013cc1149e50cc75073b1",
+          "downloaded_at": "2026-10-26T11:39:55.830467+00:00"
+        }
+      }
+    },
+    "bairros_identificados": 87,
+    "setores_sem_bairro": 109,
+    "totais_sem_bairro": {
+      "populacao": {
+        "valor": 17748,
+        "status": "divulgada"
+      },
+      "domicilios": {
+        "valor": 8817,
+        "status": "divulgada"
+      }
+    },
+    "setores_populacao_zero": 40,
+    "domicilios_em_setores_populacao_zero": 10,
+    "particao_integral": true,
+    "totais_reconciliados": {
+      "populacao": 537211,
+      "domicilios": 285000
+    }
+  },
+  "fontes": {
+    "populacao": {
+      "fonte": "IBGE · Censo Demográfico 2022",
+      "referencia": "2022-08-01",
+      "unidade": "Pessoas",
+      "universo": "População residente",
+      "consolidado": {
+        "tabela": "4714",
+        "variavel": "93",
+        "recibo": {
+          "url": "https://apisidra.ibge.gov.br/values/t/4714/n1/1/n2/all/n3/all/n6/in%20n3%2042/v/93/p/2022?formato=json",
+          "url_final": "https://apisidra.ibge.gov.br/values/t/4714/n1/1/n2/all/n3/all/n6/in%20n3%2042/v/93/p/2022?formato=json",
+          "bytes": 57409,
+          "sha256_local": "e92434191508a96a3b841831649e02a4c82383db3b5e1845d5afb3417a11b6a4",
+          "downloaded_at": "2026-10-26T11:51:42.919937+00:00"
+        }
+      },
+      "setorial": {
+        "arquivo": "Agregados_por_setores_basico_BR_20260520.zip",
+        "variavel": "v0001",
+        "edicao": "20260520",
+        "definicao": "Total de pessoas",
+        "recibo": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+          "bytes": 15418417,
+          "sha256_local": "ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63",
+          "downloaded_at": "2026-10-26T11:39:56.679006+00:00"
+        },
+        "dicionario": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+          "bytes": 118369,
+          "sha256_local": "0b8aedece57f6125d785b6aa2234cfd587e92dfb6ce5ca6ace8c67f140831344",
+          "downloaded_at": "2026-10-26T11:39:57.901160+00:00"
+        }
+      }
+    },
+    "domicilios": {
+      "fonte": "IBGE · Censo Demográfico 2022",
+      "referencia": "2022-08-01",
+      "unidade": "Domicílios",
+      "universo": "Domicílios recenseados · todas as espécies",
+      "consolidado": {
+        "tabela": "4711",
+        "variavel": "617",
+        "recibo": {
+          "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/in%20n3%2042/v/617/p/2022/c3/59993?formato=json",
+          "url_final": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/in%20n3%2042/v/617/p/2022/c3/59993?formato=json",
+          "bytes": 69484,
+          "sha256_local": "1a779ab7e194867a82ecabc66f79f4df23e95f55f61f1018ac9d6c7d24c1ccea",
+          "downloaded_at": "2026-10-26T11:51:43.761634+00:00"
+        }
+      },
+      "setorial": {
+        "arquivo": "Agregados_por_setores_basico_BR_20260520.zip",
+        "variavel": "v0002",
+        "edicao": "20260520",
+        "definicao": "Total de Domicílios (DPPO + DPPV + DPPUO + DPIO + DCCM + DCSM)",
+        "recibo": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+          "bytes": 15418417,
+          "sha256_local": "ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63",
+          "downloaded_at": "2026-10-26T11:39:56.679006+00:00"
+        },
+        "dicionario": {
+          "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+          "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+          "bytes": 118369,
+          "sha256_local": "0b8aedece57f6125d785b6aa2234cfd587e92dfb6ce5ca6ace8c67f140831344",
+          "downloaded_at": "2026-10-26T11:39:57.901160+00:00"
+        }
+      }
+    }
+  },
+  "scope": "Brasil/regiões/UFs consolidados diretos; municípios SC consolidados; setores somente Florianópolis",
+  "limitations": [
+    "Sem renda, responsáveis, PIB, Gini ou TSE. Bairros somente pelo vínculo declarado; sem limites próprios/dissolve.",
+    "SHA256 local não é assinatura IBGE."
+  ]
+}

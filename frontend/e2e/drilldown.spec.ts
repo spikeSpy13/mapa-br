@@ -141,7 +141,7 @@ test('sidecar TSE opcional: pontos separados, agrupamento e limpeza ao trocar UF
   await expect.poll(async () => {
     await map.locator('canvas').hover({ position: { x: 10, y: 10 } });
     await map.locator('canvas').hover({ position: { x: box!.width * .29, y: box!.height * .28 } });
-    return page.getByText(/Escola sintética A/).count();
+    return page.locator('.demo-map-hover').filter({ hasText: /Escola sintética A/ }).count();
   }).toBe(1);
   await page.getByRole('region', { name: 'Exploração territorial' }).getByRole('button', { name: /Área sem bairro oficial/ }).click();
   await expect(panel).toContainText('Locais / seções no grupo');
