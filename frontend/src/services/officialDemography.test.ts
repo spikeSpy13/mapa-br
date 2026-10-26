@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { demographySchema, demographicMunicipalitySchema } from '../types/demography';
+import { demographySchema, demographicMunicipalitySchema, neighborhoodLookupSchema } from '../types/demography';
 import { DataLoader } from './dataLoader';
-import { loadOfficialDemography } from './officialDemography';
+import { loadOfficialDemography, sectorName, sectorNeighborhood } from './officialDemography';
 const value = (n: number) => ({ valor: n, status: 'divulgada' });
 const indicators = { populacao: value(3), domicilios: value(5) };
 const detail = { schema_version: 'demografia-1', tipo_dados: 'oficiais', referencia: '2022-08-01', cd_uf: '42', cd_mun: '4205407', indicadores: indicators,
@@ -42,6 +42,29 @@ describe('contrato parcial oficial', () => {
     const unavailable = await loadOfficialDemography(loader, 'statistics/brasil.json', { level: 'municipio', cd_uf: '35', cd_mun: '3550308' }, { ...geo, field: 'cd_mun' }, signal);
     expect(unavailable.status === 'disponiveis' && unavailable.summary).toBeUndefined();
     await expect(loadOfficialDemography(loader, 'statistics/brasil.json', nav, { ...sectors, collection: { ...sectors.collection, features: [] } }, signal)).rejects.toThrow(/Inventários/);
+    const membership = { metodo: 'atributos_oficiais_csv_dbf', campos: ['CD_SETOR', 'CD_BAIRRO', 'NM_BAIRRO'], membro_dbf: 'test.dbf', recibos: { basico: receipt, setores_sc: receipt, dicionario_malha: receipt } };
+    files['statistics/municipios/42/4205407.json'] = { ...detail, arquivo_vinculo_bairro: '4205407.bairros.json', vinculo_bairro: membership, bairros: { 'bairro:4205407001': { cd_bairro: '4205407001', nome: 'Centro', cd_setores: ['420540705000001'], indicadores: indicators } } };
+    const lookup = { schema_version: 'vinculo-bairro-1', cd_mun: '4205407', referencia_territorial: 'Censo 2022', fonte: membership, bairros: { '4205407001': 'Centro' }, setores: { '420540705000001': '4205407001' }, cobertura: { total_setores: 1, com_bairro: 1, sem_bairro: 0, bairros: 1 } };
+    files['statistics/municipios/42/4205407.bairros.json'] = lookup;
+    neighborhoodLookupSchema.parse(lookup);
+    expect(() => neighborhoodLookupSchema.parse({ ...lookup, cobertura: { ...lookup.cobertura, sem_bairro: 1 } })).toThrow();
+    loader.clear(); fetcher.mockClear();
+    const named = await loadOfficialDemography(loader, 'statistics/brasil.json', nav, sectors, signal);
+    if (named.status !== 'disponiveis') throw new Error('Estatísticas não carregadas');
+    expect(sectorName(named, '420540705000001')).toBe('Centro — Setor 420540705000001');
+    expect(sectorNeighborhood(named, '420540705000001')?.id).toBe('bairro:4205407001');
+    expect(named.neighborhoodLookupUrl).toBe(root + 'statistics/municipios/42/4205407.bairros.json');
+    expect(sectorName(undefined, '420540705000001')).toBe('Bairro não identificado na fonte — Setor 420540705000001');
+    expect(fetcher).toHaveBeenCalledTimes(4);
+    await loadOfficialDemography(loader, 'statistics/brasil.json', nav, sectors, signal);
+    const neighborhood = await loadOfficialDemography(loader, 'statistics/brasil.json', { ...nav, level: 'bairro', id_agregacao: 'bairro:4205407001' }, sectors, signal);
+    expect(neighborhood.status === 'disponiveis' && neighborhood.rows['420540705000001']).toEqual(indicators);
+    expect(neighborhood.status === 'disponiveis' && neighborhood.rows['bairro:4205407001']).toBeUndefined();
+    expect(fetcher).toHaveBeenCalledTimes(4);
+    files['statistics/municipios/42/4205407.bairros.json'] = { ...lookup, bairros: { '4205407002': 'Outro' }, setores: { '420540705000001': '4205407002' } };
+    loader.clear();
+    await expect(loadOfficialDemography(loader, 'statistics/brasil.json', nav, sectors, signal)).rejects.toThrow(/Correspondência municipal diverge/);
+
   });
 });
 

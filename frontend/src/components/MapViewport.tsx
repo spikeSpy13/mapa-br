@@ -18,7 +18,7 @@ interface Props {
   official?: boolean; officialGeometry?: MapGeometry; tse?: MunicipioTse | null;
   loader: DataLoader; data?: LoadedData; nav: Navigation; rows: MapRow[];
   metric: MetricaAtiva; select: (nav: Navigation) => void;
-  preview?: TerritoryPreview; onMapPreview?: (id: string | null) => void;
+  parentNavigation?: Navigation; preview?: TerritoryPreview; onMapPreview?: (id: string | null) => void;
 }
 interface PointerPreview { id: string; code: string; point: { x: number; y: number }; tse?: { name: string; text: string } }
 const kinds = ['ufs', 'municipios', 'setores'] as const;
@@ -26,7 +26,7 @@ const fields = { ufs: 'cd_uf', municipios: 'cd_mun', setores: 'cd_setor' };
 function kindFor(geo: MapGeometry) { return geo.field === 'cd_setor' ? 'setores' : geo.field === 'cd_mun' ? 'municipios' : 'ufs'; }
 const levelLabel = (row: MapRow) => ({ pais: 'País', regiao: 'Região', uf: 'UF', municipio: 'Município', bairro: 'Agrupamento', setor: 'Setor censitário' })[row.nav.level];
 
-export function MapViewport({ loader, data, nav, rows, metric, select, tse, official = false, officialGeometry, preview = null, onMapPreview }: Props) {
+export function MapViewport({ loader, data, nav, rows, metric, select, tse, official = false, officialGeometry, preview = null, onMapPreview, parentNavigation }: Props) {
   const container = useRef<HTMLDivElement>(null), stage = useRef<HTMLDivElement>(null), popup = useRef<HTMLDivElement>(null);
   const map = useRef<GLMap | null>(null), active = useRef<MapGeometry | undefined>(undefined);
   const hoverPaint = useRef(new PolygonPreview()), frame = useRef<number | null>(null), dismissed = useRef<string | null>(null);
@@ -37,8 +37,8 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
   const [mapReady, setMapReady] = useState(false), [sourceReady, setSourceReady] = useState(false);
   const [error, setError] = useState('');
   const byId = useMemo(() => new Map(rows.map(r => [r.id, r])), [rows]);
-  const latest = useRef({ byId, select, nav, metric, official, onMapPreview });
-  latest.current = { byId, select, nav, metric, official, onMapPreview };
+  const latest = useRef({ byId, select, nav, metric, official, onMapPreview, parentNavigation });
+  latest.current = { byId, select, nav, metric, official, onMapPreview, parentNavigation };
   const selected = selectedTerritory(nav), scope = navigationSearch(nav);
   const key = nav.level === 'municipio' || nav.level === 'bairro' || nav.level === 'setor' ? `municipio:${nav.cd_mun}` : scope;
 
@@ -65,9 +65,10 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
     for (const f of geo.collection.features) {
       const code = f.properties![geo.field] as string, group = geo.rowByFeature.get(code)!;
       const row = latest.current.byId.get(group);
+      const isSelected = geo.selectedFeatureIds ? geo.selectedFeatureIds.has(code) : currentSelected === group;
       instance.setFeatureState({ source, id: code }, { fill: row?.fill ?? COLOR_SIGILO_OU_AUSENTE,
-        sigilo: row?.sigilo ?? false, coverage: row?.coverage ?? null, selected: currentSelected === group,
-        dimmed: currentSelected !== null && currentSelected !== group });
+        sigilo: row?.sigilo ?? false, coverage: row?.coverage ?? null, selected: isSelected,
+        dimmed: currentSelected !== null && !isSelected });
     }
   }
   useEffect(() => {
@@ -127,7 +128,7 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
           const current = latest.current.nav;
           clearPreview(); dismissed.current = null;
           latest.current.select(selectedTerritory(current) === row.id && (current.level === 'bairro' || current.level === 'setor') ?
-            { level: 'municipio', cd_uf: current.cd_uf, cd_mun: current.cd_mun } : row.nav); return;
+            latest.current.parentNavigation ?? { level: 'municipio', cd_uf: current.cd_uf, cd_mun: current.cd_mun } : row.nav); return;
         }
         if (dismissed.current === row.id) return;
         dismissed.current = null;
@@ -189,7 +190,7 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
   useEffect(() => {
     const instance = map.current;
     if (!instance || !geometry || !mapReady) return;
-    const features = selected ? geometry.collection.features.filter(f => geometry.rowByFeature.get(f.properties![geometry.field] as string) === selected) : geometry.collection.features;
+    const features = selected ? geometry.collection.features.filter(f => geometry.selectedFeatureIds ? geometry.selectedFeatureIds.has(f.properties![geometry.field] as string) : geometry.rowByFeature.get(f.properties![geometry.field] as string) === selected) : geometry.collection.features;
     const bounds = calcularBoundingBox(features);
     if (bounds) instance.fitBounds(bounds, { padding: 35, duration: 0 });
   }, [geometry, selected, mapReady]);
@@ -201,7 +202,7 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
   const tooltip = isTse ? { name: pointer!.tse!.name, code: pointer!.code, level: 'Local de votação TSE', text: pointer!.tse!.text, point: pointer!.point, selected: false, sigilo: false } : hoveredRow ? {
     name: hoveredRow.name, code: rowCode, level: levelLabel(hoveredRow), point: rowPoint,
     text: `${METRICAS_CATALOGO[metric].label}: ${hoveredRow.value}${official ? '' : ` · cobertura ${hoveredRow.coverage === null ? 'desconhecida' : formatarValorIndicador(hoveredRow.coverage, 'cobertura_renda_proporcao')}`}`,
-    selected: selected === hoveredRow.id, sigilo: hoveredRow.sigilo,
+    selected: selected === hoveredRow.id || !!geometry?.selectedFeatureIds?.has(hoveredRow.id), sigilo: hoveredRow.sigilo,
   } : null;
   useLayoutEffect(() => {
     if (!popup.current || !stage.current || !tooltip) return;

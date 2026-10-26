@@ -122,8 +122,11 @@ test.describe('toque', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `${output}/toque-setor.png`, fullPage: true });
     await page.getByRole('button', { name: /Voltar nível/ }).tap();
+    await expect(page.getByTestId('official-populacao')).toHaveText('42.308');
+    await page.getByRole('button', { name: 'Ver todos os setores de Florianópolis' }).tap();
     await expect(page.getByTestId('official-populacao')).toHaveText('537.211');
     await expect(map).toHaveAttribute('data-ready', 'true');
+    await map.locator('canvas').scrollIntoViewIfNeeded();
     const point = await officialPoint(page, 'setores/42/4205407.geojson', [-48.45, -27.6]);
     const box = (await point.canvas.boundingBox())!;
     await page.touchscreen.tap(box.x + point.position.x, box.y + point.position.y);

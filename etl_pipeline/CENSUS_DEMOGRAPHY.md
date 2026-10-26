@@ -164,48 +164,69 @@ proveniência, com setores duplicados/ausentes ou totais inconsistentes falham
 na validação. `sectorJoin.ts` compartilha o índice setor→grupo com a demo,
 aceitando apenas os dois campos necessários (IDs e lista de setores).
 
-Em Florianópolis, abra **Bairros declarados e setores sem bairro** no painel.
-Selecionar um grupo mantém a mesma malha setorial, realça todos os setores do
-grupo e soma seus indicadores. A legenda usa quantis dos 88 grupos (87 bairros
-+ um grupo sem bairro), contando cada grupo uma vez. Os limites setoriais não
-foram dissolvidos nem certificados como uma nova malha poligonal de bairros.
-No município/setor continua a coloração por valores individuais dos setores.
-É possível voltar ao município ou abrir um setor do grupo. Hover, teclado,
-seleção e fonte/período continuam pela infraestrutura visual já existente.
+O preparador também gera o arquivo municipal leve
+`statistics/municipios/42/4205407.bairros.json` (`vinculo-bairro-1`, cerca de 41 KB).
+O dicionário `bairros` guarda código → nome uma única vez; `setores` relaciona
+cada `cd_setor` textual ao código do bairro ou null. `fonte`,
+`referencia_territorial` e `cobertura` acompanham a relação. O detalhe municipal
+aponta para ele com `arquivo_vinculo_bairro`. O mesmo DataLoader valida a
+correspondência com os grupos auditados, nomes, inventário e recibos. Só é
+carregado ao abrir Florianópolis; não integra a abertura nacional. O painel
+permite consultar esse arquivo. Dados legados sem o campo continuam aceitos.
+
+Em Florianópolis, a lista de setores é organizada por bairro, com botões nos
+cabeçalhos para abrir o bairro. A busca por nome ou código ignora caixa e acentos,
+e encontra partes do nome: “centro” encontra Centro e Ingleses Centro. Cada linha,
+tooltip e detalhe setorial exibe “Nome do bairro — Setor [código]”, com nomes
+somente da fonte. Nos 109 casos sem vínculo, a interface exibe
+**Bairro não identificado na fonte**, sem criar um bairro oficial.
+
+Selecionar um bairro destaca seus setores e enquadra o conjunto, preservando
+as 1.004 geometrias originais. O painel mostra o total do bairro; a lista mostra
+apenas seus setores, cada um com seu próprio indicador. A cor/legenda continua
+usando os quantis dos setores municipais, inclusive ao selecionar bairro. Os
+limites não são dissolvidos nem certificados como uma nova malha de bairros.
+O setor pode ser aberto pela lista ou pelo mapa, e “Voltar nível”/“Voltar ao bairro”
+retorna ao vínculo auditado, inclusive após recarregar um link direto e para o
+grupo sem bairro. Sem associação disponível, o retorno continua ao município.
+Teclado, toque, hover temporário e seleção persistente usam os componentes existentes.
 
 ## Atualizar a cópia Mac mapa-br-spike
 
-As mudanças desta sessão estão locais: `git pull` sozinho não as transfere.
-O patch completo entregue é relativo ao HEAD original
-`b06ed291fa7d8aaac2c5adf2eb2e6d8d247c075f`; inclui a integração prévia de indicadores
-e interações e esta extensão de bairros. Salve-o como
-`~/Downloads/mapa-br-spike.patch`. A cópia do André não deve ser usada.
-No diretório pai de **mapa-br-spike**, com Python >=3.11 e Node 24:
+Este diff incremental parte do commit `020b792` de spikeSpy13/mapa-br. As mudanças
+desta entrega estão locais; para transferi-las, salve o patch entregue em
+`~/Downloads/bairros.patch` e aplique somente na cópia **mapa-br-spike**:
 
 ```bash
 cd mapa-br-spike
 git remote get-url origin
-git apply --check ~/Downloads/mapa-br-spike.patch
-git apply ~/Downloads/mapa-br-spike.patch
+git pull --ff-only origin main
+git apply --check ~/Downloads/bairros.patch
+git apply ~/Downloads/bairros.patch
+```
+
+Se a cópia já contém as mesmas alterações, não aplique o patch novamente.
+Com Python >=3.11 e Node 24, aproveitando o cache/cartografia já preparados:
+
+```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r etl_pipeline/requirements-geometry.txt
-.venv/bin/python etl_pipeline/prepare_official_geometries.py --audit-file data/raw/official_geometry.setup.audit.json
 .venv/bin/python etl_pipeline/prepare_census_demography.py
 cd frontend
 npm ci
+npm test
 npm run build
+npx playwright install chromium
+npm run test:e2e
 npm run dev
 ```
 
-Confirme que o remoto é spikeSpy13/mapa-br. Se a verificação do patch falhar,
-pare antes de aplicá-lo; não force, resete ou sobrescreva alterações existentes.
-Para cópias já no estado do início desta tarefa, use o patch incremental entregue.
-Os dados pesados ficam fora do Git/patch e são preparados pelos dois comandos
-Python, aproveitando o cache. O script demográfico deve rodar **após** o
-cartográfico, que recria o catálogo. Build/dev consomem só os arquivos locais.
-Para testes, ainda em frontend/: `npm test`, `npx playwright install chromium`,
-`npm run test:e2e` (build já realizado). Para a suíte Python completa, instale
-`'pyarrow>=18,<24'` na .venv antes do unittest documentado acima. Nada publica.
+Se faltarem as malhas locais, execute antes da demografia, na raiz:
+`.venv/bin/python etl_pipeline/prepare_official_geometries.py --audit-file data/raw/official_geometry.setup.audit.json`.
+As saídas oficiais são ignoradas pelo Git e são preparadas com cache verificado;
+nenhum comando modifica a cópia do André ou publica o aplicativo. O patch não
+inclui dados pesados. A suíte Python completa exige também `'pyarrow>=18,<24'`,
+conforme o bloco de validação acima.
 
 
 Os testes também removem, via respostas HTTP 404 simuladas no navegador, os

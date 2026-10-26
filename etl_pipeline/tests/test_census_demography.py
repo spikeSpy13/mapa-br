@@ -73,3 +73,19 @@ class NeighborhoodTests(unittest.TestCase):
         groups = neighborhood_groups(sectors, {c: ('4205407001', 'Centro') for c in sectors})
         self.assertEqual(groups['bairro:4205407001']['indicadores']['populacao'], {'valor': None, 'status': 'sigilo'})
         self.assertEqual(groups['bairro:4205407001']['indicadores']['domicilios'], {'valor': None, 'status': 'ausente'})
+
+class NeighborhoodLookupTests(unittest.TestCase):
+    def test_light_lookup_keeps_every_sector_and_source_names_without_repetition(self):
+        from etl_pipeline.prepare_census_demography import neighborhood_groups, neighborhood_lookup
+        sectors = {'420540705000001': ind(0, 7), '420540705000002': ind(10, 3)}
+        groups = neighborhood_groups(sectors, {'420540705000001': ('4205407001', 'Centro'), '420540705000002': (None, None)})
+        lookup = neighborhood_lookup(sectors, groups, {'evidencia': 'teste'})
+        self.assertEqual(lookup['bairros'], {'4205407001': 'Centro'})
+        self.assertEqual(lookup['setores'], {'420540705000001': '4205407001', '420540705000002': None})
+        self.assertEqual(lookup['cobertura'], {'total_setores': 2, 'com_bairro': 1, 'sem_bairro': 1, 'bairros': 1})
+        self.assertEqual(lookup['fonte'], {'evidencia': 'teste'})
+        self.assertEqual(lookup['referencia_territorial'], 'Censo 2022')
+        duplicate = copy.deepcopy(groups)
+        duplicate['sem_bairro:4205407']['cd_setores'].append('420540705000001')
+        with self.assertRaises(ValueError): neighborhood_lookup(sectors, duplicate, {})
+        with self.assertRaises(ValueError): neighborhood_lookup(sectors, {}, {})

@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import type { FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 import { DataLoader, DataHttpError } from './dataLoader';
-import { buildSectorToGroupMap } from './sectorJoin';
-import { loadOfficialDemography, type OfficialStatistics } from './officialDemography';
+import { loadOfficialDemography, type OfficialStatistics, neighborhoodName, sectorName } from './officialDemography';
 import type { MapGeometry } from '../types/geometry';
 import { cdUfSchema, cdMunSchema, cdSetorSchema } from '../types/contract';
 import { validateNavigation, type Navigation } from '../state/navigation';
@@ -69,9 +68,11 @@ export async function loadOfficialCartography(loader: DataLoader, nav: Navigatio
     const statistics = await loadOfficialDemography(loader, catalog.demografia, nav, geo, signal);
     if (nav.level === 'bairro') {
       if (statistics.status !== 'disponiveis' || !statistics.bairros?.[nav.id_agregacao]) throw new Error('Correspondência com bairros não auditada ou bairro fora do inventário.');
-      geo = { ...geo, rowByFeature: buildSectorToGroupMap(Object.entries(statistics.bairros).map(([id_agregacao, b]) => ({ ...b, id_agregacao }))) };
-      title = statistics.bairros[nav.id_agregacao]!.nome;
+      const group = statistics.bairros[nav.id_agregacao]!;
+      geo = { ...geo, selectedFeatureIds: new Set(group.cd_setores) };
+      title = neighborhoodName(group);
     }
+    if (nav.level === 'setor') title = sectorName(statistics.status === 'disponiveis' ? statistics : undefined, nav.cd_setor);
     return { kind: 'cartografia', statistics, country, geometry: geo, title, unavailableGeometry };
   };
   if (nav.level === 'pais') return state(country, 'cd_uf', 'Brasil');

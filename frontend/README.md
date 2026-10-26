@@ -204,7 +204,8 @@ a `municipios/42.geojson`. `BASE_URL` também se aplica às malhas e fontes.
 
 `OfficialExplorer.tsx` usa a store e o MapViewport existentes. `setor` é um estado
 explícito de navegação com cd_uf/cd_mun/cd_setor textuais, URL e histórico. Seleção
-realça o contorno e ajusta a câmera; Voltar nível retorna ao município. A lista
+realça o contorno e ajusta a câmera; no modo oficial, Voltar nível retorna ao
+bairro quando existe vínculo auditado, ou ao município sem esse vínculo. A lista
 pesquisável permite navegar por teclado e sem WebGL. Outras UFs mantêm seu
 contorno e informam a indisponibilidade municipal. Outros municípios de SC
 mantêm o limite municipal e informam a indisponibilidade setorial.
@@ -290,9 +291,23 @@ básico e no DBF oficial da mesma referência censitária. Em Florianópolis há
 bairros declarados e 109 setores sem bairro informado, conservados num grupo
 explícito. Os 88 grupos particionam os 1.004 setores e reconciliam com o município.
 
-No painel municipal, abra “Bairros declarados e setores sem bairro”. A seleção
-usa a malha setorial existente e o mesmo índice de grupos da demo; não há dissolve
-ou nova geometria de bairro. Setores continuam com seus próprios indicadores
-no modo individual. Zero/ausência/sigilo e os controles visuais existentes foram
-mantidos. Fontes, limitações e comandos para atualizar **mapa-br-spike** no Mac
-estão em [CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md).
+A lista municipal organiza os setores por bairro. Pesquise pelo nome (sem
+exigir acentos) ou pelos códigos textuais de bairro/setor e selecione o cabeçalho
+do bairro. A seleção destaca seus setores, enquadra o mapa e filtra a lista;
+o painel mostra os totais do grupo. Cada setor continua com sua própria cor,
+valor e tooltip. A legenda usa os mesmos quantis setoriais do município.
+
+Ao abrir um setor, o título e os detalhes mostram o bairro, o código do bairro
+e o código setorial. “Voltar nível” e “Voltar ao bairro” retornam ao vínculo
+oficial, inclusive em links diretos. Os 109 sem vínculo mantêm seus códigos sob
+“Bairro não identificado na fonte”; o grupo não representa um bairro oficial.
+A cobertura de 895/1.004 setores (89,14%) fica explícita no painel.
+
+O arquivo leve `statistics/municipios/42/4205407.bairros.json` contém códigos,
+nomes, referência territorial, fontes e cobertura. É gerado junto da demografia
+e validado pelo DataLoader existente apenas ao abrir o município. Nenhuma
+geometria foi modificada, e não há dissolve no navegador. Keyboard/Enter/Espaço,
+toque e hover temporário continuam pela infraestrutura existente. Zero,
+ausência, sigilo e demonstração são preservados. Fontes, limitações e comandos
+para atualizar **mapa-br-spike** no Mac estão em
+[CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md).

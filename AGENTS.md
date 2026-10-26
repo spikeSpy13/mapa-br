@@ -397,3 +397,11 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
 - O detalhe municipal possui bairros/vinculo_bairro opcionais; fonte e partição
   são validadas juntas. Reusar sectorJoin e MapViewport para seleção de grupos.
   O panorama nacional continua vindo diretamente do SIDRA, sem depender do recorte.
+
+- A lista oficial agora agrupa setores por bairro e exibe nome + código setorial.
+  `4205407.bairros.json` é uma correspondência normalizada leve, opcional no
+  detalhe, validada contra a partição auditada; não criar cache/carregador novo.
+  Bairro selecionado usa `selectedFeatureIds` sem trocar a identidade setorial.
+  Cor/legenda permanece setorial; só o KPI do bairro é agregado. Voltar do setor
+  resolve o pai pelo vínculo, nunca por prefixo. Sem vínculo, usar o grupo
+  explícito “Bairro não identificado na fonte” ou município se não há partição.

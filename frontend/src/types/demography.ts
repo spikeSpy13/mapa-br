@@ -29,9 +29,20 @@ const neighborhoodSchema = z.object({ cd_bairro: cdBairroSchema.nullable(), nome
 export type OfficialNeighborhood = z.infer<typeof neighborhoodSchema>;
 const neighborhoodSource = z.object({ metodo: z.literal('atributos_oficiais_csv_dbf'), campos: z.tuple([z.literal('CD_SETOR'), z.literal('CD_BAIRRO'), z.literal('NM_BAIRRO')]), membro_dbf: z.string().min(1), recibos: z.object({ basico: receipt, setores_sc: receipt, dicionario_malha: receipt }).strict() }).strict();
 export type NeighborhoodSource = z.infer<typeof neighborhoodSource>;
-export const demographicMunicipalitySchema = z.object({ ...metadata, cd_uf: cdUfSchema, cd_mun: cdMunSchema, indicadores: demographySchema, setores: z.record(cdSetorSchema, demographySchema), bairros: z.record(z.string(), neighborhoodSchema).optional(), vinculo_bairro: neighborhoodSource.optional() }).strict()
+export const neighborhoodLookupSchema = z.object({ schema_version: z.literal('vinculo-bairro-1'), cd_mun: cdMunSchema,
+  referencia_territorial: z.literal('Censo 2022'), fonte: neighborhoodSource,
+  bairros: z.record(cdBairroSchema, z.string().min(1)), setores: z.record(cdSetorSchema, cdBairroSchema.nullable()),
+  cobertura: z.object({ total_setores: z.number().int().positive(), com_bairro: z.number().int().nonnegative(), sem_bairro: z.number().int().nonnegative(), bairros: z.number().int().nonnegative() }).strict(),
+}).strict().superRefine((p, ctx) => {
+  const entries = Object.entries(p.setores), known = entries.filter(([, b]) => b !== null), names = new Set(known.map(([, b]) => b!));
+  if (entries.some(([c, b]) => !c.startsWith(p.cd_mun) || b !== null && (!b.startsWith(p.cd_mun) || !(b in p.bairros))) || names.size !== Object.keys(p.bairros).length ||
+    p.cobertura.total_setores !== entries.length || p.cobertura.com_bairro !== known.length || p.cobertura.sem_bairro !== entries.length - known.length || p.cobertura.bairros !== names.size) ctx.addIssue({ code: 'custom', message: 'Correspondência setor/bairro ou cobertura inconsistente' });
+});
+export type NeighborhoodCoverage = z.infer<typeof neighborhoodLookupSchema>['cobertura'];
+export const demographicMunicipalitySchema = z.object({ ...metadata, cd_uf: cdUfSchema, cd_mun: cdMunSchema, indicadores: demographySchema, setores: z.record(cdSetorSchema, demographySchema), bairros: z.record(z.string(), neighborhoodSchema).optional(), vinculo_bairro: neighborhoodSource.optional(), arquivo_vinculo_bairro: z.string().min(1).optional() }).strict()
   .superRefine((p, ctx) => {
     if (!p.cd_mun.startsWith(p.cd_uf) || !Object.keys(p.setores).length || Object.keys(p.setores).some(c => !c.startsWith(p.cd_mun))) ctx.addIssue({ code: 'custom', message: 'Inventário setorial incompatível' });
+    if (p.arquivo_vinculo_bairro && !p.bairros) ctx.addIssue({ code: 'custom', message: 'Correspondência sem bairros auditados' });
     if (!!p.bairros !== !!p.vinculo_bairro) ctx.addIssue({ code: 'custom', message: 'Bairros sem proveniência do vínculo' });
     if (p.bairros) {
       const seen = new Set<string>();

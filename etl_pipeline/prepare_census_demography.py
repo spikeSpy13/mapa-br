@@ -155,6 +155,22 @@ def neighborhood_groups(sectors, territory):
     return groups
 
 
+def neighborhood_lookup(sectors, groups, source):
+    """Dicionário normalizado leve, sem repetir o nome em cada setor."""
+    mapping, names = {}, {}
+    for group in groups.values():
+        bairro = group['cd_bairro']
+        if bairro is not None: names[bairro] = group['nome']
+        for code in group['cd_setores']:
+            if code in mapping: raise ValueError('Setor duplicado no arquivo de correspondência')
+            mapping[code] = bairro
+    compare_inventory(list(mapping), list(sectors), 'arquivo de correspondência vs setores')
+    known = sum(code is not None for code in mapping.values())
+    return {'schema_version': 'vinculo-bairro-1', 'cd_mun': '4205407', 'referencia_territorial': 'Censo 2022',
+        'fonte': source, 'bairros': names, 'setores': dict(sorted(mapping.items())),
+        'cobertura': {'total_setores': len(mapping), 'com_bairro': known, 'sem_bairro': len(mapping) - known, 'bairros': len(names)}}
+
+
 def verify_neighborhood_sources(paths, territory):
     import shapefile
     # A aba Setor declara explicitamente CD_SETOR, CD_BAIRRO e NM_BAIRRO.
@@ -234,6 +250,8 @@ def prepare(repo: Path):
         ufs={c: indicators('3', c) for c, *_ in UFS}, arquivos_uf={'42': 'uf/42.json'})
     uf = dict(metadata, cd_uf='42', municipios=municipalities, arquivos_municipio={'4205407': '../municipios/42/4205407.json'})
     detail = dict(metadata, cd_uf='42', cd_mun='4205407', indicadores=municipalities['4205407'], setores=sectors, bairros=groups, vinculo_bairro=neighborhood_source)
+    lookup = neighborhood_lookup(sectors, groups, neighborhood_source)
+    detail['arquivo_vinculo_bairro'] = '4205407.bairros.json'
     report = {'status': 'approved_demography_only', 'generated_at': datetime.now(timezone.utc).isoformat(),
         'consolidados_diretos': {'brasil': index['brasil'], 'sc': index['ufs']['42']},
         'reconciliation': {'setores': len(sectors), 'municipio': totals, 'sidra_igual_setores': True},
@@ -249,6 +267,7 @@ def prepare(repo: Path):
     # Só escrever após todas as conferências: falhas não substituem uma entrega aprovada.
     helper.atomic_json(destination / 'brasil.json', index)
     helper.atomic_json(destination / 'uf/42.json', uf)
+    helper.atomic_json(destination / 'municipios/42/4205407.bairros.json', lookup)
     helper.atomic_json(destination / 'municipios/42/4205407.json', detail)
     helper.atomic_json(repo / 'data/raw/demography.audit.json', report)
     catalog_path = output / 'catalogo.json'
