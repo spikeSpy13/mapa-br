@@ -436,3 +436,29 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
 - Contrato explícito `types/censusThemes.ts` separa contagem inteira, percentual
   decimal textual e moeda decimal textual. Reusar catálogo, loaders, MapLibre e
   comparação; carregar uma partição temática apenas quando escolhida.
+
+
+## Municípios oficiais configuráveis — Agudos e Florianópolis
+
+- A configuração compartilhada é `etl_pipeline/manifests/prepared_municipalities.json`,
+  lida por Python e TypeScript. Ler `etl_pipeline/PREPARED_MUNICIPALITIES.md`.
+  Nela ficam municípios, UFs, projeção de auditoria, fontes setoriais e snapshots
+  SIDRA. Não acrescentar códigos/contagens/títulos de uma cidade em loaders ou schemas.
+- As contagens antigas 1.004/87 são observações de Florianópolis, não constantes
+  gerais. Agudos tem 66 setores e nenhum CD_BAIRRO/NM_BAIRRO publicado nessas fontes.
+  Os 66 permanecem no grupo `sem_bairro:3500709`. Agudos e Domélia são distritos,
+  não bairros; conferir atributos CSV/DBF e exibir identificação própria.
+- Os preparadores processam todas as cidades configuradas e leem cada tabela
+  nacional uma vez por execução. Geometria mantém referências integrais e display
+  separados; compara inventário completo de cada UF com o básico e audita validade
+  e contenção espacial dos municípios exportados. As geometrias anteriores são preservadas.
+- Validadores e loaders devem vincular o conjunto exato de IDs ao inventário do
+  município selecionado, com chave de cache incluindo cidade e tema. Não aceitar
+  respostas de outra cidade mesmo que tenham a mesma quantidade de setores.
+- `setores_uf` é o nome canônico do recibo de vínculo; `setores_sc` é aceito apenas
+  por compatibilidade com artefatos antigos. Distrito/subdistrito são atributos
+  textuais opcionais do detalhe, não novos agrupamentos de bairro.
+- Na API SIDRA, `-` é zero absoluto (ajuda oficial, Valores especiais). A regra
+  fica restrita à API, sem reinterpretar CSVs ou ausência de linha como zero.
+- Para acrescentar outra cidade: configuração + conferência/pins das fontes e
+  preparo, sem novo motor/cache. Não atualizar hashes cegamente para passar validação.

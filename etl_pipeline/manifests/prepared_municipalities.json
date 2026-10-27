@@ -1,0 +1,76 @@
+{
+  "schema_version": "municipios-preparados-1",
+  "referencia": "Censo 2022",
+  "municipios": {
+    "4205407": {
+      "cd_uf": "42",
+      "nome": "Florianópolis",
+      "epsg_area": 31982
+    },
+    "3500709": {
+      "cd_uf": "35",
+      "nome": "Agudos",
+      "epsg_area": 31982
+    }
+  },
+  "ufs": {
+    "42": {
+      "sigla": "SC",
+      "setores": {
+        "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/setores/shp/UF/SC/SC_setores_CD2022.zip",
+        "sha256": "6914fcc25bc8880565778582ff4753cb54b23294be4882a3f372138b4bd3239b"
+      }
+    },
+    "35": {
+      "sigla": "SP",
+      "setores": {
+        "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/setores/shp/UF/SP/SP_setores_CD2022.zip",
+        "sha256": "dd0a9a5439382437304aff017b23b9edd00598b946bfc27c8bd2e2084b4dbd2d"
+      }
+    }
+  },
+  "sidra_basico": {
+    "populacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/4714/n1/1/n2/all/n3/all/n6/in%20n3%2035,42/v/93/p/2022?formato=json",
+      "sha256": "43232b26dea86b575f78d100daca8a1e585a2dfac7327a31dcbac56592732446"
+    },
+    "domicilios": {
+      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/in%20n3%2035,42/v/617/p/2022/c3/59993?formato=json",
+      "sha256": "fab45bea570445b9214a961af2c1277e6d67bcdf4eed32bada6798de358462e4"
+    }
+  },
+  "sidra_temas": {
+    "sexo": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
+      "sha256": "c8eb526f91c45c2622b67a2eb391912005e1b7711d1f262067d2ad921e2e4ace"
+    },
+    "idade": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
+      "sha256": "6815a0e1f741ef87c57b082da712ede6e96a78a46876ac2cf80e422d4a53a67c"
+    },
+    "raca": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c86/all?formato=json",
+      "sha256": "a6e733bc93b64d563e2296b3964be140e97e10e96753fc842be6149adbf7f40b"
+    },
+    "alfabetizacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/3500709,4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
+      "sha256": "f0e79870c806da6cc5942f3d91d696c6da87b6ea2f149b6549753206a967b017"
+    },
+    "habitacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/3500709,4205407/v/617/p/2022/c3/all?formato=json",
+      "sha256": "eb2526e9b1a3164bb32872c080dcd1f10f01ecedec65d6e49566c3a765caed1f"
+    },
+    "agua": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c1821/all?formato=json",
+      "sha256": "9cd1adcf85e96748d5a3bd7feabc76eac3553288cdb928f63bfde5993f351996"
+    },
+    "esgoto": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c11558/all?formato=json",
+      "sha256": "d1b3003fc68ee285b4be3d55d29b9abee6fa132dc7b95732beac2d532765dedf"
+    },
+    "lixo": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c67/all?formato=json",
+      "sha256": "ec1ef5dc0e8b54114e0e9cbc01313de84e8024f53d625ec1c4833445d7259b43"
+    }
+  }
+}

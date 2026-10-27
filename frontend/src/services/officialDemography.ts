@@ -1,3 +1,4 @@
+import { preparedMunicipality } from '../lib/preparedMunicipalities';
 import { CENSUS_DEFINITIONS } from '../lib/censusCatalog';
 import { censusThemeSchema } from '../types/censusThemes';
 import { DataHttpError, type DataLoader } from './dataLoader';
@@ -6,7 +7,7 @@ import type { Navigation } from '../state/navigation';
 import type { MapGeometry } from '../types/geometry';
 import { demographicIndexSchema, demographicUfSchema, demographicMunicipalitySchema, neighborhoodLookupSchema, type NeighborhoodCoverage, type DemographicIndex, type Demography, type OfficialNeighborhood, type NeighborhoodSource } from '../types/demography';
 export type OfficialStatistics = { status: 'indisponiveis' } | {
-  status: 'disponiveis'; index: DemographicIndex; summary?: Demography; municipalitySummary?: Demography; rows: Record<string, Demography>; bairros?: Record<string, OfficialNeighborhood>; vinculoBairro?: NeighborhoodSource; setores?: Record<string, Demography>; unavailableStatistics?: string; neighborhoodBySector?: ReadonlyMap<string, string>; coverage?: NeighborhoodCoverage; neighborhoodLookupUrl?: string;
+  status: 'disponiveis'; index: DemographicIndex; summary?: Demography; municipalitySummary?: Demography; rows: Record<string, Demography>; bairros?: Record<string, OfficialNeighborhood>; vinculoBairro?: NeighborhoodSource; setores?: Record<string, Demography>; unavailableStatistics?: string; neighborhoodBySector?: ReadonlyMap<string, string>; coverage?: NeighborhoodCoverage; neighborhoodLookupUrl?: string; territoriosSetores?: Record<string,{cd_distrito:string;nm_distrito:string;cd_subdistrito:string;nm_subdistrito:string|null}>;
 };
 export const UNKNOWN_NEIGHBORHOOD = 'Bairro não identificado na fonte';
 export function neighborhoodName(group?: OfficialNeighborhood) { return group?.cd_bairro ? group.nome : UNKNOWN_NEIGHBORHOOD; }
@@ -26,6 +27,7 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
   let neighborhoodBySector: ReadonlyMap<string, string> | undefined, coverage: NeighborhoodCoverage | undefined;
   let neighborhoodLookupUrl: string | undefined;
   let municipalitySummary: Demography | undefined;
+  let territoriosSetores: Extract<OfficialStatistics,{status:'disponiveis'}>['territoriosSetores'];
   let bairros: Record<string, OfficialNeighborhood> | undefined, vinculoBairro: NeighborhoodSource | undefined, setores: Record<string, Demography> | undefined;
   let rows: Record<string, Demography> = geo.field === 'cd_uf' ? index.ufs : {};
   if ('cd_uf' in nav && index.arquivos_uf[nav.cd_uf]) {
@@ -47,7 +49,7 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
         if (mun.cd_mun !== nav.cd_mun || mun.cd_uf !== nav.cd_uf || (['populacao', 'domicilios'] as const).some(f => mun.indicadores[f].valor !== uf.municipios[nav.cd_mun]?.[f].valor || mun.indicadores[f].status !== uf.municipios[nav.cd_mun]?.[f].status)) throw new Error('Resumo municipal incompatível com o detalhe.');
         const ids = geo.collection.features.map(f => f.properties?.cd_setor as string);
         if (geo.field !== 'cd_setor' || ids.length !== Object.keys(mun.setores).length || ids.some(c => !(c in mun.setores))) throw new Error('Inventários estatístico/cartográfico divergentes.');
-        municipalitySummary = mun.indicadores;
+        municipalitySummary = mun.indicadores; territoriosSetores = mun.territorios_setores;
         bairros = mun.bairros; vinculoBairro = mun.vinculo_bairro; setores = mun.setores;
         if (bairros) {
           neighborhoodBySector = buildSectorToGroupMap(Object.entries(bairros).map(([id_agregacao, b]) => ({ ...b, id_agregacao })));
@@ -59,7 +61,7 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
           const lookup = neighborhoodLookupSchema.parse(await loader.request(lookupUrl, signal, raw => neighborhoodLookupSchema.parse(raw)));
           if (lookup.cd_mun !== nav.cd_mun || Object.keys(lookup.setores).length !== neighborhoodBySector?.size ||
               Object.entries(lookup.setores).some(([code, bairro]) => { const group = bairros?.[neighborhoodBySector?.get(code) ?? '']; return !group || group.cd_bairro !== bairro || bairro !== null && group.nome !== lookup.bairros[bairro]; }) ||
-              (['basico', 'setores_sc', 'dicionario_malha'] as const).some(k => lookup.fonte.recibos[k].sha256_local !== mun.vinculo_bairro?.recibos[k].sha256_local || lookup.fonte.recibos[k].url !== mun.vinculo_bairro?.recibos[k].url)) throw new Error('Correspondência municipal diverge dos bairros auditados.');
+              Object.entries(lookup.fonte.recibos).some(([k,r]) => r?.sha256_local !== mun.vinculo_bairro?.recibos[k as keyof typeof lookup.fonte.recibos]?.sha256_local || r?.url !== mun.vinculo_bairro?.recibos[k as keyof typeof lookup.fonte.recibos]?.url)) throw new Error('Correspondência municipal diverge dos bairros auditados.');
           coverage = lookup.cobertura;
           neighborhoodLookupUrl = lookupUrl;
         }
@@ -69,16 +71,20 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
       }
     }
   }
-  return { status: 'disponiveis', index, summary, municipalitySummary, rows, bairros, vinculoBairro, setores, neighborhoodBySector, coverage, neighborhoodLookupUrl };
+  return { status: 'disponiveis', index, summary, municipalitySummary, rows, bairros, vinculoBairro, setores, neighborhoodBySector, coverage, neighborhoodLookupUrl, territoriosSetores };
 }
 
 /** Temas particionados: usa o mesmo DataLoader; só é chamado ao escolher um tema. */
 export async function loadOfficialTheme(loader: DataLoader, municipality: string | undefined, theme: string, signal: AbortSignal, reference?: { ufs: readonly string[]; setores: readonly string[]; bairros?: Record<string, { cd_setores: string[] }> }) {
   if (!Object.values(CENSUS_DEFINITIONS).some(m => m.tema === theme)) throw new Error('Tema desconhecido.');
-  const path = `statistics/temas/${theme}/${municipality === '4205407' ? 'municipios/42/4205407.json' : 'brasil.json'}`;
+  const config = preparedMunicipality(municipality);
+  if (municipality && !config) return null;
+  const path = `statistics/temas/${theme}/${config && municipality ? `municipios/${config.cd_uf}/${municipality}.json` : 'brasil.json'}`;
   try {
     const data = censusThemeSchema.parse(await loader.request(loader.resolve(path, loader.indexUrl), signal, raw => censusThemeSchema.parse(raw)));
     if (data.tema !== theme) throw new Error('Resposta de outro tema.');
+    if (municipality ? !('cd_mun' in data) || data.cd_mun !== municipality : 'cd_mun' in data) throw new Error('Resposta temática de outro município/nível.');
+    if ('cd_mun' in data && !reference?.setores.length) throw new Error('Inventário cartográfico municipal obrigatório.');
     if (reference) {
       if ('cd_mun' in data) {
         if (Object.keys(data.setores).length !== reference.setores.length || reference.setores.some(c => !(c in data.setores))) throw new Error('Inventário temático/cartográfico divergente.');

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { cdMunSchema, cdSetorSchema, cdUfSchema } from './contract';
 import { CENSUS_DEFINITIONS, CENSUS_PROFILE } from '../lib/censusCatalog';
+import { preparedMunicipality } from '../lib/preparedMunicipalities';
+import { cdBairroSchema } from './contract';
 import { roundRatioHalfEven } from '../lib/exactRatio';
 const status = z.enum(['divulgada','ausente','sigilo','parcial']);
 const count = z.number().int().nonnegative().safe();
@@ -42,7 +44,7 @@ export const censusThemeSchema = z.union([national,municipal]).superRefine((p,ct
     }
   }
   if ('cd_mun' in p) {
-    if (p.cd_mun !== '4205407' || Object.keys(p.setores).length !== 1004 || Object.keys(p.setores).some(c => !c.startsWith(p.cd_mun)) || Object.keys(p.bairros).some(id => id !== `sem_bairro:${p.cd_mun}` && !/^bairro:4205407\d{2,3}$/.test(id))) bad('Inventário municipal temático incompatível');
+    if (!preparedMunicipality(p.cd_mun) || !Object.keys(p.setores).length || Object.keys(p.setores).some(c => !c.startsWith(p.cd_mun)) || Object.keys(p.bairros).some(id => id !== `sem_bairro:${p.cd_mun}` && !(id.startsWith('bairro:') && cdBairroSchema.safeParse(id.slice(7)).success && id.slice(7).startsWith(p.cd_mun)))) bad('Inventário municipal temático incompatível');
   } else if (Object.keys(p.ufs).length !== 27 || Object.keys(p.regioes).length !== 5) bad('Panorama nacional temático incompleto');
   const requiredSources = [...('cd_mun' in p ? Object.keys(CENSUS_PROFILE.arquivos) : []), ...Object.keys(CENSUS_PROFILE.consultas).map(k => `sidra_${k}`)];
   if (requiredSources.some(k => !(k in p.fontes))) bad('Proveniência temática incompleta');

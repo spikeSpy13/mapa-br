@@ -18,12 +18,12 @@ if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from etl_pipeline.core_contract import normalize_code, WATER_BODY_DENYLIST
 from etl_pipeline.reference_data import UFS
+from etl_pipeline.prepared_municipalities import MUNICIPALITIES, PREPARED_UFS
 from etl_pipeline.audits.verify_2022_sc import source_rows
 
 BASE = 'https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/'
 SOURCES = {
     'distritos': BASE + 'malha_com_atributos/distritos/shp/BR/BR_distritos_CD2022.zip',
-    'setores_sc': BASE + 'malha_com_atributos/setores/shp/UF/SC/SC_setores_CD2022.zip',
     'dicionario_malha': BASE + 'malha_com_atributos/Dicionario_de_dados_malha_agregados.xlsx',
     'basico': BASE + 'Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip',
     'dicionario_basico': BASE + 'dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx',
@@ -31,11 +31,14 @@ SOURCES = {
 # Fixados após leitura das listagens e inspeção do dicionário e schema DBF.
 PINNED_SHA256 = {
     'distritos': '4247509c713e35c182f1c77a16aab39855a5f6ba067dd4bdaee99ede8026767c',
-    'setores_sc': '6914fcc25bc8880565778582ff4753cb54b23294be4882a3f372138b4bd3239b',
     'dicionario_malha': '0dffb669ee90e1ffb86a7c8666cc066d5121d44b494013cc1149e50cc75073b1',
     'basico': 'ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63',
     'dicionario_basico': '0b8aedece57f6125d785b6aa2234cfd587e92dfb6ce5ca6ace8c67f140831344',
 }
+for _uf, _spec in PREPARED_UFS.items():
+    SOURCES['setores_' + _spec['sigla'].lower()] = _spec['setores']['url']
+    PINNED_SHA256['setores_' + _spec['sigla'].lower()] = _spec['setores']['sha256']
+
 UF_META = {code: {'cd_uf': code, 'sigla_uf': sigla, 'nm_uf': name, 'cd_regiao': region} for code, sigla, name, region in UFS}
 
 
@@ -56,7 +59,7 @@ def compare_inventory(actual, expected, label):
     return result
 
 
-def read_shapes(path, code_field):
+def read_shapes(path, code_field, municipalities=None):
     import shapefile
     from pyproj import CRS
     from shapely.geometry import shape
@@ -76,14 +79,14 @@ def read_shapes(path, code_field):
         for key in [code_field, 'CD_UF', 'CD_MUN', 'CD_REGIAO']:
             if fields.get(key) != 'C':
                 raise ValueError(f'Identificador DBF deve ser textual: {key}/{fields.get(key)}')
-        rows, seen, unassigned = [], set(), []
-        for ordinal, feature in enumerate(reader.iterShapeRecords()):
-            p = feature.record.as_dict()
+        rows, seen, unassigned, inventory = [], set(), [], {}
+        for ordinal, record in enumerate(reader.iterRecords()):
+            p = record.as_dict()
             # A edição fixada contém uma feição final sem distrito/município,
             # explicitamente vinculada à UF 43. Conservar sua área na UF, sem
             # fabricar um código de distrito ou município nem publicar detalhe.
             if code_field == 'CD_DIST' and p['CD_DIST'] == '' and p['CD_MUN'] == '' and p['CD_UF'] == '43' and ordinal == 10698:
-                g = shape(feature.shape.__geo_interface__)
+                g = shape(reader.shape(ordinal).__geo_interface__)
                 if g.is_empty or not g.is_valid: raise ValueError('Feição sem distrito inválida')
                 rows.append((None, p, g))
                 unassigned.append({'ordinal_zero_based': ordinal, 'cd_uf': '43', 'cd_mun': None, 'cd_dist': None,
@@ -99,11 +102,13 @@ def read_shapes(path, code_field):
                 raise ValueError(f'Corpo de água fora do recorte encontrado: {code}; requer exclusão explícita')
             if uf not in UF_META or not mun.startswith(uf) or not code.startswith(mun) or p['CD_REGIAO'] != UF_META[uf]['cd_regiao']:
                 raise ValueError(f'Vínculo territorial incoerente: {code}')
-            g = shape(feature.shape.__geo_interface__)
+            inventory[code] = mun
+            if municipalities is not None and mun not in municipalities: continue
+            g = shape(reader.shape(ordinal).__geo_interface__)
             if g.is_empty or g.geom_type not in {'Polygon', 'MultiPolygon'}:
                 raise ValueError(f'Geometria vazia/não poligonal: {code}')
             rows.append((code, p, g))
-        return rows, {'member': member('.shp'), 'crs_epsg': 4674, 'crs_wkt': crs.to_wkt(), 'encoding': encoding, 'dbf_types': fields, 'unassigned_features': unassigned}
+        return rows, {'member': member('.shp'), 'crs_epsg': 4674, 'crs_wkt': crs.to_wkt(), 'encoding': encoding, 'dbf_types': fields, 'unassigned_features': unassigned, 'inventory': inventory}
 
 
 def collection(items):
@@ -115,7 +120,8 @@ def collection(items):
 def write_catalog(output, report):
     """Particiona também os inventários; a abertura não recebe IDs descendentes."""
     helper = importlib.import_module('etl_pipeline.03_fetch_ibge_raw')
-    for filename, field in [('ufs.geojson', 'cd_uf'), ('municipios/42.geojson', 'cd_mun'), ('setores/42/4205407.geojson', 'cd_setor')]:
+    entries = [('ufs.geojson', 'cd_uf')] + [(f'municipios/{u}.geojson', 'cd_mun') for u in PREPARED_UFS] + [(f'setores/{m["cd_uf"]}/{c}.geojson', 'cd_setor') for c,m in MUNICIPALITIES.items()]
+    for filename, field in entries:
         features = json.loads((output / filename).read_text(encoding='utf-8'))['features']
         ids = [checked_code(f['properties'][field], field) for f in features]
         compare_inventory(ids, ids, filename)
@@ -124,8 +130,8 @@ def write_catalog(output, report):
         report['files'][inventory_file] = {'sha256_local': helper.sha256_file(output / inventory_file), 'bytes': (output / inventory_file).stat().st_size}
     catalog = {'schema_version': 'cartografia-1', 'referencia': 'Censo 2022', 'estatisticas': 'indisponiveis',
         'ufs': {'arquivo': 'ufs.geojson', 'inventario': 'ufs.inventory.json'},
-        'municipios': {'42': {'arquivo': 'municipios/42.geojson', 'inventario': 'municipios/42.inventory.json'}},
-        'setores': {'4205407': {'arquivo': '../setores/42/4205407.geojson', 'inventario': '../setores/42/4205407.inventory.json'}}}
+        'municipios': {u: {'arquivo': f'municipios/{u}.geojson', 'inventario': f'municipios/{u}.inventory.json'} for u in PREPARED_UFS},
+        'setores': {c: {'arquivo': f'../setores/{m["cd_uf"]}/{c}.geojson', 'inventario': f'../setores/{m["cd_uf"]}/{c}.inventory.json'} for c,m in MUNICIPALITIES.items()}}
     helper.atomic_json(output / 'catalogo.json', catalog)
 
 
@@ -143,7 +149,7 @@ def prepare(cache, output, reference, audit_path):
             {'url': BASE + 'malha_com_atributos/', 'result': 'HTTP 200; alternativa oficial da mesma referência censitária examinada e selecionada'}],
         'statistics': 'indisponiveis; nenhum indicador extraído da malha ou imputado',
         'bairros': 'join não auditado; sem agrupamento ou atribuição de indicadores', 'exclusions_water_body_denylist': [],
-        'transformations': ['dissolve geométrico dos distritos CD2022 por CD_UF e por CD_MUN de SC; sem alteração de edição',
+        'transformations': ['dissolve geométrico dos distritos CD2022 por CD_UF e por CD_MUN das UFs configuradas; sem alteração de edição',
             'SIRGAS 2000 EPSG:4674 → WGS84 EPSG:4326, always_xy, sem arredondamento de coordenadas',
             'referência integral separada da versão de exibição; sem make_valid, buffer ou reparo silencioso'],
         'files': {}}
@@ -156,6 +162,7 @@ def prepare(cache, output, reference, audit_path):
                 raise ValueError(f'Fonte {name} mudou de edição/hash: {receipt["sha256_local"]}')
             paths[name] = path; report['sources'][name] = receipt
         districts, report['district_schema'] = read_shapes(paths['distritos'], 'CD_DIST')
+        report['district_schema'].pop('inventory')
         invalid = [[c, explain_validity(g)] for c, _, g in districts if not g.is_valid]
         if invalid:
             raise ValueError(f'Distritos inválidos: {invalid}')
@@ -163,7 +170,7 @@ def prepare(cache, output, reference, audit_path):
         by_uf, by_mun, mun_names = defaultdict(list), defaultdict(list), {}
         for code, p, g in districts:
             by_uf[p['CD_UF']].append(g)
-            if p['CD_UF'] == '42':
+            if p['CD_UF'] in PREPARED_UFS:
                 by_mun[p['CD_MUN']].append(g)
                 if p['CD_MUN'] in mun_names and mun_names[p['CD_MUN']] != p['NM_MUN']:
                     raise ValueError('Nomes municipais divergentes')
@@ -175,33 +182,47 @@ def prepare(cache, output, reference, audit_path):
             if not g.is_valid: raise ValueError(f'Dissolve inválido: UF {code}')
             ufs.append((UF_META[code], g))
             print(f'UF {code}: {get_num_coordinates(g)} vértices', flush=True)
-        municipalities = [(dict(UF_META['42'], cd_mun=c, nm_mun=mun_names[c]), union_all(gs)) for c, gs in sorted(by_mun.items())]
-        if any(not g.is_valid for _, g in municipalities): raise ValueError('Município dissolvido inválido')
-        sectors, report['sector_schema'] = read_shapes(paths['setores_sc'], 'CD_SETOR')
-        if any(p['CD_UF'] != '42' for _, p, _ in sectors): raise ValueError('Setor fora de SC')
-        basic = {}
+        municipal_items = {uf: [(dict(UF_META[uf], cd_mun=c, nm_mun=mun_names[c]), union_all(gs))
+            for c, gs in sorted(by_mun.items()) if c.startswith(uf)] for uf in PREPARED_UFS}
+        if any(not g.is_valid for items in municipal_items.values() for _,g in items): raise ValueError('Município dissolvido inválido')
+        basic = {uf: {} for uf in PREPARED_UFS}
         for row in source_rows(paths['basico'], encoding='cp1252'):
             code = checked_code(row['CD_SETOR'], 'cd_setor')
-            if not code.startswith('42'): continue
-            if code in basic: raise ValueError(f'Setor básico duplicado: {code}')
+            uf = row['CD_UF']
+            if uf not in basic: continue
+            if code in basic[uf]: raise ValueError(f'Setor básico duplicado: {code}')
             mun = checked_code(row['CD_MUN'], 'cd_mun')
-            if not code.startswith(mun): raise ValueError('Município básico incompatível')
-            basic[code] = mun
-        report['inventory_sc'] = compare_inventory([c for c, _, _ in sectors], basic, 'SC inteiro vs básico completo 20260520')
-        report['municipal_inventory_sc'] = compare_inventory(by_mun, set(basic.values()), 'municípios SC vs básico')
-        if any(basic[c] != p['CD_MUN'] for c, p, _ in sectors): raise ValueError('Pertencimento municipal difere entre malha/básico')
-        report['invalid_reference_sectors_sc'] = [{'cd_setor': c, 'cd_mun': p['CD_MUN'], 'reason': explain_validity(g)} for c, p, g in sectors if not g.is_valid]
-        fl = [(dict(UF_META['42'], cd_mun=p['CD_MUN'], nm_mun=p['NM_MUN'], cd_setor=c), g) for c, p, g in sectors if p['CD_MUN'] == '4205407']
-        report['inventory_florianopolis'] = compare_inventory([p['cd_setor'] for p, _ in fl], [c for c, m in basic.items() if m == '4205407'], 'Florianópolis vs básico')
-        if any(not g.is_valid for _, g in fl): raise ValueError('Setor inválido em Florianópolis; publicação bloqueada')
-        mun_geom = next(g for p, g in municipalities if p['cd_mun'] == '4205407')
-        projection = Transformer.from_crs(4674, 31982, always_xy=True)
-        outside = [{'cd_setor': p['cd_setor'], 'area_m2': transform(projection.transform, g.difference(mun_geom)).area} for p, g in fl]
-        report['spatial_membership_florianopolis'] = {'method': 'difference por setor vs município dissolvido dos distritos, área em EPSG:31982', 'tolerance_m2': 1, 'max_outside_m2': max(r['area_m2'] for r in outside), 'violations': [r for r in outside if r['area_m2'] > 1]}
-        if report['spatial_membership_florianopolis']['violations']: raise ValueError('Setores fora do limite municipal: ver diagnóstico')
+            if not code.startswith(mun) or not mun.startswith(uf): raise ValueError('Município básico incompatível')
+            basic[uf][code] = mun
+        report['ufs'], report['municipios'] = {}, {}
+        sector_items = {}
+        for uf, spec in PREPARED_UFS.items():
+            selected_cities = {c for c,m in MUNICIPALITIES.items() if m['cd_uf'] == uf}
+            sectors, schema = read_shapes(paths['setores_' + spec['sigla'].lower()], 'CD_SETOR', selected_cities)
+            source_inventory = schema.pop('inventory')
+            if any(not c.startswith(uf) or not m.startswith(uf) for c,m in source_inventory.items()): raise ValueError('Setor fora da UF')
+            report['ufs'][uf] = {'sector_schema': schema,
+                'inventario_setorial': compare_inventory(list(source_inventory), list(basic[uf]), f'UF {uf} vs básico completo'),
+                'inventario_municipal': compare_inventory([p['cd_mun'] for p,_ in municipal_items[uf]], list(set(basic[uf].values())), f'municípios {uf} vs básico')}
+            if source_inventory != basic[uf]: raise ValueError('Pertencimento municipal difere entre malha/básico')
+            for city in sorted(selected_cities):
+                cfg = MUNICIPALITIES[city]
+                selected = [(dict(UF_META[uf], cd_mun=p['CD_MUN'], nm_mun=p['NM_MUN'], cd_setor=c), g) for c,p,g in sectors if p['CD_MUN'] == city]
+                inventory = compare_inventory([p['cd_setor'] for p,_ in selected], [c for c,m in basic[uf].items() if m == city], f'{cfg["nome"]} vs básico')
+                if any(not g.is_valid for _,g in selected): raise ValueError(f'Setor inválido em {cfg["nome"]}; publicação bloqueada')
+                if any(p['nm_mun'] != cfg['nome'] for p,_ in selected): raise ValueError('Nome municipal difere da configuração')
+                mun_geom = next(g for p,g in municipal_items[uf] if p['cd_mun'] == city)
+                projection = Transformer.from_crs(4674, cfg['epsg_area'], always_xy=True)
+                outside = [{'cd_setor':p['cd_setor'],'area_m2':transform(projection.transform,g.difference(mun_geom)).area} for p,g in selected]
+                spatial = {'method': f'difference vs município integral, EPSG:{cfg["epsg_area"]}', 'tolerance_m2':1,
+                    'max_outside_m2':max(r['area_m2'] for r in outside), 'violations':[r for r in outside if r['area_m2'] > 1]}
+                if spatial['violations']: raise ValueError(f'Setores fora do município {city}: {spatial}')
+                report['municipios'][city] = {'nome':cfg['nome'],'inventario':inventory,'spatial_membership':spatial}
+                sector_items[city] = selected
         # Referências integrais são mantidas para novas validações espaciais.
         wgs = Transformer.from_crs(4674, 4326, always_xy=True)
-        for filename, items in [('ufs.geojson', ufs), ('municipios/42.geojson', municipalities), ('setores/42/4205407.geojson', fl)]:
+        exports = [('ufs.geojson', ufs)] + [(f'municipios/{uf}.geojson', items) for uf,items in municipal_items.items()] + [(f'setores/{MUNICIPALITIES[city]["cd_uf"]}/{city}.geojson', items) for city,items in sector_items.items()]
+        for filename, items in exports:
             for _, g in items:
                 if not g.is_valid or g.is_empty: raise ValueError(f'Geometria inválida em {filename}')
             refpath = reference / filename
@@ -237,7 +258,7 @@ def prepare(cache, output, reference, audit_path):
                 'simplification': 'coverage_simplify; adjacência e cobertura verificadas' if simplified is not geometries else 'nenhuma; limites integrais preservados',
                 'tolerance_degrees': (.005 if filename == 'ufs.geojson' else .0001) if simplified is not geometries else None, 'ids_preserved': True}
         report['status'] = 'approved_cartography_only'
-        report['limitations'] = ['Autointerseção na referência SC fora de Florianópolis permanece registrada, sem reparo. Não é publicada nesta entrega.', 'Indicadores e correspondência com bairros não publicados; expansão do detalhe limitada a Florianópolis.']
+        report['limitations'] = ['Referência bruta preservada no cache; validade geométrica setorial auditada somente nos municípios exportados, sem reparos. A autointerseção conhecida em São José não pertence a estes recortes.', 'Indicadores e bairros são preparados separadamente pelo preparador demográfico.']
         write_catalog(output, report)
         helper.atomic_json(output / 'proveniencia.json', report)
         print(json.dumps(report['files'], ensure_ascii=False, indent=2), flush=True)

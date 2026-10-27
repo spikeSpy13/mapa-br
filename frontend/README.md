@@ -357,3 +357,24 @@ do build. Para só os consolidados nacionais, use `--national-themes-only`.
 Fontes, todas as variáveis/edições, resultados, limites e comandos completos
 para atualizar e testar no Mac em **mapa-br-spike**:
 [CENSUS_THEMES.md](../etl_pipeline/CENSUS_THEMES.md).
+
+
+## Municípios oficiais configuráveis
+
+Brasil → SP agora oferece 645 municípios e detalhe de Agudos (`3500709`), além
+da cobertura de SC/Florianópolis preservada. Os 66 setores de Agudos conservam
+população, domicílios e os 25 indicadores temáticos conforme divulgação/sigilo.
+Não há bairros identificados nos atributos oficiais de Agudos; o grupo explícito
+sem bairro mantém todos os setores. Distrito e subdistrito aparecem nos detalhes
+com seus códigos, sem se tornarem bairros. Não há ranking/comparação de bairros
+inventados. Florianópolis mantém seus 87 bairros e sua comparação.
+
+A configuração comum fica em `etl_pipeline/manifests/prepared_municipalities.json`.
+Loaders, validação, títulos e caminhos usam a cidade selecionada, com inventário
+exato e cache por município/tema. Artefatos antigos de vínculo com `setores_sc`
+continuam aceitos; novos usam `setores_uf`.
+
+Na raiz, execute o preparador cartográfico e depois o demográfico, conforme os
+[comandos completos para o Mac](../etl_pipeline/PREPARED_MUNICIPALITIES.md).
+O [relatório de Agudos](../etl_pipeline/manifests/agudos.audit.json) contém a
+cobertura de cada indicador e a comprovação da preservação das malhas existentes.

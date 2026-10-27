@@ -20,8 +20,8 @@ test('panoramas nacionais por tema são diretos e independem do município',asyn
  expect(blocked).toEqual([]);
  await page.getByRole('button',{name:'Sul',exact:true}).click();const d=payload('lixo');
  await expect(panel(page,'lixo').locator('[data-census-id="lixo_coleta_domicilio"] [data-census-value]')).toHaveText(formatted(d.regioes['4'].lixo_coleta_domicilio));
- await page.getByRole('combobox',{name:'Selecionar UF'}).selectOption('35');
- await expect(panel(page,'lixo').locator('[data-census-id="lixo_coleta_domicilio"] [data-census-value]')).toHaveText(formatted(d.ufs['35'].lixo_coleta_domicilio));
+ await page.getByRole('combobox',{name:'Selecionar UF'}).selectOption('31');
+ await expect(panel(page,'lixo').locator('[data-census-id="lixo_coleta_domicilio"] [data-census-value]')).toHaveText(formatted(d.ufs['31'].lixo_coleta_domicilio));
  expect(blocked).toEqual([]);await panel(page,'lixo').getByText('Definições, universos e fontes do tema',{exact:true}).click();await expect(panel(page,'lixo')).toContainText('SIDRA · tabela 6892');await page.screenshot({path:`${output}/temas-uf-consolidado.png`,fullPage:true});
 });
 

@@ -76,9 +76,9 @@ test('resposta geométrica atrasada não sobrescreve uma nova seleção', async 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('São Paulo');
   await release!();
   await expect(page.getByTestId('official-map')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
-  await expect(page.getByTestId('official-map')).toHaveAttribute('data-feature-count', '1');
+  await expect(page.getByTestId('official-map')).toHaveAttribute('data-feature-count', '645');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('São Paulo');
-  await expect(page.getByText(/Geometria municipal indisponível para esta UF/)).toBeVisible();
+  await expect(page.getByTestId('official-map')).toHaveAttribute('data-layer', 'cd_mun');
 });
 
 test('geometria ausente, inventário inválido e navegação móvel têm diagnóstico explícito', async ({ page }) => {

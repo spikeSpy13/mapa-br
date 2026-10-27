@@ -7,10 +7,18 @@ import xml.etree.ElementTree as ET
 import zipfile
 from etl_pipeline.core_contract import normalize_code
 from etl_pipeline.reference_data import REGIOES, UFS
+from etl_pipeline.prepared_municipalities import CONFIG, MUNICIPALITIES
 from etl_pipeline.audits.verify_2022_sc import source_rows
-from etl_pipeline.prepare_census_demography import helper, measure, municipal_share
+from etl_pipeline.prepare_census_demography import helper, measure, sidra_measure, municipal_share
 
 PROFILE_PATH = Path(__file__).parent / 'manifests/census_themes.json'
+
+
+def load_profile():
+    profile = json.loads(PROFILE_PATH.read_text())
+    for key, spec in profile['consultas'].items():
+        spec.update(CONFIG['sidra_temas'][key])
+    return profile
 
 
 def xlsx_rows(path):
@@ -37,12 +45,13 @@ def verify_dictionary(rows, metrics):
                     raise ValueError(f'Dicionário não confirma {variable}: {definition}')
 
 
-def table_rows(path, spec, scope, expected):
+def table_rows(path, spec, scope, expected, municipalities=None):
     """Lê uma tabela nacional em streaming; só retém o recorte municipal."""
     found = {}
+    cities = set(municipalities) if municipalities is not None else {code[:7] for code in expected}
     for row in source_rows(path, encoding=spec['encoding'], required_columns=[spec['codigo']]):
         code = row[spec['codigo']]
-        if not code.startswith('4205407'): continue
+        if code[:7] not in cities: continue
         if normalize_code(code, scope) != code or code in found or code not in expected:
             raise ValueError(f'Código duplicado/extra/não canônico: {code}')
         found[code] = row
@@ -88,7 +97,7 @@ def national_rows(path, spec):
     rows = json.loads(path.read_text(encoding='utf-8'))
     if not isinstance(rows, list) or len(rows) < 2: raise ValueError('Consolidado SIDRA vazio')
     result = {}
-    expected = {'1': {'1'}, '2': set(REGIOES), '3': {u[0] for u in UFS}, '6': {'4205407'}}
+    expected = {'1': {'1'}, '2': set(REGIOES), '3': {u[0] for u in UFS}, '6': set(MUNICIPALITIES)}
     dimension = 'D5C' if spec['tabela'] == '9514' and len(spec['dimensoes']['D5C']) > 1 else 'D4C'
     categories = set(spec['dimensoes'][dimension])
     for r in rows[1:]:
@@ -99,7 +108,7 @@ def national_rows(path, spec):
             if r[col] not in labels or r[col[:-1]+'N'] != labels[r[col]]: raise ValueError('Categoria SIDRA divergente')
         key = (r['NC'], r['D1C'], r[dimension])
         if key in result: raise ValueError('Consolidado SIDRA duplicado')
-        result[key] = measure(r['V'], 'contagem')
+        result[key] = sidra_measure(r['V'], 'contagem')
     for level, codes in expected.items():
         if not categories or any((level, code, cat) not in result for code in codes for cat in categories):
             raise ValueError('Consolidado SIDRA incompleto')
@@ -108,7 +117,8 @@ def national_rows(path, spec):
 
 def read_national(profile, cache):
     national, receipts = {}, {}
-    for k, spec in profile['consultas'].items():
+    for k, original in profile['consultas'].items():
+        spec = {**original, **CONFIG['sidra_temas'][k]}
         path, receipt = helper.download(spec['url'], cache, timeout=60)
         if receipt['sha256_local'] != spec['sha256']: raise ValueError('Snapshot SIDRA mudou; requer nova auditoria')
         receipts['sidra_'+k] = receipt
@@ -132,20 +142,20 @@ def write_national(repo, profile, national, receipts):
         record = lambda level,code: {k:global_cell(national,m,level,code) for k,m in metrics.items()}
         payload = {'schema_version':'censo-temas-1','referencia':'2022-08-01','tema':theme,'metricas':list(metrics),'fontes':receipts,
             'brasil':record('1','1'),'regioes':{c:record('2',c) for c in REGIOES},'ufs':{c:record('3',c) for c,*_ in UFS},
-            'municipios':{'4205407':record('6','4205407')} if theme != 'renda' else {}}
+            'municipios':{city:record('6',city) for city in MUNICIPALITIES} if theme != 'renda' else {}}
         helper.atomic_json(out / theme / 'brasil.json', payload, compact=True)
 
 
 def prepare_national_themes(repo):
     """Não lê malhas, básico, setores, bairros nem arquivos de renda."""
-    profile = json.loads(PROFILE_PATH.read_text())
+    profile = load_profile()
     national, receipts = read_national(profile, repo / 'data/raw/cache')
     write_national(repo, profile, national, receipts)
     return {'status':'consolidados_diretos','ufs':27,'regioes':5,'fontes':receipts}
 
 
-def prepare_themes(repo, detail, basic_rows):
-    profile = json.loads(PROFILE_PATH.read_text())
+def prepare_themes(repo, details, basics):
+    profile = load_profile()
     cache = repo / 'data/raw/cache'; out = repo / 'frontend/public/geo/official/statistics/temas'
     national, receipts = read_national(profile, cache)
     write_national(repo, profile, national, dict(receipts))
@@ -158,16 +168,33 @@ def prepare_themes(repo, detail, basic_rows):
     # V00003 já foi corrigida nesta edição e NÃO é o universo DPPO.
     if not any('V00003' in row and profile['errata']['definicao'] in row for row in dictionary): raise ValueError('Definição da errata V00003 não confirmada')
     sources = {}
-    codes = set(detail['setores']); group_codes = {g['cd_bairro'] for g in detail['bairros'].values() if g['cd_bairro'] is not None}
+    codes = {code for detail in details.values() for code in detail['setores']}
+    group_codes = {g['cd_bairro'] for detail in details.values() for g in detail['bairros'].values() if g['cd_bairro'] is not None}
+    basic_rows = {code:row for rows in basics.values() for code,row in rows.items()}
     for k, spec in specs.items():
         if k.startswith('dicionario'): continue
         if k == 'basico': sources[k] = basic_rows; continue
         scope = 'cd_bairro' if k == 'renda_bairro' else 'cd_mun' if k == 'renda_municipio' else 'cd_setor'
-        expected = group_codes if scope == 'cd_bairro' else {'4205407'} if scope == 'cd_mun' else codes
-        sources[k] = table_rows(paths[k], spec, scope, expected)
+        expected = group_codes if scope == 'cd_bairro' else set(details) if scope == 'cd_mun' else codes
+        sources[k] = table_rows(paths[k], spec, scope, expected, details)
     if set(sources['renda_bairro']) != group_codes: raise ValueError('Inventário de bairros da renda divergente')
-    for g in detail['bairros'].values():
-        if g['cd_bairro'] and sources['renda_bairro'][g['cd_bairro']]['NM_BAIRRO'] != g['nome']: raise ValueError('Nome de bairro da renda divergente')
+    for detail in details.values():
+        for g in detail['bairros'].values():
+            if g['cd_bairro'] and sources['renda_bairro'][g['cd_bairro']]['NM_BAIRRO'] != g['nome']: raise ValueError('Nome de bairro da renda divergente')
+    reports = {}
+    for city, detail in details.items():
+        city_sources = {k:{code:row for code,row in rows.items() if code.startswith(city)} for k,rows in sources.items()}
+        reports[city] = prepare_city_themes(repo, profile, detail, basics[city], city_sources, national, receipts)
+    helper.atomic_json(out / 'catalogo.json', profile)
+    helper.atomic_json(repo / 'data/raw/census_themes.audit.json', {'municipios':reports})
+    return reports
+
+
+def prepare_city_themes(repo, profile, detail, basic_rows, sources, national, receipts):
+    """Transforma o recorte já lido; nenhuma nova leitura das tabelas nacionais."""
+    specs = profile['arquivos']
+    city, uf, codes = detail['cd_mun'], detail['cd_uf'], set(detail['setores'])
+    out = repo / 'frontend/public/geo/official/statistics/temas'
     thematic_audit = {'errata': profile['errata'], 'arquivos': {}, 'reconciliacao': {}, 'renda': 'V06004 publicada diretamente em setor/município/bairro. Sem agregação de médias ou peso V06001.'}
     for name, data in sources.items():
         if specs[name].get('codigo') in ('setor','CD_setor','CD_SETOR'):
@@ -208,8 +235,8 @@ def prepare_themes(repo, detail, basic_rows):
                     row = sources['renda_bairro'].get(group['cd_bairro'])
                     groups[gid][key] = money(row['V06004'], ',') if row else cell(missing, reason='Sem média publicada para o grupo sem bairro. Não agregar V06004 sem massa/denominador compatível.')
                 else: groups[gid][key] = aggregate([sectors[c][key] for c in group['cd_setores']])
-        municipality = {key: global_cell(national,m,'6','4205407') for key,m in metrics.items()}
-        if theme == 'renda': municipality = {key:money(sources['renda_municipio']['4205407']['V06004'], ',') for key in metrics}
+        municipality = {key: global_cell(national,m,'6',city) for key,m in metrics.items()}
+        if theme == 'renda': municipality = {key:money(sources['renda_municipio'][city]['V06004'], ',') for key in metrics}
         for key, m in metrics.items():
             if m['unidade'] == 'BRL/mês': continue
             aggregate_all = aggregate([r[key] for r in sectors.values()]); official = municipality[key]
@@ -218,8 +245,6 @@ def prepare_themes(repo, detail, basic_rows):
             if aggregate_all['valor'] is not None and official['valor'] is not None and aggregate_all['valor'] > official['valor']:
                 raise ValueError(f'Subtotal conhecido excede consolidado: {key}')
             thematic_audit['reconciliacao'][key] = {'soma_setores':aggregate_all, 'consolidado':official, 'comparacao':'igual' if aggregate_all['status'] == 'divulgada' else 'parcial; não reconcilia X nem ausências'}
-        municipal_payload = {**common, 'cd_mun':'4205407', 'municipio':municipality, 'bairros':groups, 'setores':sectors}
-        helper.atomic_json(out / theme / 'municipios/42/4205407.json', municipal_payload, compact=True)
-    helper.atomic_json(out / 'catalogo.json', profile)
-    helper.atomic_json(repo / 'data/raw/census_themes.audit.json', thematic_audit)
+        municipal_payload = {**common, 'cd_mun':city, 'municipio':municipality, 'bairros':groups, 'setores':sectors}
+        helper.atomic_json(out / theme / f'municipios/{uf}/{city}.json', municipal_payload, compact=True)
     return thematic_audit

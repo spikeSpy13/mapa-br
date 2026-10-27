@@ -1,11 +1,12 @@
 import profile from '../../../etl_pipeline/manifests/census_themes.json';
+import { PREPARATION_CONFIG } from './preparedMunicipalities';
 export type CensusMetric = `censo_${string}`;
 export interface CensusDefinition {
   tema: string; rotulo: string; unidade: string; arquivo: string; variaveis: string[];
   consolidado?: {consulta:string;categorias:string[];denominador:string[]}|null; definicoes: Record<string,string>; universo: string; denominador: string; agregacao: string; nota: string;
 }
 export const CENSUS_DEFINITIONS: Record<string, CensusDefinition> = profile.metricas;
-export const CENSUS_PROFILE = profile;
+export const CENSUS_PROFILE = { ...profile, consultas: Object.fromEntries(Object.entries(profile.consultas).map(([key,spec]) => [key, { ...spec, ...PREPARATION_CONFIG.sidra_temas[key as keyof typeof PREPARATION_CONFIG.sidra_temas] }])) };
 export const CENSUS_THEMES: Record<string,string> = { sexo_idade: 'Sexo e idade', cor_raca: 'Cor ou raça', alfabetizacao: 'Alfabetização · 15 anos ou mais', habitacao: 'Habitação', agua: 'Abastecimento de água', esgoto: 'Esgotamento sanitário', lixo: 'Destino do lixo', renda: 'Renda publicada' };
 export function isCensusMetric(metric: unknown): metric is CensusMetric { return typeof metric === 'string' && metric.startsWith('censo_') && Object.hasOwn(CENSUS_DEFINITIONS, metric.slice(6)); }
 export function censusDefinition(metric: string) { return isCensusMetric(metric) ? CENSUS_DEFINITIONS[metric.slice(6)] : undefined; }

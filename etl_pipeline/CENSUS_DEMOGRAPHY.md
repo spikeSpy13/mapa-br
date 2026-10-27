@@ -1,5 +1,8 @@
 # Censo 2022: população e domicílios oficiais
 
+Municípios configuráveis: [PREPARED_MUNICIPALITIES.md](PREPARED_MUNICIPALITIES.md)
+acrescenta SP/Agudos e atualiza os antigos limites de cobertura desta página.
+
 Extensão atual: [CENSUS_THEMES.md](CENSUS_THEMES.md) documenta os 25 novos
 indicadores, universos, errata de 21/10/2026, renda publicada diretamente,
 contrato temático, lacunas e comandos. O preparo abaixo agora também gera esses

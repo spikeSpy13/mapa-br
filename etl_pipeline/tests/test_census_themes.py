@@ -6,8 +6,9 @@ import unittest
 import zipfile
 from unittest.mock import patch
 from etl_pipeline.census_themes import aggregate, cell, combine, money, national_rows, subtract, table_rows, verify_dictionary, PROFILE_PATH
-from etl_pipeline.census_themes import prepare_national_themes
+from etl_pipeline.census_themes import prepare_national_themes, load_profile
 from etl_pipeline.reference_data import REGIOES, UFS
+from etl_pipeline.prepared_municipalities import MUNICIPALITIES
 
 
 def count(n): return {'valor':n,'status':'divulgada'}
@@ -16,10 +17,10 @@ SECRET={'valor':None,'status':'sigilo'}
 
 class CensusThemeTests(unittest.TestCase):
     def test_national_preparation_never_requires_geometries_or_municipal_tables(self):
-        profile=json.loads(PROFILE_PATH.read_text()); national={}; receipts={}
+        profile=load_profile(); national={}; receipts={}
         for query, spec in profile['consultas'].items():
             column='D5C' if query=='idade' else 'D4C'
-            national[query]={(level,code,cat):count(0) for level,codes in [('1',['1']),('2',list(REGIOES)),('3',[u[0] for u in UFS]),('6',['4205407'])] for code in codes for cat in spec['dimensoes'][column]}
+            national[query]={(level,code,cat):count(0) for level,codes in [('1',['1']),('2',list(REGIOES)),('3',[u[0] for u in UFS]),('6',list(MUNICIPALITIES))] for code in codes for cat in spec['dimensoes'][column]}
             receipts['sidra_'+query]={'url':spec['url'],'sha256_local':spec['sha256']}
         with tempfile.TemporaryDirectory() as tmp, patch('etl_pipeline.census_themes.read_national',return_value=(national,receipts)), patch('etl_pipeline.census_themes.table_rows',side_effect=AssertionError('Arquivo municipal não pode ser lido')):
             report=prepare_national_themes(Path(tmp))
@@ -79,7 +80,7 @@ class CensusThemeTests(unittest.TestCase):
 
     def test_national_direct_tables_validate_dimensions_and_complete_territories(self):
         spec={'variavel':'93','rotulo_variavel':'População residente','unidade':'Pessoas','tabela':'9605','dimensoes':{'D4C':{'95251':'Total'}}}
-        rows=[{}]+[{'NC':level,'D1C':code,'D2C':'93','D2N':'População residente','D3C':'2022','D3N':'2022','MN':'Pessoas','D4C':'95251','D4N':'Total','V':'7'} for level,codes in [('1',['1']),('2',list(REGIOES)),('3',[u[0] for u in UFS]),('6',['4205407'])] for code in codes]
+        rows=[{}]+[{'NC':level,'D1C':code,'D2C':'93','D2N':'População residente','D3C':'2022','D3N':'2022','MN':'Pessoas','D4C':'95251','D4N':'Total','V':'7'} for level,codes in [('1',['1']),('2',list(REGIOES)),('3',[u[0] for u in UFS]),('6',list(MUNICIPALITIES))] for code in codes]
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp)/'sidra.json'
             p.write_text(json.dumps(rows));result=national_rows(p,spec)

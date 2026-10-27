@@ -1,5 +1,9 @@
 # Geometrias sintéticas e critérios para publicação oficial
 
+Atualização: [PREPARED_MUNICIPALITIES.md](PREPARED_MUNICIPALITIES.md) documenta
+SP/Agudos, a configuração compartilhada e a auditoria por município/UF. As
+quantidades e limitações de cobertura abaixo registram a primeira entrega.
+
 A demonstração usa exclusivamente os GeoJSONs pequenos e versionados em
 `frontend/public/geo/demo`. Gere-os com `python3 etl_pipeline/build_demo_geometries.py`
 a partir das fixtures de `data/processed`. O gerador não acessa a rede, não

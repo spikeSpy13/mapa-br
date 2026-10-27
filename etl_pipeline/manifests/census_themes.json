@@ -91,8 +91,6 @@
   },
   "consultas": {
     "sexo": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
-      "sha256": "c061bdd67e45aa1278d0c29416b3f3ed8a0c407e030a152f4374504a48f6019b",
       "tabela": "9514",
       "variavel": "93",
       "rotulo_variavel": "População residente",
@@ -112,8 +110,6 @@
       }
     },
     "idade": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
-      "sha256": "dea96f2885a86fa772f9eede7141fbe3663c2ce286dd01ed22e73a3ac9f63ff5",
       "tabela": "9514",
       "variavel": "93",
       "rotulo_variavel": "População residente",
@@ -151,8 +147,6 @@
       }
     },
     "raca": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/4205407/v/93/p/2022/c86/all?formato=json",
-      "sha256": "1567a0352917e9213618842fc7049caf02d46dab952d95fb3da65d5ffff96ddb",
       "tabela": "9605",
       "variavel": "93",
       "rotulo_variavel": "População residente",
@@ -169,8 +163,6 @@
       }
     },
     "alfabetizacao": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
-      "sha256": "8bbc4cb82b2479abb30cf48a1e148eb429f3603334510bd66311637c09bae32d",
       "tabela": "9542",
       "variavel": "950",
       "rotulo_variavel": "Pessoas de 15 anos ou mais de idade",
@@ -193,8 +185,6 @@
       }
     },
     "habitacao": {
-      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/4205407/v/617/p/2022/c3/all?formato=json",
-      "sha256": "dd20d9a4a0ff185b8866d392bb4e18093220322e9ffb3a2c09bda36264fc323e",
       "tabela": "4711",
       "variavel": "617",
       "rotulo_variavel": "Domicílios recenseados",
@@ -218,8 +208,6 @@
       }
     },
     "agua": {
-      "url": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/4205407/v/381/p/2022/c1821/all?formato=json",
-      "sha256": "dd124190356608cc9dcb26169aad21bb708d33e561dd3f9518e8d7fc2e74d1e1",
       "tabela": "6803",
       "variavel": "381",
       "rotulo_variavel": "Domicílios particulares permanentes ocupados",
@@ -248,8 +236,6 @@
       }
     },
     "esgoto": {
-      "url": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/4205407/v/381/p/2022/c11558/all?formato=json",
-      "sha256": "9a2ff2c6b9a1bd6d9c905231d71c83db4507c260dce6a2cef78f1df024361df6",
       "tabela": "6805",
       "variavel": "381",
       "rotulo_variavel": "Domicílios particulares permanentes ocupados",
@@ -270,8 +256,6 @@
       }
     },
     "lixo": {
-      "url": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/4205407/v/381/p/2022/c67/all?formato=json",
-      "sha256": "31074edd8d5a6e5464e9c8877a7c42cc6747b91b5bb213b76a089bc3f1e23536",
       "tabela": "6892",
       "variavel": "381",
       "rotulo_variavel": "Domicílios particulares permanentes ocupados",

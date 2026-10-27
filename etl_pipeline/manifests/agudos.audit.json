@@ -1,0 +1,1337 @@
+{
+  "base": "6a8b59c",
+  "status": "approved_agudos_data",
+  "verificado_em": "2026-10-27",
+  "referencia": "2022-08-01",
+  "municipio": {
+    "cd_mun": "3500709",
+    "cd_uf": "35",
+    "nome": "Agudos",
+    "populacao": 37680,
+    "domicilios_fisicos": 15448,
+    "setores": 66,
+    "bairros_oficiais_na_fonte": 0,
+    "setores_sem_bairro": 66,
+    "distritos": {
+      "350070905": {
+        "nome": "Agudos",
+        "setores": 63
+      },
+      "350070910": {
+        "nome": "Domélia",
+        "setores": 3
+      }
+    },
+    "setores_populacao_zero": 3,
+    "domicilios_em_setores_populacao_zero": 5
+  },
+  "cartografia": {
+    "nome": "Agudos",
+    "inventario": {
+      "actual": 66,
+      "expected": 66,
+      "missing": [],
+      "extra": []
+    },
+    "spatial_membership": {
+      "method": "difference vs município integral, EPSG:31982",
+      "tolerance_m2": 1,
+      "max_outside_m2": 0.0,
+      "violations": []
+    },
+    "crs_origem": 4674,
+    "crs_exibicao": 4326,
+    "inventario_sp": {
+      "actual": 103319,
+      "expected": 103319,
+      "missing": [],
+      "extra": []
+    },
+    "municipios_sp": {
+      "actual": 645,
+      "expected": 645,
+      "missing": [],
+      "extra": []
+    },
+    "fonte_sp": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/setores/shp/UF/SP/SP_setores_CD2022.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/malha_com_atributos/setores/shp/UF/SP/SP_setores_CD2022.zip",
+      "bytes": 86608666,
+      "sha256_local": "dd0a9a5439382437304aff017b23b9edd00598b946bfc27c8bd2e2084b4dbd2d",
+      "downloaded_at": "2026-10-27T05:56:11.321211+00:00"
+    },
+    "arquivos": {
+      "reference/setores/35/3500709.geojson": {
+        "sha256_local": "9e8f6be5c7adf50256f4e0d24a072f80e3cc61412cf7ead9f5c63b1ac6b915ea",
+        "bytes": 754414
+      },
+      "setores/35/3500709.geojson": {
+        "sha256_local": "480e0a9a3e4573719f74e361143989c09cf4f4790429fac5c1ccd40dab4f798b",
+        "bytes": 321946,
+        "entities": 66,
+        "source_vertices": 7522,
+        "display_vertices": 7522,
+        "coverage_valid": true,
+        "simplification": "nenhuma; limites integrais preservados",
+        "tolerance_degrees": null,
+        "ids_preserved": true
+      },
+      "setores/35/3500709.inventory.json": {
+        "sha256_local": "83a886ab9a798243500bd044088514f397b329a1aba3b9e601fd822ee4c4ee18",
+        "bytes": 1536
+      }
+    },
+    "preservados": {
+      "ufs.geojson": {
+        "sha256": "d18a3ef8f6d1403b82a4471eec7020511134b944834a3d7bdcbf5aae0322b1c8",
+        "inalterado": true
+      },
+      "municipios/42.geojson": {
+        "sha256": "da2fec4a2c4b3f388204a7167d348cab54eb5cd04f2537769f17179b6fb22a8b",
+        "inalterado": true
+      },
+      "setores/42/4205407.geojson": {
+        "sha256": "5c755137dcccc4fda630bcbaec4c32be9ad9c1a57119dc168f4f109f385ab3f4",
+        "inalterado": true
+      }
+    }
+  },
+  "fontes_tematicas": {
+    "sidra_sexo": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
+      "bytes": 27699,
+      "sha256_local": "c8eb526f91c45c2622b67a2eb391912005e1b7711d1f262067d2ad921e2e4ace",
+      "downloaded_at": "2026-10-27T05:56:05.242550+00:00"
+    },
+    "sidra_idade": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
+      "bytes": 194582,
+      "sha256_local": "6815a0e1f741ef87c57b082da712ede6e96a78a46876ac2cf80e422d4a53a67c",
+      "downloaded_at": "2026-10-27T05:56:05.505430+00:00"
+    },
+    "sidra_raca": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c86/all?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/3500709,4205407/v/93/p/2022/c86/all?formato=json",
+      "bytes": 42806,
+      "sha256_local": "a6e733bc93b64d563e2296b3964be140e97e10e96753fc842be6149adbf7f40b",
+      "downloaded_at": "2026-10-27T05:56:05.236337+00:00"
+    },
+    "sidra_alfabetizacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/3500709,4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/3500709,4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
+      "bytes": 32834,
+      "sha256_local": "f0e79870c806da6cc5942f3d91d696c6da87b6ea2f149b6549753206a967b017",
+      "downloaded_at": "2026-10-27T05:56:05.668196+00:00"
+    },
+    "sidra_habitacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/3500709,4205407/v/617/p/2022/c3/all?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/3500709,4205407/v/617/p/2022/c3/all?formato=json",
+      "bytes": 106084,
+      "sha256_local": "eb2526e9b1a3164bb32872c080dcd1f10f01ecedec65d6e49566c3a765caed1f",
+      "downloaded_at": "2026-10-27T05:56:05.931289+00:00"
+    },
+    "sidra_agua": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c1821/all?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c1821/all?formato=json",
+      "bytes": 186798,
+      "sha256_local": "9cd1adcf85e96748d5a3bd7feabc76eac3553288cdb928f63bfde5993f351996",
+      "downloaded_at": "2026-10-27T05:56:06.137024+00:00"
+    },
+    "sidra_esgoto": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c11558/all?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c11558/all?formato=json",
+      "bytes": 88307,
+      "sha256_local": "d1b3003fc68ee285b4be3d55d29b9abee6fa132dc7b95732beac2d532765dedf",
+      "downloaded_at": "2026-10-27T05:56:06.350059+00:00"
+    },
+    "sidra_lixo": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c67/all?formato=json",
+      "url_final": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/3500709,4205407/v/381/p/2022/c67/all?formato=json",
+      "bytes": 70587,
+      "sha256_local": "ec1ef5dc0e8b54114e0e9cbc01313de84e8024f53d625ec1c4833445d7259b43",
+      "downloaded_at": "2026-10-27T05:56:06.320080+00:00"
+    },
+    "demografia": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_demografia_BR.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_demografia_BR.zip",
+      "bytes": 22554090,
+      "sha256_local": "f8486233ce2f6559de76299390577c58d05f35cad07c46098e6e565949c8b269",
+      "downloaded_at": "2026-10-27T04:07:43.527137+00:00"
+    },
+    "cor_ou_raca": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_cor_ou_raca_BR.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_cor_ou_raca_BR.zip",
+      "bytes": 43838759,
+      "sha256_local": "cd4d628878f619b69c9e0d06e613011a05b67643edbb3cfc25735ae6b6941b1a",
+      "downloaded_at": "2026-10-27T04:07:44.724259+00:00"
+    },
+    "alfabetizacao": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_alfabetizacao_BR.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_alfabetizacao_BR.zip",
+      "bytes": 142133036,
+      "sha256_local": "3b2de94e0099d9b6aa32bf967b1e96321a0f6ee7df674bbac984c3b751c8a17b",
+      "downloaded_at": "2026-10-27T04:07:48.236525+00:00"
+    },
+    "caracteristicas_domicilio1": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio1_BR_20261021.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio1_BR_20261021.zip",
+      "bytes": 24197389,
+      "sha256_local": "29db91e0a65776a317addbb1a2a1367c5ca2e1d72f5ffd223f80304800657810",
+      "downloaded_at": "2026-10-27T04:07:46.228114+00:00"
+    },
+    "caracteristicas_domicilio2": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio2_BR_20250417.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio2_BR_20250417.zip",
+      "bytes": 83971374,
+      "sha256_local": "513f8a0d9c84b1325487f651f6d5d90bbc6f5ad7af60460b53598555ac008759",
+      "downloaded_at": "2026-10-27T04:07:49.756897+00:00"
+    },
+    "renda_setor": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip",
+      "bytes": 9370011,
+      "sha256_local": "141c83e7635674e7e2c941e55f98811e538fcbf2e1e1125b0aa7892c260f4a23",
+      "downloaded_at": "2026-10-27T04:11:08.953268+00:00"
+    },
+    "renda_municipio": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_municipios_renda_responsavel_BR_20260508_csv.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_municipios_renda_responsavel_BR_20260508_csv.zip",
+      "bytes": 168582,
+      "sha256_local": "ad52b9e9fe7bf67d45250799d6926e4f13752cfddc5f0f96a7147f9b5fb909fe",
+      "downloaded_at": "2026-10-27T04:11:08.284134+00:00"
+    },
+    "renda_bairro": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_bairros_renda_responsavel_BR_20260508_csv.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_bairros_renda_responsavel_BR_20260508_csv.zip",
+      "bytes": 503079,
+      "sha256_local": "db2fda144b62d9badf21ac54fdf43dbba09e029fd21f27393df7c5f4ea7ac333",
+      "downloaded_at": "2026-10-27T04:11:07.943424+00:00"
+    },
+    "dicionario_renda": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/dicionario_de_dados_renda_responsavel_20260508.xlsx",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/dicionario_de_dados_renda_responsavel_20260508.xlsx",
+      "bytes": 10197,
+      "sha256_local": "fea6e2b2439eeb167c6fa9c136ed7cb13ebcb06f4c875d634e3e2578c668a48d",
+      "downloaded_at": "2026-10-27T04:11:08.358905+00:00"
+    },
+    "dicionario": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+      "bytes": 118369,
+      "sha256_local": "0b8aedece57f6125d785b6aa2234cfd587e92dfb6ce5ca6ace8c67f140831344",
+      "downloaded_at": "2026-10-26T11:39:57.901160+00:00"
+    },
+    "basico": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+      "url_final": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+      "bytes": 15418417,
+      "sha256_local": "ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63",
+      "downloaded_at": "2026-10-26T11:39:56.679006+00:00"
+    }
+  },
+  "inventario_tematico": {
+    "demografia": {
+      "linhas": 63,
+      "faltantes": [
+        "350070905000070",
+        "350070905000072",
+        "350070905000077"
+      ],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    },
+    "cor_ou_raca": {
+      "linhas": 63,
+      "faltantes": [
+        "350070905000070",
+        "350070905000072",
+        "350070905000077"
+      ],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    },
+    "alfabetizacao": {
+      "linhas": 63,
+      "faltantes": [
+        "350070905000070",
+        "350070905000072",
+        "350070905000077"
+      ],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    },
+    "caracteristicas_domicilio1": {
+      "linhas": 63,
+      "faltantes": [
+        "350070905000070",
+        "350070905000072",
+        "350070905000077"
+      ],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    },
+    "caracteristicas_domicilio2": {
+      "linhas": 63,
+      "faltantes": [
+        "350070905000070",
+        "350070905000072",
+        "350070905000077"
+      ],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    },
+    "renda_setor": {
+      "linhas": 63,
+      "faltantes": [
+        "350070905000070",
+        "350070905000072",
+        "350070905000077"
+      ],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    },
+    "basico": {
+      "linhas": 66,
+      "faltantes": [],
+      "extras": [],
+      "faltantes_populacao_positiva": []
+    }
+  },
+  "indicadores": [
+    {
+      "indicador": "homens",
+      "municipio": {
+        "valor": 18461,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "48.99",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 59,
+        "sigilo": 4,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 18398,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 59,
+            "esperados": 66,
+            "sigilo": 4,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 18461,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "48.99",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "mulheres",
+      "municipio": {
+        "valor": 19219,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "51.01",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 59,
+        "sigilo": 4,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 19216,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 59,
+            "esperados": 66,
+            "sigilo": 4,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 19219,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "51.01",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "idade_0_14",
+      "municipio": {
+        "valor": 7419,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "19.69",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 55,
+        "sigilo": 8,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 7389,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 55,
+            "esperados": 66,
+            "sigilo": 8,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 7419,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "19.69",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "idade_15_59",
+      "municipio": {
+        "valor": 23831,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "63.25",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 55,
+        "sigilo": 8,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 23649,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 55,
+            "esperados": 66,
+            "sigilo": 8,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 23831,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "63.25",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "idade_60_mais",
+      "municipio": {
+        "valor": 6430,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "17.06",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 57,
+        "sigilo": 6,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 6366,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 57,
+            "esperados": 66,
+            "sigilo": 6,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 6430,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "17.06",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "raca_branca",
+      "municipio": {
+        "valor": 22272,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "59.11",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 59,
+        "sigilo": 4,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 22218,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 59,
+            "esperados": 66,
+            "sigilo": 4,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 22272,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "59.11",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "raca_preta",
+      "municipio": {
+        "valor": 2422,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "6.43",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 56,
+        "sigilo": 7,
+        "ausente": 3,
+        "zero_divulgado": 1
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 2416,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 56,
+            "esperados": 66,
+            "sigilo": 7,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 2422,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "6.43",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "raca_amarela",
+      "municipio": {
+        "valor": 159,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "0.42",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 43,
+        "sigilo": 20,
+        "ausente": 3,
+        "zero_divulgado": 21
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 138,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 43,
+            "esperados": 66,
+            "sigilo": 20,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 159,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "0.42",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "raca_parda",
+      "municipio": {
+        "valor": 12773,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "33.90",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 59,
+        "sigilo": 4,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 12764,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 59,
+            "esperados": 66,
+            "sigilo": 4,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 12773,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "33.90",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "raca_indigena",
+      "municipio": {
+        "valor": 52,
+        "status": "divulgada",
+        "denominador": 37680,
+        "status_denominador": "divulgada",
+        "percentual": "0.14",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 46,
+        "sigilo": 17,
+        "ausente": 3,
+        "zero_divulgado": 42
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 36,
+          "status": "parcial",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 46,
+            "esperados": 66,
+            "sigilo": 17,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 52,
+          "status": "divulgada",
+          "denominador": 37680,
+          "status_denominador": "divulgada",
+          "percentual": "0.14",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "alfabetizados_15_mais",
+      "municipio": {
+        "valor": 29107,
+        "status": "divulgada",
+        "denominador": 30261,
+        "status_denominador": "divulgada",
+        "percentual": "96.19",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 51,
+        "sigilo": 12,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 28400,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 51,
+            "esperados": 66,
+            "sigilo": 12,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 29107,
+          "status": "divulgada",
+          "denominador": 30261,
+          "status_denominador": "divulgada",
+          "percentual": "96.19",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "nao_alfabetizados_15_mais",
+      "municipio": {
+        "valor": 1154,
+        "status": "divulgada",
+        "denominador": 30261,
+        "status_denominador": "divulgada",
+        "percentual": "3.81",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 51,
+        "sigilo": 12,
+        "ausente": 3,
+        "zero_divulgado": 1
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 1101,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 51,
+            "esperados": 66,
+            "sigilo": 12,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 1154,
+          "status": "divulgada",
+          "denominador": 30261,
+          "status_denominador": "divulgada",
+          "percentual": "3.81",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "dppo",
+      "municipio": {
+        "valor": 12936,
+        "status": "divulgada",
+        "denominador": 15401,
+        "status_denominador": "divulgada",
+        "percentual": "83.99",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 59,
+        "sigilo": 4,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 12933,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 59,
+            "esperados": 66,
+            "sigilo": 4,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 12936,
+          "status": "divulgada",
+          "denominador": 15401,
+          "status_denominador": "divulgada",
+          "percentual": "83.99",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "vagos",
+      "municipio": {
+        "valor": 1638,
+        "status": "divulgada",
+        "denominador": 15401,
+        "status_denominador": "divulgada",
+        "percentual": "10.64",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 66,
+        "sigilo": 0,
+        "ausente": 0,
+        "zero_divulgado": 5
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 1638,
+          "status": "divulgada",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": null,
+          "cobertura": {
+            "divulgados": 66,
+            "esperados": 66,
+            "sigilo": 0,
+            "ausentes": 0
+          }
+        },
+        "consolidado": {
+          "valor": 1638,
+          "status": "divulgada",
+          "denominador": 15401,
+          "status_denominador": "divulgada",
+          "percentual": "10.64",
+          "motivo": null
+        },
+        "comparacao": "igual"
+      }
+    },
+    {
+      "indicador": "uso_ocasional",
+      "municipio": {
+        "valor": 827,
+        "status": "divulgada",
+        "denominador": 15401,
+        "status_denominador": "divulgada",
+        "percentual": "5.37",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 66,
+        "sigilo": 0,
+        "ausente": 0,
+        "zero_divulgado": 12
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 827,
+          "status": "divulgada",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": null,
+          "cobertura": {
+            "divulgados": 66,
+            "esperados": 66,
+            "sigilo": 0,
+            "ausentes": 0
+          }
+        },
+        "consolidado": {
+          "valor": 827,
+          "status": "divulgada",
+          "denominador": 15401,
+          "status_denominador": "divulgada",
+          "percentual": "5.37",
+          "motivo": null
+        },
+        "comparacao": "igual"
+      }
+    },
+    {
+      "indicador": "agua_rede",
+      "municipio": {
+        "valor": 12302,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "95.10",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 56,
+        "sigilo": 7,
+        "ausente": 3,
+        "zero_divulgado": 2
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 12296,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 56,
+            "esperados": 66,
+            "sigilo": 7,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 12302,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "95.10",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "agua_poco_profundo",
+      "municipio": {
+        "valor": 499,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "3.86",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 50,
+        "sigilo": 13,
+        "ausente": 3,
+        "zero_divulgado": 40
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 484,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 50,
+            "esperados": 66,
+            "sigilo": 13,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 499,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "3.86",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "esgoto_rede",
+      "municipio": {
+        "valor": 12171,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "94.09",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 58,
+        "sigilo": 5,
+        "ausente": 3,
+        "zero_divulgado": 4
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 12170,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 58,
+            "esperados": 66,
+            "sigilo": 5,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 12171,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "94.09",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "esgoto_fossa_ligada",
+      "municipio": {
+        "valor": 25,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "0.19",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 55,
+        "sigilo": 8,
+        "ausente": 3,
+        "zero_divulgado": 51
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 18,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 55,
+            "esperados": 66,
+            "sigilo": 8,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 25,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "0.19",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "esgoto_fossa_nao_ligada",
+      "municipio": {
+        "valor": 576,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "4.45",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 52,
+        "sigilo": 11,
+        "ausente": 3,
+        "zero_divulgado": 40
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 565,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 52,
+            "esperados": 66,
+            "sigilo": 11,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 576,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "4.45",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "esgoto_rudimentar",
+      "municipio": {
+        "valor": 94,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "0.73",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 55,
+        "sigilo": 8,
+        "ausente": 3,
+        "zero_divulgado": 47
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 89,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 55,
+            "esperados": 66,
+            "sigilo": 8,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 94,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "0.73",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "lixo_coleta_domicilio",
+      "municipio": {
+        "valor": 12484,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "96.51",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 58,
+        "sigilo": 5,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 12481,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 58,
+            "esperados": 66,
+            "sigilo": 5,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 12484,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "96.51",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "lixo_cacamba",
+      "municipio": {
+        "valor": 183,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "1.41",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 51,
+        "sigilo": 12,
+        "ausente": 3,
+        "zero_divulgado": 44
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 171,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 51,
+            "esperados": 66,
+            "sigilo": 12,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 183,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "1.41",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "lixo_queimado",
+      "municipio": {
+        "valor": 251,
+        "status": "divulgada",
+        "denominador": 12936,
+        "status_denominador": "divulgada",
+        "percentual": "1.94",
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 51,
+        "sigilo": 12,
+        "ausente": 3,
+        "zero_divulgado": 46
+      },
+      "consolidado_setorial": {
+        "soma_setores": {
+          "valor": 239,
+          "status": "parcial",
+          "denominador": null,
+          "status_denominador": "sigilo",
+          "percentual": null,
+          "motivo": "Soma apenas das contagens divulgadas; não é o total do grupo.",
+          "cobertura": {
+            "divulgados": 51,
+            "esperados": 66,
+            "sigilo": 12,
+            "ausentes": 3
+          }
+        },
+        "consolidado": {
+          "valor": 251,
+          "status": "divulgada",
+          "denominador": 12936,
+          "status_denominador": "divulgada",
+          "percentual": "1.94",
+          "motivo": null
+        },
+        "comparacao": "parcial; não reconcilia X nem ausências"
+      }
+    },
+    {
+      "indicador": "renda_responsavel_com_rendimentos",
+      "municipio": {
+        "valor": "2719.19",
+        "status": "divulgada",
+        "denominador": null,
+        "status_denominador": "ausente",
+        "percentual": null,
+        "motivo": null
+      },
+      "setores": {
+        "divulgada": 59,
+        "sigilo": 4,
+        "ausente": 3,
+        "zero_divulgado": 0
+      },
+      "consolidado_setorial": null
+    }
+  ],
+  "limites": [
+    "Bairro ausente em todos os registros do básico e DBF; não equivale a inexistência de bairros municipais em outras fontes.",
+    "Distritos de Agudos e Domélia não são bairros.",
+    "Três setores sem moradores não têm linha temática/renda: ausência explícita, sem imputação.",
+    "Renda média publicada diretamente, sem agregação para o grupo sem bairro.",
+    "SIDRA - é zero absoluto segundo ajuda oficial; regra restrita à API."
+  ]
+}

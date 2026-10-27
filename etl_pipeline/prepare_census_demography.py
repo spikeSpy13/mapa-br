@@ -19,13 +19,13 @@ if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from etl_pipeline.core_contract import normalize_code, nonnegative
 from etl_pipeline.reference_data import UFS, REGIOES
+from etl_pipeline.prepared_municipalities import CONFIG, MUNICIPALITIES, PREPARED_UFS
 from etl_pipeline.audits.verify_2022_sc import source_rows
 from etl_pipeline.prepare_official_geometries import SOURCES, PINNED_SHA256, compare_inventory
 
 helper = importlib.import_module('etl_pipeline.03_fetch_ibge_raw')
 FIELDS = ('populacao', 'domicilios')
-# Snapshot SIDRA consultado em 2026-10-26. Mudanças exigem nova revisão explícita.
-SIDRA_SHA256 = {'populacao': 'e92434191508a96a3b841831649e02a4c82383db3b5e1845d5afb3417a11b6a4', 'domicilios': '1a779ab7e194867a82ecabc66f79f4df23e95f55f61f1018ac9d6c7d24c1ccea'}
+# Snapshots e recortes SIDRA estão na configuração municipal compartilhada.
 SPECIES = 'Total de Domicílios (DPPO + DPPV + DPPUO + DPIO + DCCM + DCSM)'
 # Dados do Universo; espécie Total explícita (não apenas domicílios ocupados).
 QUERIES = {
@@ -38,6 +38,13 @@ def measure(raw: str, field: str) -> dict:
     if status != 'divulgada':
         return {'valor': None, 'status': status}
     return {'valor': nonnegative(value, field, integer=True), 'status': status}
+
+
+def sidra_measure(raw, field):
+    # Convenção oficial exclusiva da API SIDRA: '-' é zero absoluto.
+    # https://apisidra.ibge.gov.br/home/ajuda (Valores especiais)
+    # Não aplicar esta regra aos CSVs setoriais ou à ausência de linhas.
+    return measure('0' if raw == '-' else raw, field)
 
 
 def parse_sidra(rows, field):
@@ -60,11 +67,11 @@ def parse_sidra(rows, field):
             raise ValueError('Nível territorial inesperado')
         if level == '6':
             normalize_code(code, 'cd_mun')
-            if not code.startswith('42'): raise ValueError('Município fora de SC')
+            if code[:2] not in PREPARED_UFS: raise ValueError('Município fora das UFs configuradas')
         elif code not in expected[level]: raise ValueError('Código SIDRA inesperado')
         key = (level, code)
         if key in result: raise ValueError('SIDRA duplicado')
-        result[key] = measure(r['V'], field)
+        result[key] = sidra_measure(r['V'], field)
     for level in ('1', '2', '3'):
         if {c for l, c in result if l == level} != expected[level]:
             raise ValueError('SIDRA: panorama nacional incompleto')
@@ -86,17 +93,32 @@ def verify_dictionary(path):
             raise ValueError('Dicionário básico mudou; revisar mapeamento')
 
 
+def sector_municipality(codes):
+    municipalities = {normalize_code(c, 'cd_setor')[:7] for c in codes}
+    if len(municipalities) != 1: raise ValueError('Inventário deve pertencer a um único município')
+    return municipalities.pop()
+
+
+def district_identity(row):
+    district = normalize_code(row['CD_DIST'], 'cd_dist')
+    subdistrict = normalize_code(row['CD_SUBDIST'], 'cd_subdist')
+    if district != row['CD_DIST'] or subdistrict != row['CD_SUBDIST'] or not district.startswith(row['CD_MUN']) or not subdistrict.startswith(district):
+        raise ValueError('Distrito/subdistrito não canônico ou incompatível')
+    return {'cd_distrito': district, 'nm_distrito': row['NM_DIST'], 'cd_subdistrito':subdistrict, 'nm_subdistrito':row['NM_SUBDIST'] or None}
+
+
 def extract_sectors(rows, ids, territory=None, raw_out=None):
+    municipality = sector_municipality(ids)
     sectors = {}
     for row in rows:
-        if row['CD_MUN'] != '4205407': continue
+        if row['CD_MUN'] != municipality: continue
         code = normalize_code(row['CD_SETOR'], 'cd_setor')
-        if code != row['CD_SETOR'] or not code.startswith('4205407') or code in sectors:
+        if code != row['CD_SETOR'] or not code.startswith(municipality) or code in sectors:
             raise ValueError('Setor duplicado, não canônico ou fora do município')
         if territory is not None: territory[code] = neighborhood_identity(row)
         if raw_out is not None: raw_out[code] = row
         sectors[code] = {f: measure(row[column], f) for f, column in zip(FIELDS, ('v0001', 'v0002'))}
-    compare_inventory(list(sectors), ids, 'demografia vs geometria Florianópolis')
+    compare_inventory(list(sectors), ids, f'demografia vs geometria {municipality}')
     return sectors
 
 
@@ -126,9 +148,10 @@ def neighborhood_identity(row):
 
 
 def verify_neighborhood_links(territory, records):
+    municipality = sector_municipality(territory)
     seen = set()
     for record in records:
-        if record['CD_MUN'] != '4205407': continue
+        if record['CD_MUN'] != municipality: continue
         code = normalize_code(record['CD_SETOR'], 'cd_setor')
         if code != record['CD_SETOR'] or code in seen or code not in territory:
             raise ValueError('Inventário DBF duplicado/extra no vínculo de bairros')
@@ -157,9 +180,10 @@ def municipal_share(numerator, denominator):
 
 def neighborhood_groups(sectors, territory, municipality=None):
     compare_inventory(list(territory), list(sectors), 'vínculo bairros vs setores')
+    municipality_code = sector_municipality(sectors)
     groups = {}
     for code, (bairro, name) in territory.items():
-        key = f'bairro:{bairro}' if bairro is not None else 'sem_bairro:4205407'
+        key = f'bairro:{bairro}' if bairro is not None else f'sem_bairro:{municipality_code}'
         if key not in groups:
             groups[key] = {'cd_bairro': bairro, 'nome': name or 'Setores sem bairro identificado', 'cd_setores': [], 'indicadores': {}}
         group = groups[key]
@@ -187,12 +211,12 @@ def neighborhood_lookup(sectors, groups, source):
             mapping[code] = bairro
     compare_inventory(list(mapping), list(sectors), 'arquivo de correspondência vs setores')
     known = sum(code is not None for code in mapping.values())
-    return {'schema_version': 'vinculo-bairro-1', 'cd_mun': '4205407', 'referencia_territorial': 'Censo 2022',
+    return {'schema_version': 'vinculo-bairro-1', 'cd_mun': sector_municipality(sectors), 'referencia_territorial': 'Censo 2022',
         'fonte': source, 'bairros': names, 'setores': dict(sorted(mapping.items())),
         'cobertura': {'total_setores': len(mapping), 'com_bairro': known, 'sem_bairro': len(mapping) - known, 'bairros': len(names)}}
 
 
-def verify_neighborhood_sources(paths, territory):
+def verify_neighborhood_sources(paths, territory, basic_rows=None):
     import shapefile
     # A aba Setor declara explicitamente CD_SETOR, CD_BAIRRO e NM_BAIRRO.
     ns = {'m': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
@@ -207,7 +231,7 @@ def verify_neighborhood_sources(paths, territory):
             rows.append(values)
         for expected in [['CD_SETOR', 'Geocódigo de Setor Censitário'], ['CD_BAIRRO', 'Código do Bairro'], ['NM_BAIRRO', 'Nome do Bairro']]:
             if expected not in rows: raise ValueError('Dicionário de vínculo bairro mudou')
-    with zipfile.ZipFile(paths['setores_sc']) as z:
+    with zipfile.ZipFile(paths['setores_uf']) as z:
         def member(ext):
             names = [n for n in z.namelist() if n.endswith(ext)]
             if len(names) != 1: raise ValueError('Membros DBF/CPG ambíguos')
@@ -217,7 +241,13 @@ def verify_neighborhood_sources(paths, territory):
         types = {f.name: f.field_type for f in reader.fields[1:]}
         if any(types.get(f) != 'C' for f in ['CD_SETOR', 'CD_MUN', 'CD_BAIRRO', 'NM_BAIRRO']):
             raise ValueError('Identificadores/nomes DBF não textuais')
-        verify_neighborhood_links(territory, (r.as_dict() for r in reader.iterRecords()))
+        def records():
+            for r in reader.iterRecords():
+                row = r.as_dict()
+                if basic_rows is not None and row['CD_SETOR'] in basic_rows and district_identity(row) != district_identity(basic_rows[row['CD_SETOR']]):
+                    raise ValueError('Distrito/subdistrito CSV/DBF divergente')
+                yield row
+        verify_neighborhood_links(territory, records())
         return {'metodo': 'atributos_oficiais_csv_dbf', 'campos': ['CD_SETOR', 'CD_BAIRRO', 'NM_BAIRRO'], 'membro_dbf': member('.dbf')}
 
 
@@ -226,37 +256,52 @@ def prepare(repo: Path):
     output = repo / 'frontend/public/geo/official'
     destination = output / 'statistics'
     receipts, parsed = {}, {}
-    for field, (table, variable, _, _, category) in QUERIES.items():
-        url = f'https://apisidra.ibge.gov.br/values/t/{table}/n1/1/n2/all/n3/all/n6/in%20n3%2042/v/{variable}/p/2022{category}?formato=json'
-        path, receipts[field] = helper.download(url, cache)
-        if receipts[field]['sha256_local'] != SIDRA_SHA256[field]:
+    for field in FIELDS:
+        query = CONFIG['sidra_basico'][field]
+        path, receipts[field] = helper.download(query['url'], cache)
+        if receipts[field]['sha256_local'] != query['sha256']:
             raise ValueError(f'Snapshot SIDRA {field} mudou; revisar a nova edição antes de usar')
         parsed[field] = parse_sidra(json.loads(path.read_text()), field)
     if parsed['populacao'].keys() != parsed['domicilios'].keys():
         raise ValueError('Inventários SIDRA divergentes')
     def indicators(level, code): return {f: parsed[f][(level, code)] for f in FIELDS}
     municipalities = {code: indicators('6', code) for level, code in parsed['populacao'] if level == '6'}
-    ids = json.loads((output / 'setores/42/4205407.inventory.json').read_text())['ids']
-    for kind in ('basico', 'dicionario_basico'):
+    for kind in ('basico', 'dicionario_basico', 'dicionario_malha'):
         path, receipts[kind] = helper.download(SOURCES[kind], cache)
-        if receipts[kind]['sha256_local'] != PINNED_SHA256[kind]:
-            raise ValueError(f'Edição/hash {kind} divergente')
-        if kind == 'dicionario_basico': verify_dictionary(path)
-        else: basic = path
-    territory, basic_rows = {}, {}
-    sectors = extract_sectors(source_rows(basic, encoding='cp1252'), ids, territory, basic_rows)
-    totals = reconcile(sectors, municipalities['4205407'])
-    paths = {}
-    for kind in ('setores_sc', 'dicionario_malha'):
-        paths[kind], receipts[kind] = helper.download(SOURCES[kind], cache)
         if receipts[kind]['sha256_local'] != PINNED_SHA256[kind]: raise ValueError(f'Edição/hash {kind} divergente')
-    neighborhood_source = verify_neighborhood_sources(paths, territory)
-    neighborhood_source['recibos'] = {k: receipts[k] for k in ('basico', 'setores_sc', 'dicionario_malha')}
-    groups = neighborhood_groups(sectors, territory, municipalities['4205407'])
-    reconcile({k: v['indicadores'] for k, v in groups.items()}, municipalities['4205407'])
-    # A UF cartográfica e os consolidados municipais devem ter inventários iguais.
-    mun_ids = json.loads((output / 'municipios/42.inventory.json').read_text())['ids']
-    compare_inventory(list(municipalities), mun_ids, 'SIDRA municípios vs geometria SC')
+        if kind == 'dicionario_basico': verify_dictionary(path)
+        elif kind == 'basico': basic = path
+        else: dictionary = path
+    # O CSV nacional é lido uma vez; reter somente os municípios configurados.
+    basic_by_city = {code: [] for code in MUNICIPALITIES}
+    for row in source_rows(basic, encoding='cp1252'):
+        if row['CD_MUN'] in basic_by_city: basic_by_city[row['CD_MUN']].append(row)
+    details, basics, reports = {}, {}, {}
+    for city, cfg in MUNICIPALITIES.items():
+        uf = cfg['cd_uf']
+        ids = json.loads((output / f'setores/{uf}/{city}.inventory.json').read_text())['ids']
+        territory, basic_rows = {}, {}
+        sectors = extract_sectors(basic_by_city[city], ids, territory, basic_rows)
+        totals = reconcile(sectors, municipalities[city])
+        spec = PREPARED_UFS[uf]['setores']
+        sector_path, sector_receipt = helper.download(spec['url'], cache)
+        if sector_receipt['sha256_local'] != spec['sha256']: raise ValueError('Edição setorial divergente')
+        neighborhood_source = verify_neighborhood_sources({'setores_uf':sector_path, 'dicionario_malha':dictionary}, territory, basic_rows)
+        neighborhood_source['recibos'] = {'basico':receipts['basico'], 'setores_uf':sector_receipt, 'dicionario_malha':receipts['dicionario_malha']}
+        groups = neighborhood_groups(sectors, territory, municipalities[city])
+        reconcile({k:v['indicadores'] for k,v in groups.items()}, municipalities[city])
+        details[city] = {'cd_uf':uf, 'cd_mun':city, 'indicadores':municipalities[city], 'setores':sectors,
+            'bairros':groups, 'vinculo_bairro':neighborhood_source, 'arquivo_vinculo_bairro':f'{city}.bairros.json',
+            'territorios_setores':{code:district_identity(row) for code,row in basic_rows.items()}}
+        basics[city] = basic_rows
+        reports[city] = {'nome':cfg['nome'], 'setores':len(sectors),'municipio':totals,'sidra_igual_setores':True,
+            'bairros_identificados':sum(g['cd_bairro'] is not None for g in groups.values()),
+            'setores_sem_bairro':len(groups.get(f'sem_bairro:{city}',{}).get('cd_setores',[])),
+            'setores_populacao_zero':sum(s['populacao']['valor']==0 for s in sectors.values()),
+            'fonte_bairros':neighborhood_source}
+    for uf in PREPARED_UFS:
+        mun_ids = json.loads((output / f'municipios/{uf}.inventory.json').read_text())['ids']
+        compare_inventory([c for c in municipalities if c.startswith(uf)], mun_ids, f'SIDRA municípios vs geometria {uf}')
     sources = {field: {
         'fonte': 'IBGE · Censo Demográfico 2022', 'referencia': '2022-08-01',
         'unidade': QUERIES[field][2], 'universo': QUERIES[field][3] + (' · todas as espécies' if field == 'domicilios' else ''),
@@ -268,36 +313,29 @@ def prepare(repo: Path):
     metadata = {'schema_version': 'demografia-1', 'tipo_dados': 'oficiais', 'referencia': '2022-08-01'}
     index = dict(metadata, fontes=sources, brasil=indicators('1', '1'),
         regioes={c: {'nome': n, 'indicadores': indicators('2', c)} for c, n in REGIOES.items()},
-        ufs={c: indicators('3', c) for c, *_ in UFS}, arquivos_uf={'42': 'uf/42.json'})
-    uf = dict(metadata, cd_uf='42', municipios=municipalities, arquivos_municipio={'4205407': '../municipios/42/4205407.json'})
-    detail = dict(metadata, cd_uf='42', cd_mun='4205407', indicadores=municipalities['4205407'], setores=sectors, bairros=groups, vinculo_bairro=neighborhood_source)
-    lookup = neighborhood_lookup(sectors, groups, neighborhood_source)
-    detail['arquivo_vinculo_bairro'] = '4205407.bairros.json'
-    report = {'status': 'approved_demography_only', 'generated_at': datetime.now(timezone.utc).isoformat(),
-        'consolidados_diretos': {'brasil': index['brasil'], 'sc': index['ufs']['42']},
-        'reconciliation': {'setores': len(sectors), 'municipio': totals, 'sidra_igual_setores': True},
-        'bairros': {'status': 'approved_declared_membership', 'fonte': neighborhood_source,
-            'bairros_identificados': sum(g['cd_bairro'] is not None for g in groups.values()),
-            'setores_sem_bairro': len(groups.get('sem_bairro:4205407', {}).get('cd_setores', [])),
-            'totais_sem_bairro': groups.get('sem_bairro:4205407', {}).get('indicadores'),
-            'setores_populacao_zero': sum(s['populacao']['valor'] == 0 for s in sectors.values()),
-            'domicilios_em_setores_populacao_zero': sum(s['domicilios']['valor'] for s in sectors.values() if s['populacao']['valor'] == 0),
-            'particao_integral': True, 'totais_reconciliados': totals},
-        'fontes': sources, 'scope': 'Brasil/regiões/UFs consolidados diretos; municípios SC consolidados; setores somente Florianópolis',
-        'limitations': ['Sem renda, responsáveis, PIB, Gini ou TSE. Bairros somente pelo vínculo declarado; sem limites próprios/dissolve.', 'SHA256 local não é assinatura IBGE.']}
-    # Só escrever após todas as conferências: falhas não substituem uma entrega aprovada.
+        ufs={c: indicators('3', c) for c, *_ in UFS}, arquivos_uf={uf:f'uf/{uf}.json' for uf in PREPARED_UFS})
+    # Só escrever após todas as conferências básicas, sem substituir fixtures.
     helper.atomic_json(destination / 'brasil.json', index)
-    helper.atomic_json(destination / 'uf/42.json', uf)
-    helper.atomic_json(destination / 'municipios/42/4205407.bairros.json', lookup)
-    helper.atomic_json(destination / 'municipios/42/4205407.json', detail)
+    for uf in PREPARED_UFS:
+        payload = dict(metadata, cd_uf=uf, municipios={c:v for c,v in municipalities.items() if c.startswith(uf)},
+            arquivos_municipio={c:f'../municipios/{uf}/{c}.json' for c,m in MUNICIPALITIES.items() if m['cd_uf'] == uf})
+        helper.atomic_json(destination / f'uf/{uf}.json', payload)
+    for city, detail in details.items():
+        detail.update(metadata)
+        folder = destination / f'municipios/{detail["cd_uf"]}'
+        lookup = neighborhood_lookup(detail['setores'], detail['bairros'], detail['vinculo_bairro'])
+        helper.atomic_json(folder / f'{city}.bairros.json', lookup)
+        helper.atomic_json(folder / f'{city}.json', detail)
+    report = {'status':'approved_demography_only', 'generated_at':datetime.now(timezone.utc).isoformat(),
+        'municipios':reports, 'fontes':sources, 'scope':'Consolidados oficiais diretos; detalhe dos municípios configurados'}
     helper.atomic_json(repo / 'data/raw/demography.audit.json', report)
     catalog_path = output / 'catalogo.json'
     catalog = json.loads(catalog_path.read_text())
     catalog.update(estatisticas='demografia-1', demografia='statistics/brasil.json')
     helper.atomic_json(catalog_path, catalog)
     from etl_pipeline.census_themes import prepare_themes
-    prepare_themes(repo, detail, basic_rows)
-    print(json.dumps(report['reconciliation'], ensure_ascii=False))
+    prepare_themes(repo, details, basics)
+    print(json.dumps(reports, ensure_ascii=False))
     return report
 
 if __name__ == '__main__':

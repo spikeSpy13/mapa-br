@@ -83,7 +83,7 @@ test('busca por nome e navegação Florianópolis → bairro → setor → bairr
   await unknownSector.press('Enter');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(`Bairro não identificado na fonte — Setor ${unknownCode}`);
   await expect(page.getByTestId('sector-neighborhood')).toContainText('Não informado na fonte');
-  await page.getByRole('button', { name: 'Voltar ao bairro', exact: true }).click();
+  await page.getByRole('button', { name: 'Voltar ao grupo sem bairro', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Bairro não identificado na fonte');
   await expect(list.locator('[data-territory-id]')).toHaveCount(109);
   await page.setViewportSize({ width: 390, height: 844 });

@@ -9,7 +9,7 @@ import type { DemographicMetric, Demography, OfficialNeighborhood, NeighborhoodC
 
 type Entry = [string, OfficialNeighborhood];
 interface Props {
-  groups: Record<string, OfficialNeighborhood>; municipality: Demography; coverage?: NeighborhoodCoverage;
+  municipalityName?: string; groups: Record<string, OfficialNeighborhood>; municipality: Demography; coverage?: NeighborhoodCoverage;
   visibleIds: ReadonlySet<string>; metric: DemographicMetric; setMetric: (metric: DemographicMetric) => void;
   thematic?: { key: string; theme: string; bairros: Record<string,CensusRecord> };
   selected: readonly string[]; add: (id: string) => void; remove: (id: string) => void; clear: () => void;
@@ -30,7 +30,7 @@ function Values({ group }: { group: OfficialNeighborhood }) {
     <dt>{group.cd_bairro ? 'Setores associados' : 'Setores sem vínculo'}</dt><dd data-value="setores">{format(group.cd_setores.length)}</dd>
   </dl>;
 }
-export function NeighborhoodComparison({ groups, municipality, coverage, visibleIds, metric, setMetric, selected, add, remove, clear, open, sourceUrl, thematic }: Props) {
+export function NeighborhoodComparison({ municipalityName, groups, municipality, coverage, visibleIds, metric, setMetric, selected, add, remove, clear, open, sourceUrl, thematic }: Props) {
   const entries = useMemo(() => Object.entries(groups), [groups]);
   const thematicDefinition = thematic ? CENSUS_DEFINITIONS[thematic.key] : undefined;
   const numberFor = (id:string, b:OfficialNeighborhood) => thematic ? censusNumeric(thematic.bairros[id]?.[thematic.key]) : b.indicadores[metric].valor;
@@ -39,8 +39,8 @@ export function NeighborhoodComparison({ groups, municipality, coverage, visible
   const visible = ranked.filter(([id]) => visibleIds.has(id));
   const unknown = entries.filter(([, b]) => b.cd_bairro === null);
   return <section className="neighborhood-comparison" aria-label="Comparação entre bairros">
-    <div className="comparison-heading"><h3>Comparar bairros</h3><button className="neighborhood-action" disabled={!selected.length} onClick={clear}>Limpar comparação</button></div>
-    <p role="status" className="muted">{selected.length} de 3 bairros selecionados. {selected.length === 3 ? 'Limite atingido: remova um bairro para adicionar outro.' : 'Marque os bairros no ranking para comparar.'}</p>
+    <div className="comparison-heading"><h3>{ranked.length ? 'Comparar bairros' : 'Bairros e setores'}</h3>{!!ranked.length && <button className="neighborhood-action" disabled={!selected.length} onClick={clear}>Limpar comparação</button>}</div>
+    {!!ranked.length && <p role="status" className="muted">{selected.length} de 3 bairros selecionados. {selected.length === 3 ? 'Limite atingido: remova um bairro para adicionar outro.' : 'Marque os bairros no ranking para comparar.'}</p>}
     <p className="muted" data-testid="comparison-denominator">Total municipal completo: {display(municipality.populacao)} pessoas e {display(municipality.domicilios)} domicílios, incluindo os setores sem bairro identificado.</p>
     {coverage && <p className="muted">Associação territorial: {format(coverage.com_bairro)} de {format(coverage.total_setores)} setores. Essa cobertura por setores é diferente da participação na população ou nos domicílios.</p>}
     {!!selected.length && <div className="comparison-cards" data-testid="comparison-cards">{selected.map(id => {
@@ -51,10 +51,10 @@ export function NeighborhoodComparison({ groups, municipality, coverage, visible
       </article> : null;
     })}</div>}
     <section className="official-neighborhoods" data-testid="official-neighborhoods" aria-labelledby="official-neighborhoods-title">
-      <h4 id="official-neighborhoods-title">Bairros de Florianópolis</h4>
-      <label className="ranking-metric">Indicador do ranking <select aria-label="Indicador do ranking" value={thematic ? `censo_${thematic.key}` : metric} onChange={e => { if (!e.target.value.startsWith('censo_')) setMetric(e.target.value as DemographicMetric); }}>
+      <h4 id="official-neighborhoods-title">Bairros de {municipalityName ?? 'município selecionado'}</h4>
+      {!!ranked.length && <label className="ranking-metric">Indicador do ranking <select aria-label="Indicador do ranking" value={thematic ? `censo_${thematic.key}` : metric} onChange={e => { if (!e.target.value.startsWith('censo_')) setMetric(e.target.value as DemographicMetric); }}>
         <option value="populacao">População</option><option value="domicilios">Domicílios</option>{thematic && <option value={`censo_${thematic.key}`}>{thematicDefinition?.rotulo}</option>}
-      </select></label>
+      </select></label>}
       <p className="muted">Ordem decrescente, desempate pelo nome. Abra um bairro para destacar seus setores. Bairros e distritos são recortes distintos.</p>
       <p className="muted" data-testid="ranking-scale">Escala comum: 0 a {format(max, thematicDefinition?.unidade === 'BRL/mês' ? 'renda_media_responsavel' : metric)} {thematicDefinition?.unidade ?? (metric === 'populacao' ? 'pessoas' : 'domicílios')}. Valores parciais/indisponíveis ficam ao final, sem barra proporcional.</p>
       <ol className="ranking-rows neighborhood-ranking" aria-label={`Ranking por ${(thematicDefinition?.rotulo ?? METRICAS_CATALOGO[metric].label).toLocaleLowerCase('pt-BR')}`}>{visible.map(([id, b]) => {
@@ -68,7 +68,7 @@ export function NeighborhoodComparison({ groups, municipality, coverage, visible
           <label className="compare-toggle"><input type="checkbox" aria-label={`Comparar ${b.nome}`} checked={checked} disabled={!checked && selected.length >= 3} onChange={() => checked ? remove(id) : add(id)} />Comparar</label>
         </li>;
       })}</ol>
-      {!visible.length && <p role="status">Nenhum bairro encontrado para a busca.</p>}
+      {!visible.length && <p role="status">{ranked.length ? 'Nenhum bairro encontrado para a busca.' : 'Nenhum bairro oficial identificado nas fontes deste município. Consulte os setores no grupo sem bairro; distritos não são bairros.'}</p>}
     </section>
     {unknown.map(([id, b]) => <section className="unidentified-neighborhood" aria-label="Setores sem bairro identificado" key={id}>
       <h4>{neighborhoodName(b)}</h4><p className="muted">Fora do ranking de bairros oficiais. Seus valores integram o total municipal usado nas participações.</p>

@@ -1,6 +1,9 @@
 # Censo 2022 — temas oficiais (censo-temas-1)
 
 Extensão da entrega demográfica da main `9bb3d20`, conferida em **27/10/2026**.
+A inclusão de Agudos a partir de `6a8b59c` e a configuração de novos municípios
+estão em [PREPARED_MUNICIPALITIES.md](PREPARED_MUNICIPALITIES.md). As quantidades
+de setores/bairros abaixo descrevem Florianópolis; não limitam outras cidades.
 Referência estatística **1º/08/2022**. Preserva o contrato demo 2.0, as malhas,
 o inventário e os indicadores populacao/domicilios físicos. O produtor é uma
 extensão de `prepare_census_demography.py`, com o mesmo download/cache do 03,
@@ -8,7 +11,8 @@ parser numérico e aritmética Decimal do projeto; não há consultas IBGE no br
 
 ## Fontes, edições e correções
 
-O [manifesto canônico](manifests/census_themes.json) contém URLs completas, SHA256,
+O [manifesto de variáveis](manifests/census_themes.json) e a
+[configuração compartilhada](manifests/prepared_municipalities.json) contêm URLs completas, SHA256,
 edição, coluna textual de ligação, encoding, variável, definição literal,
 unidade, universo, denominador, categorias SIDRA e regra de agregação **por indicador**.
 A preparação verifica essas definições nos XLSX, não só códigos de variáveis.
