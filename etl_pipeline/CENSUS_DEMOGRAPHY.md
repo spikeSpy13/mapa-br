@@ -174,9 +174,15 @@ correspondência com os grupos auditados, nomes, inventário e recibos. Só é
 carregado ao abrir Florianópolis; não integra a abertura nacional. O painel
 permite consultar esse arquivo. Dados legados sem o campo continuam aceitos.
 
-Em Florianópolis, a lista de setores é organizada por bairro, com botões nos
-cabeçalhos para abrir o bairro. A busca por nome ou código ignora caixa e acentos,
-e encontra partes do nome: “centro” encontra Centro e Ingleses Centro. Cada linha,
+Em Florianópolis, a lista **Bairros de Florianópolis** fica visível no painel
+municipal, sem precisar expandir uma seção. Seus botões mostram nome, código e
+quantidade de setores, com o grupo sem bairro ao final. A lista setorial continua
+organizada por bairro, com botões nos cabeçalhos para abrir o bairro. A busca
+compartilhada por nome ou código ignora caixa e acentos,
+e encontra partes do nome: “centro” encontra Centro e Ingleses Centro. Buscar
+um código setorial também mantém visível o bairro ao qual ele pertence; os
+109 códigos sem vínculo encontram o grupo explícito. Botões nativos preservam
+Tab/Enter/Espaço, foco visível e toque. Cada linha,
 tooltip e detalhe setorial exibe “Nome do bairro — Setor [código]”, com nomes
 somente da fonte. Nos 109 casos sem vínculo, a interface exibe
 **Bairro não identificado na fonte**, sem criar um bairro oficial.
@@ -193,19 +199,16 @@ Teclado, toque, hover temporário e seleção persistente usam os componentes ex
 
 ## Atualizar a cópia Mac mapa-br-spike
 
-Este diff incremental parte do commit `020b792` de spikeSpy13/mapa-br. As mudanças
-desta entrega estão locais; para transferi-las, salve o patch entregue em
-`~/Downloads/bairros.patch` e aplique somente na cópia **mapa-br-spike**:
+A navegação por bairros já está no Git de **spikeSpy13/mapa-br**. Atualize somente
+a cópia **mapa-br-spike**, preservando alterações locais; não é necessário aplicar
+patches das entregas anteriores:
 
 ```bash
 cd mapa-br-spike
 git remote get-url origin
 git pull --ff-only origin main
-git apply --check ~/Downloads/bairros.patch
-git apply ~/Downloads/bairros.patch
 ```
 
-Se a cópia já contém as mesmas alterações, não aplique o patch novamente.
 Com Python >=3.11 e Node 24, aproveitando o cache/cartografia já preparados:
 
 ```bash
@@ -224,8 +227,8 @@ npm run dev
 Se faltarem as malhas locais, execute antes da demografia, na raiz:
 `.venv/bin/python etl_pipeline/prepare_official_geometries.py --audit-file data/raw/official_geometry.setup.audit.json`.
 As saídas oficiais são ignoradas pelo Git e são preparadas com cache verificado;
-nenhum comando modifica a cópia do André ou publica o aplicativo. O patch não
-inclui dados pesados. A suíte Python completa exige também `'pyarrow>=18,<24'`,
+nenhum comando modifica a cópia do André ou publica o aplicativo. Os dados
+pesados não são versionados. A suíte Python completa exige também `'pyarrow>=18,<24'`,
 conforme o bloco de validação acima.
 
 

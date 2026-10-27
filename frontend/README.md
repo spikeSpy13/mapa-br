@@ -291,9 +291,13 @@ básico e no DBF oficial da mesma referência censitária. Em Florianópolis há
 bairros declarados e 109 setores sem bairro informado, conservados num grupo
 explícito. Os 88 grupos particionam os 1.004 setores e reconciliam com o município.
 
-A lista municipal organiza os setores por bairro. Pesquise pelo nome (sem
-exigir acentos) ou pelos códigos textuais de bairro/setor e selecione o cabeçalho
-do bairro. A seleção destaca seus setores, enquadra o mapa e filtra a lista;
+No município, **Bairros de Florianópolis** aparece diretamente abaixo da busca,
+com os 87 bairros pelo nome e o grupo sem vínculo ao final. Cada botão identifica
+código e quantidade de setores. A lista setorial permanece organizada por bairro.
+Pesquise pelo nome (sem exigir acentos) ou pelos códigos textuais de bairro/setor:
+o código de um setor também revela o bairro correspondente na lista de bairros.
+Selecione o bairro pelo botão ou pelo cabeçalho da lista setorial. A seleção
+destaca seus setores, enquadra o mapa e filtra a lista;
 o painel mostra os totais do grupo. Cada setor continua com sua própria cor,
 valor e tooltip. A legenda usa os mesmos quantis setoriais do município.
 

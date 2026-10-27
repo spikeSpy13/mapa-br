@@ -106,3 +106,58 @@ test('setor com população zero conserva seus sete domicílios', async ({ page 
   await page.locator('.brand').hover();
   await page.screenshot({ path: `${output}/setor-zero-populacao.png`, fullPage: true });
 });
+
+test('bairros visíveis no município: busca setorial, teclado e referência territorial', async ({ page }) => {
+  await page.goto('/?level=municipio&cd_uf=42&cd_mun=4205407');
+  const groups = page.getByRole('region', { name: 'Bairros de Florianópolis' });
+  const search = page.getByRole('searchbox', { name: 'Buscar nome ou código' });
+  await expect(groups).toBeVisible();
+  await expect(groups.getByRole('button')).toHaveCount(88);
+  await expect(groups).toContainText('bairros e distritos são recortes distintos');
+  await expect(groups.getByRole('button').last()).toContainText('Bairro não identificado na fonte');
+  await expect(page.getByTestId('official-map')).toHaveAttribute('data-ready', 'true');
+  await page.screenshot({ path: `${output}/municipio-bairros-visiveis.png`, fullPage: true });
+  await search.fill('420540705000001');
+  await expect(groups.getByRole('button')).toHaveCount(1);
+  const centro = groups.getByRole('button', { name: 'Selecionar bairro Centro', exact: true });
+  await search.press('Tab');
+  await expect(centro).toBeFocused();
+  expect(await centro.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('solid');
+  await page.screenshot({ path: `${output}/busca-setor-bairro-teclado.png`, fullPage: true });
+  await centro.press('Space');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Centro');
+  await expect(page.getByRole('region', { name: 'Lista de territórios' }).locator('[data-territory-id]')).toHaveCount(97);
+  await page.getByRole('button', { name: /Voltar nível/ }).click();
+  await expect(groups).toBeVisible();
+  await search.fill('bairro inexistente na fonte');
+  await expect(groups.getByRole('button')).toHaveCount(0);
+  await expect(groups.getByRole('status')).toHaveText('Nenhum bairro encontrado para a busca.');
+  const detail = JSON.parse(readFileSync('public/geo/official/statistics/municipios/42/4205407.json', 'utf8'));
+  const code = detail.bairros['sem_bairro:4205407'].cd_setores[0];
+  await search.fill(code);
+  await expect(groups.getByRole('button')).toHaveCount(1);
+  await expect(groups.getByRole('button')).toContainText('Bairro não identificado na fonte');
+});
+
+test.describe('bairros por toque', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+  test('município → bairro → setor → bairro → município mantém identificação', async ({ page }) => {
+    await page.goto('/?level=municipio&cd_uf=42&cd_mun=4205407');
+    await page.getByRole('searchbox', { name: 'Buscar nome ou código' }).fill('centro');
+    const groups = page.getByRole('region', { name: 'Bairros de Florianópolis' });
+    await expect(groups.getByRole('button')).toHaveCount(2);
+    await expect(page.getByTestId('official-map')).toHaveAttribute('data-ready', 'true');
+    await page.screenshot({ path: `${output}/municipio-bairros-celular.png`, fullPage: true });
+    await groups.getByRole('button', { name: 'Selecionar bairro Centro', exact: true }).tap();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Centro');
+    await page.locator('[data-territory-id="420540705000001"]').tap();
+    await expect(page.getByTestId('sector-neighborhood')).toContainText('Centro');
+    await expect(page.getByTestId('sector-neighborhood')).toContainText('420540705000001');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByRole('button', { name: 'Voltar ao bairro', exact: true }).tap();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Centro');
+    await page.getByRole('button', { name: 'Ver todos os setores de Florianópolis' }).tap();
+    await expect(groups).toBeVisible();
+    await expect(groups.getByRole('button')).toHaveCount(88);
+  });
+});

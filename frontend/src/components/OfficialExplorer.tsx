@@ -51,6 +51,9 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
   const goBack = () => parent ? navigate(parent) : voltarNivel();
   const normalizeSearch = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR');
   const matches = (text: string) => normalizeSearch(text).includes(normalizeSearch(search));
+  const neighborhoodOptions = Object.entries(stats?.bairros ?? {})
+    .filter(([id, b]) => matches(`${neighborhoodName(b)} ${b.cd_bairro ?? ''} ${id}`) || b.cd_setores.some(matches))
+    .sort(([, a], [, b]) => Number(a.cd_bairro === null) - Number(b.cd_bairro === null) || neighborhoodName(a).localeCompare(neighborhoodName(b), 'pt-BR'));
   const selectedCodes = useMemo(() => bairro ? new Set(bairro.cd_setores) : undefined, [bairro]);
   const filtered = rows.filter(r => (!selectedCodes || selectedCodes.has(r.id)) && matches(`${r.name} ${r.id} ${sectorNeighborhood(stats, r.id)?.group.cd_bairro ?? ''}`))
     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
@@ -101,11 +104,13 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
       {bairro && <div className="origin-badge">{bairro.cd_bairro === null ? neighborhoodName(bairro) : `Bairro declarado IBGE: ${bairro.cd_bairro}`} · {bairro.cd_setores.length} setores
         <button className="neighborhood-action" onClick={() => 'cd_mun' in nav && navigate({ level: 'municipio', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun })}>Ver todos os setores de Florianópolis</button>
       </div>}
-      {nav.level === 'municipio' && stats?.bairros && <details className="source-details" data-testid="official-neighborhoods"><summary>Bairros declarados e setores sem bairro</summary>
-        <p>Vínculo CSV e DBF conferido por CD_SETOR. Totais agregados dos setores, não uma tabela consolidada de bairros.</p>
-        <div className="ranking-rows" role="region" aria-label="Agrupamentos declarados">{Object.entries(stats.bairros).filter(([id, b]) => matches(`${neighborhoodName(b)} ${b.cd_bairro ?? ''} ${id}`)).sort(([, a], [, b]) => neighborhoodName(a).localeCompare(neighborhoodName(b), 'pt-BR')).map(([id, b]) => <button className="ranking-row" key={id} data-group-id={id} onClick={() => navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: id })}><span className="rank-name"><strong>{neighborhoodName(b)}</strong><small>{b.cd_bairro ?? 'Sem código de bairro'} · {b.cd_setores.length} setores</small></span><span>{display(b.indicadores[metric])} →</span></button>)}</div>
-      </details>}
       <div className="ranking"><h3>Navegar por território</h3><label className="muted" htmlFor="territory-search">Buscar nome ou código</label><input id="territory-search" type="search" value={search} onChange={e => setSearch(e.target.value)} />
+        {nav.level === 'municipio' && stats?.bairros && <section className="official-neighborhoods" data-testid="official-neighborhoods" aria-labelledby="official-neighborhoods-title">
+          <h4 id="official-neighborhoods-title">Bairros de Florianópolis</h4>
+          <p className="muted">Selecione um bairro para destacar seus setores no mapa. Associação IBGE, referência Censo 2022; bairros e distritos são recortes distintos.</p>
+          <div className="ranking-rows">{neighborhoodOptions.map(([id, b]) => <button className="ranking-row" key={id} data-group-id={id} aria-label={`Selecionar bairro ${neighborhoodName(b)}`} onFocus={hover.clear} onClick={() => { hover.clear(); navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: id }); }}><span className="rank-name"><strong>{neighborhoodName(b)}</strong><small>{b.cd_bairro ?? 'Sem código de bairro'} · {b.cd_setores.length} setores</small></span><span aria-hidden="true">→</span></button>)}</div>
+          {!neighborhoodOptions.length && <p role="status">Nenhum bairro encontrado para a busca.</p>}
+        </section>}
         <div ref={hover.listRef} role="region" className="ranking-rows official-territories" aria-label="Lista de territórios">{[...sections.entries()].map(([id, section]) => <section className="neighborhood-sector-group" key={id} data-neighborhood-section={section.id}>
           {section.label && <h3>{section.id && 'cd_mun' in nav ? <button className="neighborhood-heading" data-neighborhood-id={section.id} aria-pressed={nav.level === 'bairro' && nav.id_agregacao === section.id} aria-label={`Abrir bairro ${section.label}`} onClick={() => 'cd_mun' in nav && navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: section.id! })}>{section.label}<small>{section.rows.length} setores na lista</small></button> : section.label}</h3>}
           {section.rows.map(r => <button className={`ranking-row territory-interactive${hover.preview?.id === r.id ? ' is-hovered' : ''}${selectedId === r.id ? ' is-selected' : ''}`} key={r.id} data-territory-id={r.id} data-hovered={hover.preview?.id === r.id ? 'true' : undefined} aria-pressed={selectedId === r.id} {...hover.handlers(r.id)} onClick={() => { hover.clear(); navigate(r.nav); }}><span className="rank-name"><strong>{r.name}</strong><small>{r.id}</small></span><span>{r.value} <span aria-hidden="true">{selectedId === r.id ? '✓' : '→'}</span></span></button>)}

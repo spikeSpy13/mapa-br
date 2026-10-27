@@ -210,3 +210,7 @@ h1 { font-size: clamp(24px, 3vw, 40px); letter-spacing: -1.3px; margin: 8px 0 25
 .neighborhood-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 10px; border: 1px solid #365149; border-radius: 4px; background: #132128; color: #b9efd2; text-align: left; }
 .neighborhood-heading small { color: #9ab5bf; font-size: 10px; font-weight: 400; }
 .official-shell h1, .official-shell .analytics h2 { overflow-wrap: anywhere; }
+.official-neighborhoods { margin-bottom: 24px; }
+.official-neighborhoods h4 { margin: 0; color: #b9efd2; font-size: 14px; }
+.official-neighborhoods .ranking-rows { max-height: 230px; padding: 6px; }
+.official-neighborhoods .ranking-row { min-height: 44px; padding: 10px 8px; }
