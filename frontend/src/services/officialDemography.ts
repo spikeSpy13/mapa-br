@@ -4,7 +4,7 @@ import type { Navigation } from '../state/navigation';
 import type { MapGeometry } from '../types/geometry';
 import { demographicIndexSchema, demographicUfSchema, demographicMunicipalitySchema, neighborhoodLookupSchema, type NeighborhoodCoverage, type DemographicIndex, type Demography, type OfficialNeighborhood, type NeighborhoodSource } from '../types/demography';
 export type OfficialStatistics = { status: 'indisponiveis' } | {
-  status: 'disponiveis'; index: DemographicIndex; summary?: Demography; rows: Record<string, Demography>; bairros?: Record<string, OfficialNeighborhood>; vinculoBairro?: NeighborhoodSource; setores?: Record<string, Demography>; unavailableStatistics?: string; neighborhoodBySector?: ReadonlyMap<string, string>; coverage?: NeighborhoodCoverage; neighborhoodLookupUrl?: string;
+  status: 'disponiveis'; index: DemographicIndex; summary?: Demography; municipalitySummary?: Demography; rows: Record<string, Demography>; bairros?: Record<string, OfficialNeighborhood>; vinculoBairro?: NeighborhoodSource; setores?: Record<string, Demography>; unavailableStatistics?: string; neighborhoodBySector?: ReadonlyMap<string, string>; coverage?: NeighborhoodCoverage; neighborhoodLookupUrl?: string;
 };
 export const UNKNOWN_NEIGHBORHOOD = 'Bairro não identificado na fonte';
 export function neighborhoodName(group?: OfficialNeighborhood) { return group?.cd_bairro ? group.nome : UNKNOWN_NEIGHBORHOOD; }
@@ -23,6 +23,7 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
   let summary: Demography | undefined = nav.level === 'pais' ? index.brasil : nav.level === 'regiao' ? index.regioes[nav.cd_regiao]?.indicadores : nav.level === 'uf' ? index.ufs[nav.cd_uf] : undefined;
   let neighborhoodBySector: ReadonlyMap<string, string> | undefined, coverage: NeighborhoodCoverage | undefined;
   let neighborhoodLookupUrl: string | undefined;
+  let municipalitySummary: Demography | undefined;
   let bairros: Record<string, OfficialNeighborhood> | undefined, vinculoBairro: NeighborhoodSource | undefined, setores: Record<string, Demography> | undefined;
   let rows: Record<string, Demography> = geo.field === 'cd_uf' ? index.ufs : {};
   if ('cd_uf' in nav && index.arquivos_uf[nav.cd_uf]) {
@@ -44,6 +45,7 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
         if (mun.cd_mun !== nav.cd_mun || mun.cd_uf !== nav.cd_uf || (['populacao', 'domicilios'] as const).some(f => mun.indicadores[f].valor !== uf.municipios[nav.cd_mun]?.[f].valor || mun.indicadores[f].status !== uf.municipios[nav.cd_mun]?.[f].status)) throw new Error('Resumo municipal incompatível com o detalhe.');
         const ids = geo.collection.features.map(f => f.properties?.cd_setor as string);
         if (geo.field !== 'cd_setor' || ids.length !== Object.keys(mun.setores).length || ids.some(c => !(c in mun.setores))) throw new Error('Inventários estatístico/cartográfico divergentes.');
+        municipalitySummary = mun.indicadores;
         bairros = mun.bairros; vinculoBairro = mun.vinculo_bairro; setores = mun.setores;
         if (bairros) {
           neighborhoodBySector = buildSectorToGroupMap(Object.entries(bairros).map(([id_agregacao, b]) => ({ ...b, id_agregacao })));
@@ -65,5 +67,5 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
       }
     }
   }
-  return { status: 'disponiveis', index, summary, rows, bairros, vinculoBairro, setores, neighborhoodBySector, coverage, neighborhoodLookupUrl };
+  return { status: 'disponiveis', index, summary, municipalitySummary, rows, bairros, vinculoBairro, setores, neighborhoodBySector, coverage, neighborhoodLookupUrl };
 }

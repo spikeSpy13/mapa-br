@@ -2,6 +2,7 @@ import type { Feature, Geometry } from 'geojson';
 import type { IndicadoresCanonica } from '../types/contract';
 import type { MetricaAtiva } from '../store/useGeoStore';
 import type { Navigation } from '../state/navigation';
+import type { Demography, PercentageMeasure } from '../types/demography';
 export interface MetricaMeta {
   id: MetricaAtiva; label: string; unidade: 'moeda' | 'moeda_bi' | 'inteiro' | 'proporcao';
   disponivelEmBairro: boolean; descricao: string;
@@ -30,6 +31,9 @@ export function formatarValorIndicador(value: number | null | undefined, metric:
     default: return integer.format(value);
   }
 }
+export const formatarMedidaDemografica = (value?: Demography['populacao']) => value?.status === 'sigilo' ? 'Sob sigilo' : value?.status === 'divulgada' ? formatarValorIndicador(value.valor) : 'Indisponível';
+/** Texto já arredondado no produtor Decimal; não reconverter em float para exibir. */
+export const formatarPercentualExato = (value?: PercentageMeasure) => value?.status === 'sigilo' ? 'Sob sigilo' : value?.status === 'divulgada' ? `${value.valor.replace('.', ',')}%` : 'Indisponível';
 export function extrairValorMetrica(ind: IndicadoresCanonica | null | undefined, metric: MetricaAtiva): number | null {
   if (!ind) return null;
   if (metric === 'cobertura_renda_proporcao') {

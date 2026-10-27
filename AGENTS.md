@@ -405,3 +405,14 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
   Cor/legenda permanece setorial; só o KPI do bairro é agregado. Voltar do setor
   resolve o pai pelo vínculo, nunca por prefixo. Sem vínculo, usar o grupo
   explícito “Bairro não identificado na fonte” ou município se não há partição.
+
+## Comparação de bairros oficiais
+
+- Reusar totais auditados em bairros.indicadores; `participacao_municipal` é um
+  campo opcional separado, com percentual decimal textual (0–100, duas casas),
+  calculado no produtor Python com Decimal/HALF_EVEN. Denominador municipal
+  completo, inclusive sem bairro. Validação exata no cliente, sem floats.
+- O ranking inclui só bairros oficiais; grupo sem vínculo fica separado. Barras
+  usam escala comum municipal. Comparação (até três IDs) fica na store existente,
+  independente da seleção do mapa; persiste no mesmo município e limpa ao mudar
+  de município. Não forçar soma dos percentuais arredondados a 100%.

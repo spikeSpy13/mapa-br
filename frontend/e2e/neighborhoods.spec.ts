@@ -112,15 +112,17 @@ test('bairros visíveis no município: busca setorial, teclado e referência ter
   const groups = page.getByRole('region', { name: 'Bairros de Florianópolis' });
   const search = page.getByRole('searchbox', { name: 'Buscar nome ou código' });
   await expect(groups).toBeVisible();
-  await expect(groups.getByRole('button')).toHaveCount(88);
-  await expect(groups).toContainText('bairros e distritos são recortes distintos');
-  await expect(groups.getByRole('button').last()).toContainText('Bairro não identificado na fonte');
+  await expect(groups.getByRole('button')).toHaveCount(87);
+  await expect(groups).toContainText('Bairros e distritos são recortes distintos');
+  const unknown = page.getByRole('region', { name: 'Setores sem bairro identificado', exact: true });
+  await expect(unknown).toContainText('Bairro não identificado na fonte');
   await expect(page.getByTestId('official-map')).toHaveAttribute('data-ready', 'true');
   await page.screenshot({ path: `${output}/municipio-bairros-visiveis.png`, fullPage: true });
   await search.fill('420540705000001');
   await expect(groups.getByRole('button')).toHaveCount(1);
   const centro = groups.getByRole('button', { name: 'Selecionar bairro Centro', exact: true });
   await search.press('Tab');
+  await page.keyboard.press('Tab');
   await expect(centro).toBeFocused();
   expect(await centro.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('solid');
   await page.screenshot({ path: `${output}/busca-setor-bairro-teclado.png`, fullPage: true });
@@ -135,8 +137,8 @@ test('bairros visíveis no município: busca setorial, teclado e referência ter
   const detail = JSON.parse(readFileSync('public/geo/official/statistics/municipios/42/4205407.json', 'utf8'));
   const code = detail.bairros['sem_bairro:4205407'].cd_setores[0];
   await search.fill(code);
-  await expect(groups.getByRole('button')).toHaveCount(1);
-  await expect(groups.getByRole('button')).toContainText('Bairro não identificado na fonte');
+  await expect(groups.getByRole('button')).toHaveCount(0);
+  await expect(unknown.getByRole('button')).toBeVisible();
 });
 
 test.describe('bairros por toque', () => {
@@ -158,6 +160,6 @@ test.describe('bairros por toque', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Centro');
     await page.getByRole('button', { name: 'Ver todos os setores de Florianópolis' }).tap();
     await expect(groups).toBeVisible();
-    await expect(groups.getByRole('button')).toHaveCount(88);
+    await expect(groups.getByRole('button')).toHaveCount(87);
   });
 });

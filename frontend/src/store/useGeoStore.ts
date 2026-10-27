@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 import { z } from 'zod';
 import { navigationSearch, parseNavigation, validateNavigation } from '../state/navigation';
 import type { Navigation } from '../state/navigation';
-import { cdUfSchema, cdRegiaoSchema } from '../types/contract';
+import { cdUfSchema, cdRegiaoSchema, cdBairroSchema } from '../types/contract';
 
 export type NivelDrillDown = Navigation['level'];
 const metricSchema = z.enum(['renda_media_responsavel', 'pib_per_capita', 'pib_total_bi',
@@ -17,6 +17,11 @@ export interface GeoState {
   routeError: string;
   metrica: MetricaAtiva;
   regioesPorUf: Readonly<Record<string, string>>;
+  comparacaoMunicipio: string | null;
+  bairrosComparados: readonly string[];
+  adicionarBairroComparado: (id: string) => void;
+  removerBairroComparado: (id: string) => void;
+  limparComparacao: () => void;
   navigate: (nav: Navigation) => void;
   sincronizarUrl: () => void;
   registrarRegioes: (items: readonly { cd_uf: string; cd_regiao: string }[]) => void;
@@ -36,8 +41,21 @@ function readRoute(browser: Window) {
 }
 
 export function createGeoStore(browser: Window = window) {
+  const initialRoute = readRoute(browser);
+  const comparisonScope = (nav: Navigation, current: GeoState) => 'cd_mun' in nav && nav.cd_mun !== current.comparacaoMunicipio ?
+    { comparacaoMunicipio: nav.cd_mun, bairrosComparados: [] } : {};
   return createStore<GeoState>((set, get) => ({
-    ...readRoute(browser), metrica: 'renda_media_responsavel', regioesPorUf: {},
+    ...initialRoute, metrica: 'renda_media_responsavel', regioesPorUf: {},
+    comparacaoMunicipio: 'cd_mun' in initialRoute.navigation ? initialRoute.navigation.cd_mun : null, bairrosComparados: [],
+    adicionarBairroComparado: id => {
+      const nav = get().navigation;
+      if (!('cd_mun' in nav) || typeof id !== 'string' || !id.startsWith('bairro:')) throw new Error('Selecione um bairro oficial do município.');
+      const code = cdBairroSchema.parse(id.slice('bairro:'.length));
+      if (!code.startsWith(nav.cd_mun)) throw new Error('Bairro de outro município.');
+      set(state => state.bairrosComparados.includes(id) || state.bairrosComparados.length >= 3 ? state : { bairrosComparados: [...state.bairrosComparados, id] });
+    },
+    removerBairroComparado: id => set(state => ({ bairrosComparados: state.bairrosComparados.filter(c => c !== id) })),
+    limparComparacao: () => set({ bairrosComparados: [] }),
     navigate: nav => {
       const clean = validateNavigation(nav);
       const url = new URL(browser.location.href);
@@ -45,9 +63,9 @@ export function createGeoStore(browser: Window = window) {
       url.search = navigationSearch(clean);
       if (modo) url.searchParams.set('modo', modo);
       if (url.href !== browser.location.href) browser.history.pushState(null, '', url);
-      set({ navigation: clean, routeError: '' });
+      set({ navigation: clean, routeError: '', ...comparisonScope(clean, get()) });
     },
-    sincronizarUrl: () => set(readRoute(browser)),
+    sincronizarUrl: () => { const route = readRoute(browser); set({ ...route, ...comparisonScope(route.navigation, get()) }); },
     registrarRegioes: items => {
       const mapping: Record<string, string> = {};
       for (const item of items) {

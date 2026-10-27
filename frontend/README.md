@@ -315,3 +315,24 @@ toque e hover temporário continuam pela infraestrutura existente. Zero,
 ausência, sigilo e demonstração são preservados. Fontes, limitações e comandos
 para atualizar **mapa-br-spike** no Mac estão em
 [CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md).
+
+## Comparação de bairros oficiais
+
+A lista de bairros agora oferece ranking por população/domicílios, valor absoluto,
+participação no total municipal completo e barras com escala comum. O grupo sem
+bairro fica separado, com seus valores preservados. A busca existente filtra os
+bairros sem alterar a escala ou o denominador. As participações percentuais usam
+Decimal/HALF_EVEN no produtor, com duas casas textuais; não são contagens inteiras.
+
+Marque **Comparar** para escolher até três bairros. Os cartões exibem população,
+domicílios, participações e quantidade de setores. Use **Remover** ou **Limpar
+comparação**. Explorar um bairro/setor do mesmo município preserva a escolha;
+selecionar outro município limpa a comparação. Marcar bairros não seleciona
+polígonos nem altera a URL. No celular, os cartões ficam empilhados com seus rótulos.
+
+Na raiz, reexecute `.venv/bin/python etl_pipeline/prepare_census_demography.py`;
+em `frontend/`, execute `npm test`, `npm run build` e `npm run test:e2e`.
+O arquivo demográfico antigo continua abrindo, com percentuais indisponíveis até
+o novo preparo. `comparison.spec.ts` cobre ranking, denominadores, limite de três,
+navegação, remoção, mudança de município, dados legados, teclado e toque.
+Veja a metodologia em [CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md).

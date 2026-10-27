@@ -5,6 +5,27 @@ import { fixtures } from '../test/fixtures';
 
 beforeEach(() => window.history.replaceState(null, '', '/'));
 describe('store geográfica compartilhada', () => {
+  it('compara no máximo três bairros e preserva o escopo municipal na navegação e no histórico', () => {
+    const store = createGeoStore(), a = store.getState();
+    a.selecionarMunicipio('42', '4205407');
+    for (const id of ['bairro:4205407001', 'bairro:4205407002', 'bairro:4205407003', 'bairro:4205407004', 'bairro:4205407001']) a.adicionarBairroComparado(id);
+    expect(store.getState().bairrosComparados).toEqual(['bairro:4205407001', 'bairro:4205407002', 'bairro:4205407003']);
+    a.navigate({ level: 'setor', cd_uf: '42', cd_mun: '4205407', cd_setor: '420540705000001' });
+    expect(store.getState().bairrosComparados).toHaveLength(3);
+    a.navigate({ level: 'bairro', cd_uf: '42', cd_mun: '4205407', id_agregacao: 'bairro:4205407001' });
+    expect(store.getState().bairrosComparados).toHaveLength(3);
+    a.removerBairroComparado('bairro:4205407002');
+    expect(store.getState().bairrosComparados).toHaveLength(2);
+    expect(() => a.adicionarBairroComparado('bairro:3550308001')).toThrow();
+    expect(() => a.adicionarBairroComparado('sem_bairro:4205407')).toThrow();
+    expect(() => a.adicionarBairroComparado(4205407001 as unknown as string)).toThrow();
+    a.limparComparacao(); expect(store.getState().bairrosComparados).toEqual([]);
+    a.adicionarBairroComparado('bairro:4205407001');
+    a.selecionarMunicipio('42', '4209102'); expect(store.getState().bairrosComparados).toEqual([]);
+    a.selecionarMunicipio('42', '4205407'); a.adicionarBairroComparado('bairro:4205407001');
+    window.history.replaceState(null, '', '?level=municipio&cd_uf=35&cd_mun=3550308'); a.sincronizarUrl();
+    expect(store.getState().bairrosComparados).toEqual([]);
+  });
   function ready() {
     const store = createGeoStore();
     store.getState().registrarRegioes(brasilSchema.parse(fixtures['brasil.json']).ufs.map(u => u.metadata));

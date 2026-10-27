@@ -6,6 +6,7 @@ Somente população e domicílios físicos. Sem campos de renda ou imputação.
 from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
+from decimal import Decimal, ROUND_HALF_EVEN, localcontext
 import importlib
 import io
 import json
@@ -136,7 +137,24 @@ def verify_neighborhood_links(territory, records):
     compare_inventory(list(seen), list(territory), 'CSV básico vs DBF: vínculo bairro')
 
 
-def neighborhood_groups(sectors, territory):
+def municipal_share(numerator, denominator):
+    """Percentual do município completo; decimal textual, duas casas HALF_EVEN."""
+    if denominator['status'] == 'divulgada' and denominator['valor'] == 0:
+        return {'valor': None, 'status': 'ausente'}
+    if numerator['status'] == 'sigilo' or denominator['status'] == 'sigilo':
+        return {'valor': None, 'status': 'sigilo'}
+    if numerator['status'] != 'divulgada' or denominator['status'] != 'divulgada':
+        return {'valor': None, 'status': 'ausente'}
+    n = nonnegative(numerator['valor'], 'numerador', integer=True)
+    d = nonnegative(denominator['valor'], 'denominador', integer=True)
+    if n > d: raise ValueError('Numerador excede total municipal')
+    with localcontext() as context:
+        context.prec = max(28, len(str(n)) + len(str(d)) + 6)
+        value = (Decimal(n) * 100 / Decimal(d)).quantize(Decimal('0.01'), rounding=ROUND_HALF_EVEN)
+    return {'valor': format(value, '.2f'), 'status': 'divulgada'}
+
+
+def neighborhood_groups(sectors, territory, municipality=None):
     compare_inventory(list(territory), list(sectors), 'vínculo bairros vs setores')
     groups = {}
     for code, (bairro, name) in territory.items():
@@ -152,6 +170,8 @@ def neighborhood_groups(sectors, territory):
             values = [sectors[c][field] for c in group['cd_setores']]
             status = 'sigilo' if any(v['status'] == 'sigilo' for v in values) else 'ausente' if any(v['status'] == 'ausente' for v in values) else 'divulgada'
             group['indicadores'][field] = {'valor': sum(v['valor'] for v in values) if status == 'divulgada' else None, 'status': status}
+        if municipality is not None:
+            group['participacao_municipal'] = {f: municipal_share(group['indicadores'][f], municipality[f]) for f in FIELDS}
     return groups
 
 
@@ -231,7 +251,7 @@ def prepare(repo: Path):
         if receipts[kind]['sha256_local'] != PINNED_SHA256[kind]: raise ValueError(f'Edição/hash {kind} divergente')
     neighborhood_source = verify_neighborhood_sources(paths, territory)
     neighborhood_source['recibos'] = {k: receipts[k] for k in ('basico', 'setores_sc', 'dicionario_malha')}
-    groups = neighborhood_groups(sectors, territory)
+    groups = neighborhood_groups(sectors, territory, municipalities['4205407'])
     reconcile({k: v['indicadores'] for k, v in groups.items()}, municipalities['4205407'])
     # A UF cartográfica e os consolidados municipais devem ter inventários iguais.
     mun_ids = json.loads((output / 'municipios/42.inventory.json').read_text())['ids']

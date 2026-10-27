@@ -5,16 +5,16 @@ import { neighborhoodName, sectorName, sectorNeighborhood } from '../services/of
 import { loadOfficialCartography } from '../services/officialGeometry';
 import { navigationSearch, type Navigation } from '../state/navigation';
 import { useGeoStore } from '../store/useGeoStore';
-import { criarEscalaCoropletica, CHOROPLETH_COLORS, formatarValorIndicador, METRICAS_CATALOGO } from '../lib/geoStats';
-import type { DemographicMetric, Demography } from '../types/demography';
+import { criarEscalaCoropletica, CHOROPLETH_COLORS, formatarValorIndicador, METRICAS_CATALOGO, formatarMedidaDemografica as display } from '../lib/geoStats';
+import type { DemographicMetric } from '../types/demography';
 import type { MapRow } from './MapViewport';
 import { useTerritoryPreview } from './useTerritoryPreview';
 import { TerritoryInspector } from './TerritoryInspector';
-const display = (value: Demography[DemographicMetric] | undefined) => value?.status === 'sigilo' ? 'Sob sigilo' : value?.status === 'divulgada' ? formatarValorIndicador(value.valor) : 'Indisponível';
+import { NeighborhoodComparison } from './NeighborhoodComparison';
 const MapViewport = lazy(() => import('./MapViewport'));
 
 export function OfficialExplorer({ loader }: { loader: DataLoader }) {
-  const { navigation: nav, navigate, registrarRegioes, voltarNivel, routeError, metrica, setMetrica } = useGeoStore(s => s);
+  const { navigation: nav, navigate, registrarRegioes, voltarNivel, routeError, metrica, setMetrica, bairrosComparados, adicionarBairroComparado, removerBairroComparado, limparComparacao } = useGeoStore(s => s);
   const client = useQueryClient();
   const [search, setSearch] = useState('');
   const hover = useTerritoryPreview(navigationSearch(nav));
@@ -105,12 +105,10 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
         <button className="neighborhood-action" onClick={() => 'cd_mun' in nav && navigate({ level: 'municipio', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun })}>Ver todos os setores de Florianópolis</button>
       </div>}
       <div className="ranking"><h3>Navegar por território</h3><label className="muted" htmlFor="territory-search">Buscar nome ou código</label><input id="territory-search" type="search" value={search} onChange={e => setSearch(e.target.value)} />
-        {nav.level === 'municipio' && stats?.bairros && <section className="official-neighborhoods" data-testid="official-neighborhoods" aria-labelledby="official-neighborhoods-title">
-          <h4 id="official-neighborhoods-title">Bairros de Florianópolis</h4>
-          <p className="muted">Selecione um bairro para destacar seus setores no mapa. Associação IBGE, referência Censo 2022; bairros e distritos são recortes distintos.</p>
-          <div className="ranking-rows">{neighborhoodOptions.map(([id, b]) => <button className="ranking-row" key={id} data-group-id={id} aria-label={`Selecionar bairro ${neighborhoodName(b)}`} onFocus={hover.clear} onClick={() => { hover.clear(); navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: id }); }}><span className="rank-name"><strong>{neighborhoodName(b)}</strong><small>{b.cd_bairro ?? 'Sem código de bairro'} · {b.cd_setores.length} setores</small></span><span aria-hidden="true">→</span></button>)}</div>
-          {!neighborhoodOptions.length && <p role="status">Nenhum bairro encontrado para a busca.</p>}
-        </section>}
+        {stats?.bairros && stats.municipalitySummary && 'cd_mun' in nav && <NeighborhoodComparison groups={stats.bairros} municipality={stats.municipalitySummary} coverage={stats.coverage}
+          visibleIds={new Set(neighborhoodOptions.map(([id]) => id))} metric={metric} setMetric={setMetrica} selected={bairrosComparados}
+          add={adicionarBairroComparado} remove={removerBairroComparado} clear={limparComparacao} sourceUrl={stats.index.fontes.populacao.setorial.recibo.url}
+          open={id => { hover.clear(); navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: id }); }} />}
         <div ref={hover.listRef} role="region" className="ranking-rows official-territories" aria-label="Lista de territórios">{[...sections.entries()].map(([id, section]) => <section className="neighborhood-sector-group" key={id} data-neighborhood-section={section.id}>
           {section.label && <h3>{section.id && 'cd_mun' in nav ? <button className="neighborhood-heading" data-neighborhood-id={section.id} aria-pressed={nav.level === 'bairro' && nav.id_agregacao === section.id} aria-label={`Abrir bairro ${section.label}`} onClick={() => 'cd_mun' in nav && navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: section.id! })}>{section.label}<small>{section.rows.length} setores na lista</small></button> : section.label}</h3>}
           {section.rows.map(r => <button className={`ranking-row territory-interactive${hover.preview?.id === r.id ? ' is-hovered' : ''}${selectedId === r.id ? ' is-selected' : ''}`} key={r.id} data-territory-id={r.id} data-hovered={hover.preview?.id === r.id ? 'true' : undefined} aria-pressed={selectedId === r.id} {...hover.handlers(r.id)} onClick={() => { hover.clear(); navigate(r.nav); }}><span className="rank-name"><strong>{r.name}</strong><small>{r.id}</small></span><span>{r.value} <span aria-hidden="true">{selectedId === r.id ? '✓' : '→'}</span></span></button>)}

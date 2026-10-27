@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { cdMunSchema, cdSetorSchema, cdUfSchema, cdBairroSchema } from './contract';
+import { roundRatioHalfEven } from '../lib/exactRatio';
 /** Contrato parcial explícito: não é um payload estatístico 2.0 com renda fictícia. */
 export const measureSchema = z.discriminatedUnion('status', [
   z.object({ status: z.literal('divulgada'), valor: z.number().int().nonnegative().safe() }).strict(),
@@ -9,6 +10,20 @@ export const measureSchema = z.discriminatedUnion('status', [
 export const demographySchema = z.object({ populacao: measureSchema, domicilios: measureSchema }).strict();
 export type Demography = z.infer<typeof demographySchema>;
 export type DemographicMetric = keyof Demography;
+export const percentageMeasureSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('divulgada'), valor: z.string().regex(/^(?:100\.00|(?:0|[1-9]\d?)\.\d{2})$/) }).strict(),
+  z.object({ status: z.literal('ausente'), valor: z.null() }).strict(),
+  z.object({ status: z.literal('sigilo'), valor: z.null() }).strict(),
+]);
+export type PercentageMeasure = z.infer<typeof percentageMeasureSchema>;
+/** Apenas valida os percentuais do produtor Decimal; não imputa percentuais legados. */
+export function expectedMunicipalShare(n: Demography[DemographicMetric], d: Demography[DemographicMetric]): PercentageMeasure {
+  if (d.status === 'divulgada' && d.valor === 0) return { status: 'ausente', valor: null };
+  if (n.status === 'sigilo' || d.status === 'sigilo') return { status: 'sigilo', valor: null };
+  if (n.status !== 'divulgada' || d.status !== 'divulgada') return { status: 'ausente', valor: null };
+  const q = roundRatioHalfEven(BigInt(n.valor), BigInt(d.valor), 10000n)!;
+  return { status: 'divulgada', valor: `${q / 100n}.${(q % 100n).toString().padStart(2, '0')}` };
+}
 const receipt = z.object({ url: z.string().url(), url_final: z.string().url(), sha256_local: z.string().regex(/^[a-f0-9]{64}$/), bytes: z.number().int().positive(), downloaded_at: z.string() }).strict();
 const source = z.object({ fonte: z.string(), referencia: z.literal('2022-08-01'), unidade: z.string(), universo: z.string(),
   consolidado: z.object({ tabela: z.string(), variavel: z.string(), recibo: receipt }).strict(),
@@ -25,7 +40,9 @@ export const demographicIndexSchema = z.object({ ...metadata, fontes: z.object({
 export type DemographicIndex = z.infer<typeof demographicIndexSchema>;
 export const demographicUfSchema = z.object({ ...metadata, cd_uf: cdUfSchema, municipios: z.record(cdMunSchema, demographySchema), arquivos_municipio: z.record(cdMunSchema, z.string().min(1)) }).strict()
   .superRefine((p, ctx) => { if (Object.keys(p.municipios).some(c => !c.startsWith(p.cd_uf)) || Object.keys(p.arquivos_municipio).some(c => !(c in p.municipios))) ctx.addIssue({ code: 'custom', message: 'Municípios incompatíveis com a UF' }); });
-const neighborhoodSchema = z.object({ cd_bairro: cdBairroSchema.nullable(), nome: z.string().min(1), cd_setores: z.array(cdSetorSchema).min(1), indicadores: demographySchema }).strict();
+const neighborhoodSchema = z.object({ cd_bairro: cdBairroSchema.nullable(), nome: z.string().min(1), cd_setores: z.array(cdSetorSchema).min(1), indicadores: demographySchema,
+  participacao_municipal: z.object({ populacao: percentageMeasureSchema, domicilios: percentageMeasureSchema }).strict().optional(),
+}).strict();
 export type OfficialNeighborhood = z.infer<typeof neighborhoodSchema>;
 const neighborhoodSource = z.object({ metodo: z.literal('atributos_oficiais_csv_dbf'), campos: z.tuple([z.literal('CD_SETOR'), z.literal('CD_BAIRRO'), z.literal('NM_BAIRRO')]), membro_dbf: z.string().min(1), recibos: z.object({ basico: receipt, setores_sc: receipt, dicionario_malha: receipt }).strict() }).strict();
 export type NeighborhoodSource = z.infer<typeof neighborhoodSource>;
@@ -54,6 +71,11 @@ export const demographicMunicipalitySchema = z.object({ ...metadata, cd_uf: cdUf
           seen.add(code);
         }
         for (const f of ['populacao', 'domicilios'] as const) {
+          // Refinements Zod podem continuar com contagens inválidas; não passar floats/NaN a BigInt.
+          if (group.participacao_municipal && [group.indicadores[f], p.indicadores[f]].every(m => m.valor === null || Number.isSafeInteger(m.valor) && m.valor >= 0)) {
+            const expected = expectedMunicipalShare(group.indicadores[f], p.indicadores[f]), actual = group.participacao_municipal[f];
+            if (actual.status !== expected.status || actual.valor !== expected.valor) ctx.addIssue({ code: 'custom', message: 'Participação incompatível com total municipal completo / HALF_EVEN' });
+          }
           const values = group.cd_setores.map(c => p.setores[c]?.[f]);
           if (values.some(v => !v)) continue;
           const status = values.some(v => v!.status === 'sigilo') ? 'sigilo' : values.some(v => v!.status === 'ausente') ? 'ausente' : 'divulgada';

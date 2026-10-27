@@ -214,3 +214,29 @@ h1 { font-size: clamp(24px, 3vw, 40px); letter-spacing: -1.3px; margin: 8px 0 25
 .official-neighborhoods h4 { margin: 0; color: #b9efd2; font-size: 14px; }
 .official-neighborhoods .ranking-rows { max-height: 230px; padding: 6px; }
 .official-neighborhoods .ranking-row { min-height: 44px; padding: 10px 8px; }
+.neighborhood-comparison { border: 1px solid #35504c; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+.comparison-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.comparison-heading h3 { margin: 0; }
+.comparison-heading button:disabled { opacity: .5; }
+.comparison-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+.comparison-card { min-width: 0; padding: 12px; border: 1px solid #3c685a; border-radius: 6px; background: #122229; overflow-wrap: anywhere; }
+.comparison-card h4, .unidentified-neighborhood h4 { margin: 0 0 8px; color: #b9efd2; font-size: 14px; }
+.comparison-card > small { color: #9ab5bf; font-size: 10px; }
+.comparison-values { display: grid; gap: 5px; margin: 14px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.comparison-values dt { color: #9ab5bf; font-size: 11px; }
+.comparison-values dd { margin: 0 0 9px; color: #e7f5ef; font-weight: 600; }
+.unidentified-neighborhood { border-top: 1px solid #35504c; padding-top: 16px; }
+.unidentified-neighborhood .comparison-values { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.ranking-metric { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; margin-top: 12px; }
+.neighborhood-ranking { margin: 0; list-style-position: inside; padding: 6px; }
+.neighborhood-rank-item { display: flex; align-items: center; border-bottom: 1px solid #263a42; gap: 8px; }
+.neighborhood-rank-item .ranking-row { flex: 1; min-width: 0; border-bottom: 0; display: grid; grid-template-columns: minmax(0, 1fr) 140px; }
+.neighborhood-rank-value { text-align: right; font-variant-numeric: tabular-nums; }
+.neighborhood-rank-value strong { color: #b9efd2; font-size: 13px; white-space: nowrap; }
+.neighborhood-rank-value small { display: block; color: #9ab5bf; font-size: 10px; margin-top: 6px; }
+.neighborhood-bar { display: block; margin-top: 10px; height: 6px; background: #22353f; }
+.neighborhood-bar i { display: block; height: 100%; background: #85d7ac; }
+.compare-toggle { display: flex; flex-direction: column; align-items: center; padding: 6px; font-size: 10px; color: #b9cfc7; cursor: pointer; }
+.ranking .compare-toggle input { width: 22px; height: 22px; margin: 5px; accent-color: #85d7ac; cursor: pointer; }
+@media (max-width: 1000px) { .comparison-cards { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .neighborhood-comparison { padding: 12px; } .neighborhood-rank-item { flex-wrap: wrap; gap: 0; } .neighborhood-rank-item .ranking-row { flex-basis: 100%; grid-template-columns: minmax(0, 1fr) 110px; } .compare-toggle { flex-direction: row; min-height: 44px; } }

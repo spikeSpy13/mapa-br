@@ -89,3 +89,21 @@ class NeighborhoodLookupTests(unittest.TestCase):
         duplicate['sem_bairro:4205407']['cd_setores'].append('420540705000001')
         with self.assertRaises(ValueError): neighborhood_lookup(sectors, duplicate, {})
         with self.assertRaises(ValueError): neighborhood_lookup(sectors, {}, {})
+
+class MunicipalShareTests(unittest.TestCase):
+    def test_decimal_half_even_two_places_and_missing_denominator(self):
+        from etl_pipeline.prepare_census_demography import municipal_share
+        for n, d, expected in [(1, 32, '3.12'), (3, 32, '9.38'), (1, 20000, '0.00'), (3, 20000, '0.02'), (0, 10, '0.00'), (10, 10, '100.00')]:
+            self.assertEqual(municipal_share(measure(str(n), 'populacao'), measure(str(d), 'populacao')), {'valor': expected, 'status': 'divulgada'})
+        for n, d, status in [('0', '0', 'ausente'), ('X', '10', 'sigilo'), ('', '10', 'ausente'), ('1', '', 'ausente'), ('1', 'X', 'sigilo'), ('X', '0', 'ausente')]:
+            self.assertEqual(municipal_share(measure(n, 'populacao'), measure(d, 'populacao')), {'valor': None, 'status': status})
+        with self.assertRaises(ValueError): municipal_share(measure('11', 'populacao'), measure('10', 'populacao'))
+
+    def test_complete_municipal_denominator_keeps_unknown_group_and_counts(self):
+        from etl_pipeline.prepare_census_demography import neighborhood_groups
+        sectors = {'420540705000001': ind(3, 4), '420540705000002': ind(1, 6)}
+        groups = neighborhood_groups(sectors, {'420540705000001': ('4205407001', 'Centro'), '420540705000002': (None, None)}, ind(4, 10))
+        self.assertEqual(groups['bairro:4205407001']['participacao_municipal'], {'populacao': {'valor': '75.00', 'status': 'divulgada'}, 'domicilios': {'valor': '40.00', 'status': 'divulgada'}})
+        self.assertEqual(groups['sem_bairro:4205407']['participacao_municipal']['populacao']['valor'], '25.00')
+        for field, expected in [('populacao', 4), ('domicilios', 10)]:
+            self.assertEqual(sum(g['indicadores'][field]['valor'] for g in groups.values()), expected)

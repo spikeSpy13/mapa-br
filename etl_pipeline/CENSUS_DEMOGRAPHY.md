@@ -238,3 +238,53 @@ continuam disponíveis a partir do índice nacional. Quando só estatísticas
 municipais faltam, preserva-se a malha e os municípios ficam sem valores; quando
 falta a malha municipal, preserva-se o contorno da UF. Outros erros e contratos
 inválidos não são convertidos em ausência. Isso não relaxa as validações da fonte.
+
+## Ranking e comparação dos bairros
+
+A comparação usa os totais `bairros[id].indicadores` já reconciliados. Cada grupo,
+inclusive `sem_bairro:4205407`, recebe um campo opcional separado das contagens:
+
+```json
+"participacao_municipal": {
+  "populacao": {"valor": "7.88", "status": "divulgada"},
+  "domicilios": {"valor": "8.20", "status": "divulgada"}
+}
+```
+
+A unidade é **percentual (0–100)**, texto decimal com exatamente duas casas.
+O produtor calcula `Decimal(total_grupo) * 100 / Decimal(total_municipio)` e
+aplica `quantize(Decimal('0.01'), ROUND_HALF_EVEN)`. O denominador é SEMPRE
+`municipio.indicadores`, com todos os 1.004 setores, incluindo os 109 sem vínculo.
+Não usar só a soma dos bairros identificados, a seleção de até três bairros,
+a lista filtrada ou o setor/bairro atualmente aberto como denominador.
+
+Numerador zero com denominador positivo resulta em `"0.00"`; denominador zero
+resulta em `{valor:null,status:"ausente"}`. Ausência e sigilo continuam distintos;
+sigilo em numerador/denominador deixa a participação sob sigilo, salvo denominador
+zero conhecido (razão indefinida). Não divulgar uma soma parcial como total.
+As participações são arredondadas individualmente e podem não somar 100,00%.
+As contagens inteiras dos 88 grupos continuam conservando exatamente o município.
+
+O schema runtime valida cada percentual usando divisão inteira exata e HALF_EVEN
+(compartilhada com a aritmética do sidecar TSE); a exibição só troca ponto por
+vírgula no texto. Não existe cálculo binário intermediário dos percentuais.
+Arquivos legados sem `participacao_municipal` continuam aceitos, com percentuais
+indisponíveis na interface. Reexecute `prepare_census_demography.py` antes do build
+para preparar os campos novos. Não há nova fonte, loader, cache ou requisição.
+
+A lista municipal existente agora é um ranking dos **87 bairros oficiais**, por
+população ou domicílios em ordem decrescente, com desempate pelo nome e código.
+Ausentes/sigilosos ficam no final; zero continua divulgado. As barras usam uma
+escala comum de zero ao maior valor conhecido de todos os grupos do município,
+sem mudar a escala ao filtrar ou marcar bairros. A divisão numérica no navegador
+é usada apenas para a largura gráfica, nunca para os percentuais exibidos.
+O grupo sem bairro fica separado, com ambas as contagens, participações e setores.
+A cobertura do vínculo por quantidade de setores é descrita separadamente.
+
+A mesma store geográfica mantém até três IDs de bairros oficiais para comparar.
+Marcar/remover não muda seleção do mapa, URL, métrica ou KPIs. A escolha persiste
+entre município, bairro e setor do mesmo município; é limpa ao entrar em outro
+município, inclusive por histórico. Sair para UF/país mantém o escopo anterior
+até selecionar outro município. Não há persistência após recarregar a página.
+Os cartões apresentam os dois indicadores, as duas participações e os setores;
+ficam lado a lado em desktop e empilhados em telas menores, com rótulos completos.

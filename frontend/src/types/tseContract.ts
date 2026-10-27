@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { cdUfSchema, cdMunSchema, cdSetorSchema, type MunicipioPayload } from './contract';
 import { buildSectorToGroupMap } from '../services/sectorJoin';
+import { roundRatioHalfEven } from '../lib/exactRatio';
 
 export const cdMunTseSchema = z.string().regex(/^[0-9]{5}$/);
 export const nrZonaSchema = z.string().regex(/^[0-9]{4}$/);
@@ -14,12 +15,8 @@ export const CAMPOS_CONTAGEM_TSE = ['eleitores_aptos', 'comparecimento', 'absten
 /** Quatro casas decimais, ROUND_HALF_EVEN, sem divisão binária intermediária. */
 export function proporcaoTse(numerator: number, denominator: number): number | null {
   count.parse(numerator); count.parse(denominator);
-  if (denominator === 0) return null;
-  const n = BigInt(numerator) * 10000n, d = BigInt(denominator);
-  let q = n / d;
-  const remainder = n % d;
-  if (remainder * 2n > d || (remainder * 2n === d && q % 2n === 1n)) q += 1n;
-  return Number(q) / 10000; // projeção numérica, nunca um ID
+  const q = roundRatioHalfEven(BigInt(numerator), BigInt(denominator), 10000n);
+  return q === null ? null : Number(q) / 10000; // projeção numérica, nunca um ID
 }
 const indicatorsBase = z.object({
   eleitores_aptos: count, comparecimento: count, abstencao: count,
