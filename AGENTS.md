@@ -462,3 +462,19 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
   fica restrita à API, sem reinterpretar CSVs ou ausência de linha como zero.
 - Para acrescentar outra cidade: configuração + conferência/pins das fontes e
   preparo, sem novo motor/cache. Não atualizar hashes cegamente para passar validação.
+
+
+## Bauru — configuração e associação IBGE
+
+- Ler `etl_pipeline/BAURU.md` e `etl_pipeline/manifests/bauru.audit.json`. Bauru `3506003`, UF
+  `35`, é a terceira cidade da configuração comum, sem caminhos especiais no código.
+- Inventário observado: 682 setores, 638 em 12 bairros declarados e 44 sem bairro.
+  CD_SETOR/CD_BAIRRO/NM_BAIRRO coincidem no básico/DBF. Onze nomes contêm “Bacia”:
+  preservar os literais da fonte, sem presumir equivalência com loteamentos ou
+  setores de planejamento municipais. Distrito Tibiriçá não é bairro.
+- A investigação complementar na página de mapas da Seplan retornou 503/timeout.
+  Nenhuma geometria/vínculo municipal foi obtido: interseções não avaliadas,
+  sem atribuir setor por centroide ou ratear indicadores por área.
+- Agudos e Florianópolis e seus inventários/indicadores continuam preservados.
+  Os oito snapshots SIDRA temáticos incluem os três municípios. Básico SP/SC e
+  ZIPs nacionais/setoriais continuam os mesmos; não atualizar pins sem conferência.

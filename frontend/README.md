@@ -378,3 +378,18 @@ Na raiz, execute o preparador cartográfico e depois o demográfico, conforme os
 [comandos completos para o Mac](../etl_pipeline/PREPARED_MUNICIPALITIES.md).
 O [relatório de Agudos](../etl_pipeline/manifests/agudos.audit.json) contém a
 cobertura de cada indicador e a comprovação da preservação das malhas existentes.
+
+
+## Bauru — terceira cidade oficial
+
+A mesma configuração agora inclui Bauru (`3506003`): 682 setores e os 25 temas,
+com 12 bairros declarados no CD_BAIRRO/NM_BAIRRO do IBGE (638 setores), incluindo
+os nomes publicados “Centro” e “Bacia…”. Os 44 setores sem vínculo continuam
+acessíveis e integram os totais. Os nomes não são aliases de loteamentos ou de
+outros recortes municipais. Navegação, ranking, comparação, temas e carga por
+município reutilizam os componentes existentes; Agudos/Florianópolis permanecem.
+
+A consulta complementar à página de mapas da Seplan retornou HTTP 503/timeout.
+Nenhum vínculo municipal foi estimado. Fontes, cobertura por indicador, resultado
+da investigação e [comandos completos no Mac](../etl_pipeline/BAURU.md) estão
+no relatório; [auditoria estruturada](../etl_pipeline/manifests/bauru.audit.json).

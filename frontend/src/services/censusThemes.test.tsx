@@ -55,16 +55,20 @@ describe('novos temas oficiais',()=>{
  it('isola cache, caminho e inventário temático por município sem fixar contagens',async()=>{
   const national=fixture(),record=national.brasil;
   const make=(code:string,id:string)=>({schema_version:national.schema_version,referencia:national.referencia,tema:national.tema,metricas:national.metricas,fontes:national.fontes,cd_mun:code,municipio:record,bairros:{[`sem_bairro:${code}`]:record},setores:{[id]:record}});
-  const agudos=make('3500709','350070905000001'),floripa=make('4205407','420540705000001');
-  const fetcher=vi.fn(async(url:RequestInfo|URL)=>new Response(JSON.stringify(String(url).includes('/35/')?agudos:floripa)));
+  const agudos=make('3500709','350070905000001'),bauru=make('3506003','350600305000002'),floripa=make('4205407','420540705000001');
+  const fetcher=vi.fn(async(url:RequestInfo|URL)=>new Response(JSON.stringify(String(url).includes('/3506003.json')?bauru:String(url).includes('/35/')?agudos:floripa)));
   const loader=new DataLoader('https://local.test/geo/official/catalogo.json',fetcher as typeof fetch),signal=new AbortController().signal;
   const ref=(id:string)=>({ufs:[],setores:[id]});
   const first=await loadOfficialTheme(loader,'3500709','sexo_idade',signal,ref('350070905000001'));
   const second=await loadOfficialTheme(loader,'4205407','sexo_idade',signal,ref('420540705000001'));
   expect(first&&'cd_mun' in first&&first.cd_mun).toBe('3500709');expect(second&&'cd_mun' in second&&second.cd_mun).toBe('4205407');
-  await loadOfficialTheme(loader,'3500709','sexo_idade',signal,ref('350070905000001'));expect(fetcher).toHaveBeenCalledTimes(2);
+  const third=await loadOfficialTheme(loader,'3506003','sexo_idade',signal,ref('350600305000002'));expect(third&&'cd_mun' in third&&third.cd_mun).toBe('3506003');
+  await loadOfficialTheme(loader,'3500709','sexo_idade',signal,ref('350070905000001'));
+  await loadOfficialTheme(loader,'3506003','sexo_idade',signal,ref('350600305000002'));expect(fetcher).toHaveBeenCalledTimes(3);
   await expect(loadOfficialTheme(loader,'3500709','sexo_idade',signal,ref('350070905000002'))).rejects.toThrow(/Inventário/);
   await expect(loadOfficialTheme(loader,'3500709','sexo_idade',signal)).rejects.toThrow(/Inventário/);
+  const sameUf=new DataLoader('https://local.test/geo/official/catalogo.json',vi.fn(async()=>new Response(JSON.stringify(agudos))) as typeof fetch);
+  await expect(loadOfficialTheme(sameUf,'3506003','sexo_idade',signal,ref('350600305000002'))).rejects.toThrow(/outro município/);
   const wrong=new DataLoader('https://local.test/geo/official/catalogo.json',vi.fn(async()=>new Response(JSON.stringify(floripa))) as typeof fetch);
   await expect(loadOfficialTheme(wrong,'3500709','sexo_idade',signal,ref('350070905000001'))).rejects.toThrow(/outro município/);
  });

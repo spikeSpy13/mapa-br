@@ -1,5 +1,8 @@
 # Municípios oficiais configuráveis — Agudos e Florianópolis
 
+Atualização: [BAURU.md](BAURU.md) documenta a terceira cidade, seus bairros e a
+investigação municipal. Esta página conserva a auditoria da inclusão de Agudos.
+
 Entrega sobre **6a8b59c**, auditada em **27/10/2026**, referência Censo **1º/08/2022**.
 Inclui Agudos (`cd_uf="35"`, `cd_mun="3500709"`), preservando Florianópolis.
 Repositório `spikeSpy13/mapa-br`. Sem publicação do aplicativo ou mudanças na demo.
