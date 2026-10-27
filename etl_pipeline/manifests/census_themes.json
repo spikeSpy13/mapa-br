@@ -1,0 +1,1060 @@
+{
+  "versao": "censo-temas-1",
+  "referencia": "2022-08-01",
+  "arquivos": {
+    "demografia": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_demografia_BR.zip",
+      "sha256": "f8486233ce2f6559de76299390577c58d05f35cad07c46098e6e565949c8b269",
+      "arquivo": "Agregados_por_setores_demografia_BR.zip",
+      "edicao": "snapshot-2026-10-27",
+      "codigo": "CD_setor",
+      "encoding": "utf-8-sig"
+    },
+    "cor_ou_raca": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_cor_ou_raca_BR.zip",
+      "sha256": "cd4d628878f619b69c9e0d06e613011a05b67643edbb3cfc25735ae6b6941b1a",
+      "arquivo": "Agregados_por_setores_cor_ou_raca_BR.zip",
+      "edicao": "snapshot-2026-10-27",
+      "codigo": "CD_SETOR",
+      "encoding": "utf-8-sig"
+    },
+    "alfabetizacao": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_alfabetizacao_BR.zip",
+      "sha256": "3b2de94e0099d9b6aa32bf967b1e96321a0f6ee7df674bbac984c3b751c8a17b",
+      "arquivo": "Agregados_por_setores_alfabetizacao_BR.zip",
+      "edicao": "snapshot-2026-10-27",
+      "codigo": "CD_setor",
+      "encoding": "utf-8-sig"
+    },
+    "caracteristicas_domicilio1": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio1_BR_20261021.zip",
+      "sha256": "29db91e0a65776a317addbb1a2a1367c5ca2e1d72f5ffd223f80304800657810",
+      "arquivo": "Agregados_por_setores_caracteristicas_domicilio1_BR_20261021.zip",
+      "edicao": "20261021",
+      "codigo": "setor",
+      "encoding": "utf-8-sig"
+    },
+    "caracteristicas_domicilio2": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio2_BR_20250417.zip",
+      "sha256": "513f8a0d9c84b1325487f651f6d5d90bbc6f5ad7af60460b53598555ac008759",
+      "arquivo": "Agregados_por_setores_caracteristicas_domicilio2_BR_20250417.zip",
+      "edicao": "20250417",
+      "codigo": "setor",
+      "encoding": "utf-8-sig"
+    },
+    "renda_setor": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip",
+      "sha256": "141c83e7635674e7e2c941e55f98811e538fcbf2e1e1125b0aa7892c260f4a23",
+      "arquivo": "Agregados_por_setores_renda_responsavel_BR_20260508_csv.zip",
+      "edicao": "20260508",
+      "codigo": "CD_SETOR",
+      "encoding": "utf-8-sig"
+    },
+    "renda_municipio": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_municipios_renda_responsavel_BR_20260508_csv.zip",
+      "sha256": "ad52b9e9fe7bf67d45250799d6926e4f13752cfddc5f0f96a7147f9b5fb909fe",
+      "arquivo": "Agregados_por_municipios_renda_responsavel_BR_20260508_csv.zip",
+      "edicao": "20260508",
+      "codigo": "CD_MUN",
+      "encoding": "cp1252"
+    },
+    "renda_bairro": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_bairros_renda_responsavel_BR_20260508_csv.zip",
+      "sha256": "db2fda144b62d9badf21ac54fdf43dbba09e029fd21f27393df7c5f4ea7ac333",
+      "arquivo": "Agregados_por_bairros_renda_responsavel_BR_20260508_csv.zip",
+      "edicao": "20260508",
+      "codigo": "CD_BAIRRO",
+      "encoding": "cp1252"
+    },
+    "dicionario_renda": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/dicionario_de_dados_renda_responsavel_20260508.xlsx",
+      "sha256": "fea6e2b2439eeb167c6fa9c136ed7cb13ebcb06f4c875d634e3e2578c668a48d",
+      "arquivo": "dicionario_de_dados_renda_responsavel_20260508.xlsx",
+      "edicao": "20260508",
+      "codigo": "CD_MUN",
+      "encoding": "cp1252"
+    },
+    "dicionario": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+      "sha256": "0b8aedece57f6125d785b6aa2234cfd587e92dfb6ce5ca6ace8c67f140831344",
+      "arquivo": "dicionario_de_dados_agregados_por_setores_censitarios_20260520.xlsx",
+      "edicao": "20260520"
+    },
+    "basico": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20260520.zip",
+      "sha256": "ec04624286233d699ebe69c7b9625744a1cfdfc8352126f30245bdef5e9bdc63",
+      "arquivo": "Agregados_por_setores_basico_BR_20260520.zip",
+      "edicao": "20260520",
+      "codigo": "CD_SETOR",
+      "encoding": "cp1252"
+    }
+  },
+  "consultas": {
+    "sexo": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
+      "sha256": "c061bdd67e45aa1278d0c29416b3f3ed8a0c407e030a152f4374504a48f6019b",
+      "tabela": "9514",
+      "variavel": "93",
+      "rotulo_variavel": "População residente",
+      "unidade": "Pessoas",
+      "dimensoes": {
+        "D4C": {
+          "6794": "Total",
+          "4": "Homens",
+          "5": "Mulheres"
+        },
+        "D5C": {
+          "100362": "Total"
+        },
+        "D6C": {
+          "113635": "Total"
+        }
+      }
+    },
+    "idade": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
+      "sha256": "dea96f2885a86fa772f9eede7141fbe3663c2ce286dd01ed22e73a3ac9f63ff5",
+      "tabela": "9514",
+      "variavel": "93",
+      "rotulo_variavel": "População residente",
+      "unidade": "Pessoas",
+      "dimensoes": {
+        "D4C": {
+          "6794": "Total"
+        },
+        "D5C": {
+          "93070": "0 a 4 anos",
+          "93084": "5 a 9 anos",
+          "93085": "10 a 14 anos",
+          "93086": "15 a 19 anos",
+          "93087": "20 a 24 anos",
+          "93088": "25 a 29 anos",
+          "93089": "30 a 34 anos",
+          "93090": "35 a 39 anos",
+          "93091": "40 a 44 anos",
+          "93092": "45 a 49 anos",
+          "93093": "50 a 54 anos",
+          "93094": "55 a 59 anos",
+          "93095": "60 a 64 anos",
+          "93096": "65 a 69 anos",
+          "93097": "70 a 74 anos",
+          "93098": "75 a 79 anos",
+          "49108": "80 a 84 anos",
+          "49109": "85 a 89 anos",
+          "60040": "90 a 94 anos",
+          "60041": "95 a 99 anos",
+          "6653": "100 anos ou mais"
+        },
+        "D6C": {
+          "113635": "Total"
+        }
+      }
+    },
+    "raca": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/4205407/v/93/p/2022/c86/all?formato=json",
+      "sha256": "1567a0352917e9213618842fc7049caf02d46dab952d95fb3da65d5ffff96ddb",
+      "tabela": "9605",
+      "variavel": "93",
+      "rotulo_variavel": "População residente",
+      "unidade": "Pessoas",
+      "dimensoes": {
+        "D4C": {
+          "95251": "Total",
+          "2776": "Branca",
+          "2777": "Preta",
+          "2778": "Amarela",
+          "2779": "Parda",
+          "2780": "Indígena"
+        }
+      }
+    },
+    "alfabetizacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
+      "sha256": "8bbc4cb82b2479abb30cf48a1e148eb429f3603334510bd66311637c09bae32d",
+      "tabela": "9542",
+      "variavel": "950",
+      "rotulo_variavel": "Pessoas de 15 anos ou mais de idade",
+      "unidade": "Pessoas",
+      "dimensoes": {
+        "D4C": {
+          "93024": "Total",
+          "1023": "Alfabetizadas",
+          "1024": "Não alfabetizadas"
+        },
+        "D5C": {
+          "6794": "Total"
+        },
+        "D6C": {
+          "95251": "Total"
+        },
+        "D7C": {
+          "100362": "Total"
+        }
+      }
+    },
+    "habitacao": {
+      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/4205407/v/617/p/2022/c3/all?formato=json",
+      "sha256": "dd20d9a4a0ff185b8866d392bb4e18093220322e9ffb3a2c09bda36264fc323e",
+      "tabela": "4711",
+      "variavel": "617",
+      "rotulo_variavel": "Domicílios recenseados",
+      "unidade": "Domicílios",
+      "dimensoes": {
+        "D4C": {
+          "59993": "Total",
+          "9697": "Particular",
+          "2504": "Particular permanente",
+          "59998": "Particular permanente ocupado",
+          "59999": "Particular permanente ocupado - com entrevista",
+          "60000": "Particular permanente ocupado - sem entrevista",
+          "60001": "Particular permanente não ocupado",
+          "60002": "Particular permanente não ocupado - vago",
+          "60003": "Particular permanente não ocupado - uso ocasional",
+          "2505": "Particular improvisado",
+          "103995": "Coletivo",
+          "10004": "Coletivo - com morador",
+          "10005": "Coletivo - sem morador"
+        }
+      }
+    },
+    "agua": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/4205407/v/381/p/2022/c1821/all?formato=json",
+      "sha256": "dd124190356608cc9dcb26169aad21bb708d33e561dd3f9518e8d7fc2e74d1e1",
+      "tabela": "6803",
+      "variavel": "381",
+      "rotulo_variavel": "Domicílios particulares permanentes ocupados",
+      "unidade": "Unidades",
+      "dimensoes": {
+        "D4C": {
+          "72129": "Total",
+          "72144": "Possui ligação à rede geral e a utiliza como forma principal",
+          "72145": "Possui ligação à rede geral, mas utiliza principalmente outra forma",
+          "72146": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Poço profundo ou artesiano",
+          "72147": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Poço raso, freático ou cacimba",
+          "72148": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Fonte, nascente ou mina",
+          "72149": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Carro-pipa",
+          "72150": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Água da chuva armazenada",
+          "72151": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Rios, açudes, córregos, lagos e igarapés",
+          "72152": "Possui ligação à rede geral, mas utiliza principalmente outra forma - Outra",
+          "72153": "Não possui ligação com a rede geral",
+          "72154": "Não possui ligação com a rede geral - Poço profundo ou artesiano",
+          "72155": "Não possui ligação com a rede geral - Poço raso, freático ou cacimba",
+          "72156": "Não possui ligação com a rede geral - Fonte, nascente ou mina",
+          "72157": "Não possui ligação com a rede geral - Carro-pipa",
+          "72158": "Não possui ligação com a rede geral - Água da chuva armazenada",
+          "72159": "Não possui ligação com a rede geral - Rios, açudes, córregos, lagos e igarapés",
+          "72160": "Não possui ligação com a rede geral - Outra"
+        }
+      }
+    },
+    "esgoto": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/4205407/v/381/p/2022/c11558/all?formato=json",
+      "sha256": "9a2ff2c6b9a1bd6d9c905231d71c83db4507c260dce6a2cef78f1df024361df6",
+      "tabela": "6805",
+      "variavel": "381",
+      "rotulo_variavel": "Domicílios particulares permanentes ocupados",
+      "unidade": "Unidades",
+      "dimensoes": {
+        "D4C": {
+          "46292": "Total",
+          "46290": "Rede geral, rede pluvial ou fossa ligada à rede",
+          "72110": "Rede geral ou pluvial",
+          "72111": "Fossa séptica ou fossa filtro ligada à rede",
+          "72112": "Fossa séptica ou fossa filtro não ligada à rede",
+          "72113": "Fossa rudimentar ou buraco",
+          "92858": "Vala",
+          "72114": "Rio, lago, córrego ou mar",
+          "72115": "Outra forma",
+          "92861": "Não tinham banheiro nem sanitário"
+        }
+      }
+    },
+    "lixo": {
+      "url": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/4205407/v/381/p/2022/c67/all?formato=json",
+      "sha256": "31074edd8d5a6e5464e9c8877a7c42cc6747b91b5bb213b76a089bc3f1e23536",
+      "tabela": "6892",
+      "variavel": "381",
+      "rotulo_variavel": "Domicílios particulares permanentes ocupados",
+      "unidade": "Unidades",
+      "dimensoes": {
+        "D4C": {
+          "10972": "Total",
+          "2520": "Coletado",
+          "72120": "Coletado no domicílio por serviço de limpeza",
+          "72121": "Depositado em caçamba de serviço de limpeza",
+          "72122": "Queimado na propriedade",
+          "72123": "Enterrado na propriedade",
+          "72124": "Jogado em terreno baldio, encosta ou área pública",
+          "1091": "Outro destino"
+        }
+      }
+    }
+  },
+  "metricas": {
+    "homens": {
+      "tema": "sexo_idade",
+      "rotulo": "Homens",
+      "unidade": "pessoas",
+      "arquivo": "demografia",
+      "variaveis": [
+        "V01007"
+      ],
+      "definicoes": {
+        "V01007": "Sexo masculino"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "sexo",
+        "categorias": [
+          "4"
+        ],
+        "denominador": [
+          "6794"
+        ]
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente"
+    },
+    "mulheres": {
+      "tema": "sexo_idade",
+      "rotulo": "Mulheres",
+      "unidade": "pessoas",
+      "arquivo": "demografia",
+      "variaveis": [
+        "V01008"
+      ],
+      "definicoes": {
+        "V01008": "Sexo feminino"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "sexo",
+        "categorias": [
+          "5"
+        ],
+        "denominador": [
+          "6794"
+        ]
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente"
+    },
+    "idade_0_14": {
+      "tema": "sexo_idade",
+      "rotulo": "0–14 anos",
+      "unidade": "pessoas",
+      "arquivo": "demografia",
+      "variaveis": [
+        "V01031",
+        "V01032",
+        "V01033"
+      ],
+      "definicoes": {
+        "V01031": "0 a 4 anos",
+        "V01032": "5 a 9 anos",
+        "V01033": "10 a 14 anos"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "idade",
+        "categorias": [
+          "93070",
+          "93084",
+          "93085"
+        ],
+        "denominador": []
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente"
+    },
+    "idade_15_59": {
+      "tema": "sexo_idade",
+      "rotulo": "15–59 anos",
+      "unidade": "pessoas",
+      "arquivo": "demografia",
+      "variaveis": [
+        "V01034",
+        "V01035",
+        "V01036",
+        "V01037",
+        "V01038",
+        "V01039"
+      ],
+      "definicoes": {
+        "V01034": "15 a 19 anos",
+        "V01035": "20 a 24 anos",
+        "V01036": "25 a 29 anos",
+        "V01037": "30 a 39 anos",
+        "V01038": "40 a 49 anos",
+        "V01039": "50 a 59 anos"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "idade",
+        "categorias": [
+          "93086",
+          "93087",
+          "93088",
+          "93089",
+          "93090",
+          "93091",
+          "93092",
+          "93093",
+          "93094"
+        ],
+        "denominador": []
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente"
+    },
+    "idade_60_mais": {
+      "tema": "sexo_idade",
+      "rotulo": "60 anos ou mais",
+      "unidade": "pessoas",
+      "arquivo": "demografia",
+      "variaveis": [
+        "V01040",
+        "V01041"
+      ],
+      "definicoes": {
+        "V01040": "60 a 69 anos",
+        "V01041": "70 anos ou mais"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "idade",
+        "categorias": [
+          "93095",
+          "93096",
+          "93097",
+          "93098",
+          "49108",
+          "49109",
+          "60040",
+          "60041",
+          "6653"
+        ],
+        "denominador": []
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente"
+    },
+    "raca_branca": {
+      "tema": "cor_raca",
+      "rotulo": "Branca",
+      "unidade": "pessoas",
+      "arquivo": "cor_ou_raca",
+      "variaveis": [
+        "V01317"
+      ],
+      "definicoes": {
+        "V01317": "Cor ou raça é branca"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "raca",
+        "categorias": [
+          "2776"
+        ],
+        "denominador": [
+          "95251"
+        ]
+      },
+      "nota": "Cor ou raça declarada. Indígena neste quesito não equivale ao total de pessoas indígenas pelo critério ampliado. O total inclui ignorados omitidos das categorias.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente, segundo o quesito cor ou raça"
+    },
+    "raca_preta": {
+      "tema": "cor_raca",
+      "rotulo": "Preta",
+      "unidade": "pessoas",
+      "arquivo": "cor_ou_raca",
+      "variaveis": [
+        "V01318"
+      ],
+      "definicoes": {
+        "V01318": "Cor ou raça é preta"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "raca",
+        "categorias": [
+          "2777"
+        ],
+        "denominador": [
+          "95251"
+        ]
+      },
+      "nota": "Cor ou raça declarada. Indígena neste quesito não equivale ao total de pessoas indígenas pelo critério ampliado. O total inclui ignorados omitidos das categorias.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente, segundo o quesito cor ou raça"
+    },
+    "raca_amarela": {
+      "tema": "cor_raca",
+      "rotulo": "Amarela",
+      "unidade": "pessoas",
+      "arquivo": "cor_ou_raca",
+      "variaveis": [
+        "V01319"
+      ],
+      "definicoes": {
+        "V01319": "Cor ou raça é amarela"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "raca",
+        "categorias": [
+          "2778"
+        ],
+        "denominador": [
+          "95251"
+        ]
+      },
+      "nota": "Cor ou raça declarada. Indígena neste quesito não equivale ao total de pessoas indígenas pelo critério ampliado. O total inclui ignorados omitidos das categorias.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente, segundo o quesito cor ou raça"
+    },
+    "raca_parda": {
+      "tema": "cor_raca",
+      "rotulo": "Parda",
+      "unidade": "pessoas",
+      "arquivo": "cor_ou_raca",
+      "variaveis": [
+        "V01320"
+      ],
+      "definicoes": {
+        "V01320": "Cor ou raça é parda"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "raca",
+        "categorias": [
+          "2779"
+        ],
+        "denominador": [
+          "95251"
+        ]
+      },
+      "nota": "Cor ou raça declarada. Indígena neste quesito não equivale ao total de pessoas indígenas pelo critério ampliado. O total inclui ignorados omitidos das categorias.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente, segundo o quesito cor ou raça"
+    },
+    "raca_indigena": {
+      "tema": "cor_raca",
+      "rotulo": "Indígena (cor ou raça)",
+      "unidade": "pessoas",
+      "arquivo": "cor_ou_raca",
+      "variaveis": [
+        "V01321"
+      ],
+      "definicoes": {
+        "V01321": "Cor ou raça é indígena"
+      },
+      "denominador": "populacao",
+      "consolidado": {
+        "consulta": "raca",
+        "categorias": [
+          "2780"
+        ],
+        "denominador": [
+          "95251"
+        ]
+      },
+      "nota": "Cor ou raça declarada. Indígena neste quesito não equivale ao total de pessoas indígenas pelo critério ampliado. O total inclui ignorados omitidos das categorias.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "População residente, segundo o quesito cor ou raça"
+    },
+    "alfabetizados_15_mais": {
+      "tema": "alfabetizacao",
+      "rotulo": "Alfabetizadas · 15 anos ou mais",
+      "unidade": "pessoas",
+      "arquivo": "alfabetizacao",
+      "variaveis": [
+        "V00748",
+        "V00749",
+        "V00750",
+        "V00751",
+        "V00752",
+        "V00753",
+        "V00754",
+        "V00755",
+        "V00756",
+        "V00757",
+        "V00758",
+        "V00759",
+        "V00760"
+      ],
+      "definicoes": {
+        "V00748": "Pessoas alfabetizadas, 15 a 19 anos",
+        "V00749": "Pessoas alfabetizadas, 20 a 24 anos",
+        "V00750": "Pessoas alfabetizadas, 25 a 29 anos",
+        "V00751": "Pessoas alfabetizadas, 30 a 34 anos",
+        "V00752": "Pessoas alfabetizadas, 35 a 39 anos",
+        "V00753": "Pessoas alfabetizadas, 40 a 44 anos",
+        "V00754": "Pessoas alfabetizadas, 45 a 49 anos",
+        "V00755": "Pessoas alfabetizadas, 50 a 54 anos",
+        "V00756": "Pessoas alfabetizadas, 55 a 59 anos",
+        "V00757": "Pessoas alfabetizadas, 60 a 64 anos",
+        "V00758": "Pessoas alfabetizadas, 65 a 69 anos",
+        "V00759": "Pessoas alfabetizadas, 70 a 79 anos",
+        "V00760": "Pessoas alfabetizadas, 80 anos ou mais"
+      },
+      "denominador": "pessoas_15_mais",
+      "consolidado": {
+        "consulta": "alfabetizacao",
+        "categorias": [
+          "1023"
+        ],
+        "denominador": [
+          "93024"
+        ]
+      },
+      "nota": "Não alfabetizadas = pessoas de 15 anos ou mais menos alfabetizadas, somente com ambas as parcelas divulgadas. Sem reconstruir células X.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "denominador_variaveis": [
+        "V00644",
+        "V00645",
+        "V00646",
+        "V00647",
+        "V00648",
+        "V00649",
+        "V00650",
+        "V00651",
+        "V00652",
+        "V00653",
+        "V00654",
+        "V00655",
+        "V00656"
+      ],
+      "denominador_definicoes": {
+        "V00644": "15 a 19 anos",
+        "V00645": "20 a 24 anos",
+        "V00646": "25 a 29 anos",
+        "V00647": "30 a 34 anos",
+        "V00648": "35 a 39 anos",
+        "V00649": "40 a 44 anos",
+        "V00650": "45 a 49 anos",
+        "V00651": "50 a 54 anos",
+        "V00652": "55 a 59 anos",
+        "V00653": "60 a 64 anos",
+        "V00654": "65 a 69 anos",
+        "V00655": "70 a 79 anos",
+        "V00656": "80 anos ou mais"
+      },
+      "universo": "Pessoas de 15 anos ou mais de idade"
+    },
+    "nao_alfabetizados_15_mais": {
+      "tema": "alfabetizacao",
+      "rotulo": "Não alfabetizadas · 15 anos ou mais",
+      "unidade": "pessoas",
+      "arquivo": "alfabetizacao",
+      "variaveis": [
+        "V00748",
+        "V00749",
+        "V00750",
+        "V00751",
+        "V00752",
+        "V00753",
+        "V00754",
+        "V00755",
+        "V00756",
+        "V00757",
+        "V00758",
+        "V00759",
+        "V00760"
+      ],
+      "definicoes": {
+        "V00748": "Pessoas alfabetizadas, 15 a 19 anos",
+        "V00749": "Pessoas alfabetizadas, 20 a 24 anos",
+        "V00750": "Pessoas alfabetizadas, 25 a 29 anos",
+        "V00751": "Pessoas alfabetizadas, 30 a 34 anos",
+        "V00752": "Pessoas alfabetizadas, 35 a 39 anos",
+        "V00753": "Pessoas alfabetizadas, 40 a 44 anos",
+        "V00754": "Pessoas alfabetizadas, 45 a 49 anos",
+        "V00755": "Pessoas alfabetizadas, 50 a 54 anos",
+        "V00756": "Pessoas alfabetizadas, 55 a 59 anos",
+        "V00757": "Pessoas alfabetizadas, 60 a 64 anos",
+        "V00758": "Pessoas alfabetizadas, 65 a 69 anos",
+        "V00759": "Pessoas alfabetizadas, 70 a 79 anos",
+        "V00760": "Pessoas alfabetizadas, 80 anos ou mais"
+      },
+      "denominador": "pessoas_15_mais",
+      "consolidado": {
+        "consulta": "alfabetizacao",
+        "categorias": [
+          "1024"
+        ],
+        "denominador": [
+          "93024"
+        ]
+      },
+      "nota": "Não alfabetizadas = pessoas de 15 anos ou mais menos alfabetizadas, somente com ambas as parcelas divulgadas. Sem reconstruir células X.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "denominador_variaveis": [
+        "V00644",
+        "V00645",
+        "V00646",
+        "V00647",
+        "V00648",
+        "V00649",
+        "V00650",
+        "V00651",
+        "V00652",
+        "V00653",
+        "V00654",
+        "V00655",
+        "V00656"
+      ],
+      "denominador_definicoes": {
+        "V00644": "15 a 19 anos",
+        "V00645": "20 a 24 anos",
+        "V00646": "25 a 29 anos",
+        "V00647": "30 a 34 anos",
+        "V00648": "35 a 39 anos",
+        "V00649": "40 a 44 anos",
+        "V00650": "45 a 49 anos",
+        "V00651": "50 a 54 anos",
+        "V00652": "55 a 59 anos",
+        "V00653": "60 a 64 anos",
+        "V00654": "65 a 69 anos",
+        "V00655": "70 a 79 anos",
+        "V00656": "80 anos ou mais"
+      },
+      "operacao": "complemento",
+      "universo": "Pessoas de 15 anos ou mais de idade"
+    },
+    "dppo": {
+      "tema": "habitacao",
+      "rotulo": "Particulares permanentes ocupados",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio1",
+      "variaveis": [
+        "V00001"
+      ],
+      "definicoes": {
+        "V00001": "Domicílios Particulares Permanentes Ocupados"
+      },
+      "denominador": "domicilios_permanentes",
+      "consolidado": {
+        "consulta": "habitacao",
+        "categorias": [
+          "59998"
+        ],
+        "denominador": [
+          "2504"
+        ]
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes"
+    },
+    "vagos": {
+      "tema": "habitacao",
+      "rotulo": "Particulares permanentes vagos",
+      "unidade": "domicílios",
+      "arquivo": "basico",
+      "variaveis": [
+        "v0009"
+      ],
+      "definicoes": {
+        "v0009": "Total de Domicílios Particulares Permanentes Vagos (DPPV)"
+      },
+      "denominador": "domicilios_permanentes",
+      "consolidado": {
+        "consulta": "habitacao",
+        "categorias": [
+          "60002"
+        ],
+        "denominador": [
+          "2504"
+        ]
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes"
+    },
+    "uso_ocasional": {
+      "tema": "habitacao",
+      "rotulo": "Permanentes de uso ocasional",
+      "unidade": "domicílios",
+      "arquivo": "basico",
+      "variaveis": [
+        "v0008"
+      ],
+      "definicoes": {
+        "v0008": "Total de Domicílios Particulares  de Uso Ocasional (DPPUO)"
+      },
+      "denominador": "domicilios_permanentes",
+      "consolidado": {
+        "consulta": "habitacao",
+        "categorias": [
+          "60003"
+        ],
+        "denominador": [
+          "2504"
+        ]
+      },
+      "nota": "",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes"
+    },
+    "agua_rede": {
+      "tema": "agua",
+      "rotulo": "Água · rede geral como forma principal",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00111"
+      ],
+      "definicoes": {
+        "V00111": "Domicílios Particulares Permanentes Ocupados, Utiliza rede geral de distribuição"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "agua",
+        "categorias": [
+          "72144"
+        ],
+        "denominador": [
+          "72129"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais. Forma principal de abastecimento; possuir ligação à rede não basta para integrar a categoria rede geral.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "agua_poco_profundo": {
+      "tema": "agua",
+      "rotulo": "Água · poço profundo/artesiano como forma principal",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00112"
+      ],
+      "definicoes": {
+        "V00112": "Domicílios Particulares Permanentes Ocupados, Utiliza poço profundo ou artesiano"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "agua",
+        "categorias": [
+          "72146",
+          "72154"
+        ],
+        "denominador": [
+          "72129"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais. Forma principal de abastecimento; possuir ligação à rede não basta para integrar a categoria rede geral.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "esgoto_rede": {
+      "tema": "esgoto",
+      "rotulo": "Esgoto · rede geral ou pluvial",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00309"
+      ],
+      "definicoes": {
+        "V00309": "Domicílios Particulares Permanentes Ocupados, Destinação do esgoto do banheiro ou sanitário ou buraco para dejeções é rede geral ou pluvial"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "esgoto",
+        "categorias": [
+          "72110"
+        ],
+        "denominador": [
+          "46292"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "esgoto_fossa_ligada": {
+      "tema": "esgoto",
+      "rotulo": "Esgoto · fossa séptica/filtro ligada à rede",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00310"
+      ],
+      "definicoes": {
+        "V00310": "Domicílios Particulares Permanentes Ocupados, Destinação do esgoto do banheiro ou sanitário ou buraco para dejeções é fossa séptica ou fossa filtro ligada à rede"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "esgoto",
+        "categorias": [
+          "72111"
+        ],
+        "denominador": [
+          "46292"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "esgoto_fossa_nao_ligada": {
+      "tema": "esgoto",
+      "rotulo": "Esgoto · fossa séptica/filtro não ligada à rede",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00311"
+      ],
+      "definicoes": {
+        "V00311": "Domicílios Particulares Permanentes Ocupados, Destinação do esgoto do banheiro ou sanitário ou buraco para dejeções é fossa séptica ou fossa filtro não ligada à rede"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "esgoto",
+        "categorias": [
+          "72112"
+        ],
+        "denominador": [
+          "46292"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "esgoto_rudimentar": {
+      "tema": "esgoto",
+      "rotulo": "Esgoto · fossa rudimentar ou buraco",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00312"
+      ],
+      "definicoes": {
+        "V00312": "Domicílios Particulares Permanentes Ocupados, Destinação do esgoto do banheiro ou sanitário ou buraco para dejeções é fossa rudimentar ou buraco"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "esgoto",
+        "categorias": [
+          "72113"
+        ],
+        "denominador": [
+          "46292"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "lixo_coleta_domicilio": {
+      "tema": "lixo",
+      "rotulo": "Lixo · coletado no domicílio",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00397"
+      ],
+      "definicoes": {
+        "V00397": "Domicílios Particulares Permanentes Ocupados, Lixo coletado no domicílio por serviço de limpeza"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "lixo",
+        "categorias": [
+          "72120"
+        ],
+        "denominador": [
+          "10972"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "lixo_cacamba": {
+      "tema": "lixo",
+      "rotulo": "Lixo · caçamba de serviço de limpeza",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00398"
+      ],
+      "definicoes": {
+        "V00398": "Domicílios Particulares Permanentes Ocupados, Lixo depositado em caçamba de serviço de limpeza"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "lixo",
+        "categorias": [
+          "72121"
+        ],
+        "denominador": [
+          "10972"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "lixo_queimado": {
+      "tema": "lixo",
+      "rotulo": "Lixo · queimado na propriedade",
+      "unidade": "domicílios",
+      "arquivo": "caracteristicas_domicilio2",
+      "variaveis": [
+        "V00399"
+      ],
+      "definicoes": {
+        "V00399": "Domicílios Particulares Permanentes Ocupados, Lixo queimado na propriedade"
+      },
+      "denominador": "dppo",
+      "consolidado": {
+        "consulta": "lixo",
+        "categorias": [
+          "72122"
+        ],
+        "denominador": [
+          "10972"
+        ]
+      },
+      "nota": "Categorias selecionadas; não representam toda a distribuição. Percentual sobre domicílios particulares permanentes ocupados, não domicílios físicos totais.",
+      "agregacao": "soma_contagens_compatíveis; percentual = soma_numeradores / soma_denominadores",
+      "universo": "Domicílios particulares permanentes ocupados"
+    },
+    "renda_responsavel_com_rendimentos": {
+      "tema": "renda",
+      "rotulo": "Renda média dos responsáveis com rendimentos",
+      "unidade": "BRL/mês",
+      "arquivo": "renda_setor",
+      "variaveis": [
+        "V06004"
+      ],
+      "definicoes": {
+        "V06004": "Valor do rendimento nominal médio mensal das pessoas responsáveis com rendimentos por domicílios particulares permanentes ocupados"
+      },
+      "denominador": "não publicado no arquivo",
+      "consolidado": null,
+      "agregacao": "valor publicado diretamente por setor, bairro ou município; nunca média das médias",
+      "nota": "Não é renda domiciliar nem per capita. V06001 não é aceito como peso de V06004; massa/denominador do mesmo universo continuam sem comprovação. Grupo sem bairro: indisponível.",
+      "universo": "Pessoas responsáveis com rendimentos em domicílios particulares permanentes ocupados"
+    }
+  },
+  "errata": {
+    "url": "https://www.ibge.gov.br/estatisticas/sociais/populacao/22827-censo-demografico-2022.html?=&t=erratas",
+    "data": "2026-10-21",
+    "variavel": "V00003",
+    "definicao": "Unidades de Habitação em Domicílios Coletivos Com Morador",
+    "acao": "Substituição dos arquivos; usar domicilio1_BR_20261021. V00003 não é DPPO.",
+    "verificada_em": "2026-10-27",
+    "trecho_verificado": "Os arquivos foram substituídos para correção da variável V00003, Unidades de Habitação em Domicílios Coletivos Com Morador."
+  },
+  "nota_metodologica": "https://biblioteca.ibge.gov.br/visualizacao/livros/liv102136.pdf"
+}

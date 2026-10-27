@@ -1,5 +1,11 @@
 # Censo 2022: população e domicílios oficiais
 
+Extensão atual: [CENSUS_THEMES.md](CENSUS_THEMES.md) documenta os 25 novos
+indicadores, universos, errata de 21/10/2026, renda publicada diretamente,
+contrato temático, lacunas e comandos. O preparo abaixo agora também gera esses
+temas. As referências históricas a renda fora do escopo nesta página se aplicam
+à entrega original de população/domicílios, não à extensão atual.
+
 A entrega `demografia-1` acrescenta dois indicadores à cartografia existente.
 Não modifica o contrato demonstrativo 2.0 nem preenche os seus campos de renda,
 responsáveis, PIB ou Gini. A demo (`?modo=demo`) mantém seus próprios dados.

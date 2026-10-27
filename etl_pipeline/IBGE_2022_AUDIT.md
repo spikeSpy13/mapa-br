@@ -1,5 +1,15 @@
 # Auditoria online do Censo 2022 — Santa Catarina
 
+**Atualização 27/10/2026:** este relatório conserva a investigação original da
+incompatibilidade de agregação V06001/V06004. O bloqueio continua para médias
+agregadas sem massa/denominador compatível. A extensão
+[CENSUS_THEMES.md](CENSUS_THEMES.md) permite V06004 publicada **diretamente**
+nos CSVs oficiais de setor, município e bairro (edição 20260508), sem ponderação.
+Foram conferidos os 87 códigos/nomes de bairros. Os outros temas foram liberados
+independentemente. O portal oficial agora responde; sua errata de 21/10/2026 foi
+verificada e o domicilio1 corrigido foi fixado. Referências a 403/503 e bloqueio
+geral abaixo descrevem a tentativa anterior, não o estado desta entrega.
+
 Verificação em 2026-10-26. FTP e SIDRA responderam com sucesso nesta tentativa.
 Os dados oficiais foram baixados para `data/raw/cache`, com recibos de URL,
 tamanho e SHA-256 local. Os hashes detectam alteração/corrupção local; não são

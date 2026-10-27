@@ -1,13 +1,15 @@
 import type { Feature, Geometry } from 'geojson';
 import type { IndicadoresCanonica } from '../types/contract';
 import type { MetricaAtiva } from '../store/useGeoStore';
+import { censusMetricEntries, isCensusMetric } from './censusCatalog';
 import type { Navigation } from '../state/navigation';
 import type { Demography, PercentageMeasure } from '../types/demography';
 export interface MetricaMeta {
   id: MetricaAtiva; label: string; unidade: 'moeda' | 'moeda_bi' | 'inteiro' | 'proporcao';
-  disponivelEmBairro: boolean; descricao: string;
+  disponivelEmBairro: boolean; descricao: string; oficial?: boolean;
 }
 export const METRICAS_CATALOGO: Record<MetricaAtiva, MetricaMeta> = {
+  ...Object.fromEntries(censusMetricEntries),
   renda_media_responsavel: { id: 'renda_media_responsavel', label: 'Renda do responsável', unidade: 'moeda', disponivelEmBairro: true, descricao: 'Média ponderada pelo universo válido de responsáveis; exclui renda ausente ou sob sigilo.' },
   pib_per_capita: { id: 'pib_per_capita', label: 'PIB por habitante', unidade: 'moeda', disponivelEmBairro: false, descricao: 'PIB do recorte dividido pela população censitária; conferir os períodos das fontes.' },
   pib_total_bi: { id: 'pib_total_bi', label: 'PIB total (bilhões)', unidade: 'moeda_bi', disponivelEmBairro: false, descricao: 'PIB a preços correntes em bilhões de reais; disponível até município.' },
@@ -16,6 +18,11 @@ export const METRICAS_CATALOGO: Record<MetricaAtiva, MetricaMeta> = {
   cobertura_renda_proporcao: { id: 'cobertura_renda_proporcao', label: 'Cobertura da renda', unidade: 'proporcao', disponivelEmBairro: true, descricao: 'Responsáveis com renda divulgada / universo conhecido; denominador suprimido implica cobertura desconhecida.' },
   setores_sob_sigilo: { id: 'setores_sob_sigilo', label: 'Setores sob sigilo', unidade: 'inteiro', disponivelEmBairro: true, descricao: 'Quantidade de setores com renda sob sigilo estatístico.' },
 };
+export function metadadosMetrica(metric: MetricaAtiva): MetricaMeta {
+  const metadata = METRICAS_CATALOGO[metric];
+  if (!metadata) throw new Error('Métrica fora do catálogo validado.');
+  return metadata;
+}
 export const CHOROPLETH_COLORS = ['#1e3a5f', '#2563eb', '#06b6d4', '#10b981', '#eab308', '#f97316'];
 export const COLOR_SIGILO_OU_AUSENTE = '#334155';
 export const COLOR_DESTAQUE_SELECIONADO = '#f43f5e';
@@ -24,7 +31,7 @@ const integer = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
 const percent = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 2 });
 export function formatarValorIndicador(value: number | null | undefined, metric: MetricaAtiva = 'populacao'): string {
   if (value == null || !Number.isFinite(value)) return '—'; // ausência não comprova sigilo
-  switch (METRICAS_CATALOGO[metric].unidade) {
+  switch (metadadosMetrica(metric).unidade) {
     case 'moeda': return money.format(value);
     case 'moeda_bi': return `${money.format(value)} bi`;
     case 'proporcao': return value < 1 && percent.format(value) === percent.format(1) ? '< 100%' : percent.format(value);
@@ -35,7 +42,7 @@ export const formatarMedidaDemografica = (value?: Demography['populacao']) => va
 /** Texto já arredondado no produtor Decimal; não reconverter em float para exibir. */
 export const formatarPercentualExato = (value?: PercentageMeasure) => value?.status === 'sigilo' ? 'Sob sigilo' : value?.status === 'divulgada' ? `${value.valor.replace('.', ',')}%` : 'Indisponível';
 export function extrairValorMetrica(ind: IndicadoresCanonica | null | undefined, metric: MetricaAtiva): number | null {
-  if (!ind) return null;
+  if (!ind || isCensusMetric(metric)) return null;
   if (metric === 'cobertura_renda_proporcao') {
     if ((ind.setores_universo_renda_suprimido ?? 0) > 0) return null;
     if (ind.responsaveis_renda && ind.responsaveis_com_renda != null) return ind.responsaveis_com_renda / ind.responsaveis_renda;
@@ -44,7 +51,7 @@ export function extrairValorMetrica(ind: IndicadoresCanonica | null | undefined,
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 export function metricaDoMapa(nav: Navigation, metric: MetricaAtiva): MetricaAtiva {
-  return (nav.level === 'municipio' || nav.level === 'bairro') && !METRICAS_CATALOGO[metric].disponivelEmBairro ? 'renda_media_responsavel' : metric;
+  return (nav.level === 'municipio' || nav.level === 'bairro') && !metadadosMetrica(metric).disponivelEmBairro ? 'renda_media_responsavel' : metric;
 }
 /** Quantis interpolados (R-7); empates têm a mesma cor, incluindo distribuições constantes. */
 export function criarEscalaCoropletica(values: Array<number | null | undefined>) {

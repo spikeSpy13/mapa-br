@@ -8,7 +8,7 @@ import { pontosTse } from '../services/tseLoader';
 import type { MunicipioTse } from '../types/tseContract';
 import { loadDemoGeometry } from '../services/demoGeometry';
 import type { MapGeometry } from '../types/geometry';
-import { calcularBoundingBox, COLOR_SIGILO_OU_AUSENTE, COLOR_DESTAQUE_SELECIONADO, formatarValorIndicador, METRICAS_CATALOGO } from '../lib/geoStats';
+import { metadadosMetrica, calcularBoundingBox, COLOR_SIGILO_OU_AUSENTE, COLOR_DESTAQUE_SELECIONADO, formatarValorIndicador } from '../lib/geoStats';
 import type { MetricaAtiva } from '../store/useGeoStore';
 import type { TerritoryPreview } from './useTerritoryPreview';
 import { PolygonPreview, selectedTerritory, tooltipPosition } from './mapInteraction';
@@ -18,7 +18,7 @@ interface Props {
   official?: boolean; officialGeometry?: MapGeometry; tse?: MunicipioTse | null;
   loader: DataLoader; data?: LoadedData; nav: Navigation; rows: MapRow[];
   metric: MetricaAtiva; select: (nav: Navigation) => void;
-  parentNavigation?: Navigation; preview?: TerritoryPreview; onMapPreview?: (id: string | null) => void;
+  metricContext?: string; parentNavigation?: Navigation; preview?: TerritoryPreview; onMapPreview?: (id: string | null) => void;
 }
 interface PointerPreview { id: string; code: string; point: { x: number; y: number }; tse?: { name: string; text: string } }
 const kinds = ['ufs', 'municipios', 'setores'] as const;
@@ -26,7 +26,7 @@ const fields = { ufs: 'cd_uf', municipios: 'cd_mun', setores: 'cd_setor' };
 function kindFor(geo: MapGeometry) { return geo.field === 'cd_setor' ? 'setores' : geo.field === 'cd_mun' ? 'municipios' : 'ufs'; }
 const levelLabel = (row: MapRow) => ({ pais: 'País', regiao: 'Região', uf: 'UF', municipio: 'Município', bairro: 'Agrupamento', setor: 'Setor censitário' })[row.nav.level];
 
-export function MapViewport({ loader, data, nav, rows, metric, select, tse, official = false, officialGeometry, preview = null, onMapPreview, parentNavigation }: Props) {
+export function MapViewport({ loader, data, nav, rows, metric, select, tse, official = false, officialGeometry, preview = null, onMapPreview, parentNavigation, metricContext }: Props) {
   const container = useRef<HTMLDivElement>(null), stage = useRef<HTMLDivElement>(null), popup = useRef<HTMLDivElement>(null);
   const map = useRef<GLMap | null>(null), active = useRef<MapGeometry | undefined>(undefined);
   const hoverPaint = useRef(new PolygonPreview()), frame = useRef<number | null>(null), dismissed = useRef<string | null>(null);
@@ -201,7 +201,7 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
   const isTse = !!pointer?.tse;
   const tooltip = isTse ? { name: pointer!.tse!.name, code: pointer!.code, level: 'Local de votação TSE', text: pointer!.tse!.text, point: pointer!.point, selected: false, sigilo: false } : hoveredRow ? {
     name: hoveredRow.name, code: rowCode, level: levelLabel(hoveredRow), point: rowPoint,
-    text: `${METRICAS_CATALOGO[metric].label}: ${hoveredRow.value}${official ? '' : ` · cobertura ${hoveredRow.coverage === null ? 'desconhecida' : formatarValorIndicador(hoveredRow.coverage, 'cobertura_renda_proporcao')}`}`,
+    text: `${metadadosMetrica(metric).label}: ${hoveredRow.value}${metricContext ? ` · ${metricContext}` : ''}${official ? '' : ` · cobertura ${hoveredRow.coverage === null ? 'desconhecida' : formatarValorIndicador(hoveredRow.coverage, 'cobertura_renda_proporcao')}`}`,
     selected: selected === hoveredRow.id || !!geometry?.selectedFeatureIds?.has(hoveredRow.id), sigilo: hoveredRow.sigilo,
   } : null;
   useLayoutEffect(() => {

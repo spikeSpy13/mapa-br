@@ -1,16 +1,19 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { DataHttpError, DataLoader } from '../services/dataLoader';
-import { neighborhoodName, sectorName, sectorNeighborhood } from '../services/officialDemography';
+import { neighborhoodName, sectorName, sectorNeighborhood, loadOfficialTheme } from '../services/officialDemography';
 import { loadOfficialCartography } from '../services/officialGeometry';
 import { navigationSearch, type Navigation } from '../state/navigation';
 import { useGeoStore } from '../store/useGeoStore';
-import { criarEscalaCoropletica, CHOROPLETH_COLORS, formatarValorIndicador, METRICAS_CATALOGO, formatarMedidaDemografica as display } from '../lib/geoStats';
+import { metadadosMetrica, criarEscalaCoropletica, CHOROPLETH_COLORS, formatarValorIndicador, formatarMedidaDemografica as display } from '../lib/geoStats';
 import type { DemographicMetric } from '../types/demography';
 import type { MapRow } from './MapViewport';
 import { useTerritoryPreview } from './useTerritoryPreview';
 import { TerritoryInspector } from './TerritoryInspector';
 import { NeighborhoodComparison } from './NeighborhoodComparison';
+import { censusUniverseLabel, CENSUS_DEFINITIONS, CENSUS_THEMES, censusDefinition, isCensusMetric } from '../lib/censusCatalog';
+import { censusNumeric, censusRows, censusSummary, formatCensusValue } from '../lib/censusValues';
+import { CensusThemePanel } from './CensusThemePanel';
 const MapViewport = lazy(() => import('./MapViewport'));
 
 export function OfficialExplorer({ loader }: { loader: DataLoader }) {
@@ -30,7 +33,18 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
   const uf = 'cd_uf' in nav ? ufs.find(f => f.properties.cd_uf === nav.cd_uf)?.properties : undefined;
   const title = data?.title ?? (nav.level === 'pais' ? 'Brasil' : nav.level === 'uf' ? uf?.nm_uf : undefined);
   const stats = data?.statistics.status === 'disponiveis' ? data.statistics : undefined;
-  const metric: DemographicMetric = metrica === 'domicilios' ? 'domicilios' : 'populacao';
+  const baseMetric: DemographicMetric = metrica === 'domicilios' ? 'domicilios' : 'populacao';
+  const metric = isCensusMetric(metrica) ? metrica : baseMetric;
+  const definition = censusDefinition(metric), theme = definition?.tema;
+  const themeMunicipality = 'cd_mun' in nav && nav.cd_mun === '4205407' ? nav.cd_mun : undefined;
+  const thematic = useQuery({ queryKey: ['censo-temas', loader.indexUrl, theme ?? '', themeMunicipality ?? 'brasil'],
+    queryFn: ({ signal }) => loadOfficialTheme(loader, themeMunicipality, theme!, signal, { ufs: ufs.map(f => f.properties.cd_uf), setores: data?.geometry.field === 'cd_setor' ? data.geometry.collection.features.map(f => f.properties!.cd_setor as string) : [], bairros: stats?.bairros }), enabled: !!theme && !!data });
+  const themeData = theme ? thematic.data : undefined;
+  const thematicRows = censusRows(themeData, data?.geometry.field);
+  const themeSummary = censusSummary(themeData, nav);
+  const thematicKey = isCensusMetric(metric) ? metric.slice(6) : '';
+  const numberFor = (id: string) => theme ? censusNumeric(thematicRows[id]?.[thematicKey]) : stats?.rows[id]?.[baseMetric].valor;
+  const unit = definition?.unidade ?? (metric === 'populacao' ? 'pessoas' : 'domicílios');
   const territories = useMemo(() => {
     if (!data) return [];
     return data.geometry.collection.features.map(f => {
@@ -40,9 +54,9 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
       return { id: p[data.geometry.field] as string, name: p.cd_setor ? sectorName(stats, p.cd_setor) : p.nm_mun ?? `${p.nm_uf} (${p.sigla_uf})`, nav: target };
     });
   }, [data, stats, nav]);
-  const scale = useMemo(() => criarEscalaCoropletica(territories.map(t => stats?.rows[t.id]?.[metric].valor)), [territories, stats, metric]);
-  const rows: MapRow[] = useMemo(() => territories.map(t => ({ ...t, fill: scale.obterCor(stats?.rows[t.id]?.[metric].valor),
-    sigilo: stats?.rows[t.id]?.[metric].status === 'sigilo', coverage: null, value: display(stats?.rows[t.id]?.[metric]) })), [territories, stats, scale, metric]);
+  const scale = useMemo(() => criarEscalaCoropletica(territories.map(t => numberFor(t.id))), [territories, stats, metric, thematicRows]);
+  const rows: MapRow[] = useMemo(() => territories.map(t => ({ ...t, fill: scale.obterCor(numberFor(t.id)),
+    sigilo: theme ? thematicRows[t.id]?.[thematicKey]?.status === 'sigilo' : stats?.rows[t.id]?.[baseMetric].status === 'sigilo', coverage: null, value: theme ? formatCensusValue(thematicRows[t.id]?.[thematicKey]) : display(stats?.rows[t.id]?.[baseMetric]) })), [territories, stats, scale, metric, thematicRows]);
   const selectedSector = nav.level === 'setor' ? nav.cd_setor : undefined;
   const selectedId = selectedSector ?? (nav.level === 'bairro' ? nav.id_agregacao : undefined);
   const bairro = nav.level === 'bairro' ? stats?.bairros?.[nav.id_agregacao] : undefined;
@@ -64,7 +78,7 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
     if (!sections.has(key)) sections.set(key, { label: data?.geometry.field === 'cd_setor' ? neighborhoodName(membership?.group) : '', id: membership?.id, rows: [] });
     sections.get(key)!.rows.push(row);
   }
-  const inspectorRows = bairro && nav.level === 'bairro' ? [...rows, { id: nav.id_agregacao, name: neighborhoodName(bairro), nav, fill: '', sigilo: bairro.indicadores[metric].status === 'sigilo', coverage: null, value: display(bairro.indicadores[metric]) }] : rows;
+  const inspectorRows = bairro && nav.level === 'bairro' ? [...rows, { id: nav.id_agregacao, name: neighborhoodName(bairro), nav, fill: '', sigilo: theme ? themeSummary?.[thematicKey]?.status === 'sigilo' : bairro.indicadores[baseMetric].status === 'sigilo', coverage: null, value: theme ? formatCensusValue(themeSummary?.[thematicKey]) : display(bairro.indicadores[baseMetric]) }] : rows;
   const message = error instanceof DataHttpError && error.status === 404 ? 'Arquivo de geometria oficial indisponível localmente ou estatísticas ausentes. Execute a preparação das malhas e da demografia desta entrega.' :
     error instanceof Error && error.name !== 'ZodError' ? error.message : 'Os dados ou a geometria recebidos são incompatíveis com o catálogo auditado.';
   return <div className="app-shell official-shell">
@@ -82,21 +96,26 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
     {routeError && <p role="alert" className="notice">{routeError}</p>}
     <main className="split-screen"><section className="map-panel" aria-label="Exploração territorial">
       <div className="map-heading"><div><span className="eyebrow">CARTOGRAFIA OFICIAL / {nav.level.toUpperCase()}</span><h1>{title ?? 'Carregando território…'}</h1></div><span className="level-tag">CENSO 2022</span></div>
-      <div className="map-controls"><label>Colorir por <select aria-label="Colorir por" disabled={!stats} value={metric} onChange={e => setMetrica(e.target.value as DemographicMetric)}><option value="populacao">População</option><option value="domicilios">Domicílios</option></select></label></div>
+      <div className="map-controls"><label>Colorir por <select aria-label="Colorir por" disabled={!stats} value={metric} onChange={e => setMetrica(e.target.value as typeof metric)}><option value="populacao">População</option><option value="domicilios">Domicílios</option>{Object.entries(CENSUS_THEMES).map(([id,label]) => <optgroup key={id} label={label}>{Object.entries(CENSUS_DEFINITIONS).filter(([,m]) => m.tema === id).map(([key,m]) => <option key={key} value={`censo_${key}`}>{m.rotulo}</option>)}</optgroup>)}</select></label></div>
       <div className="region-pills" aria-label="Regiões do Brasil">{Object.entries(stats?.index.regioes ?? {}).map(([id, r]) => <button key={id} aria-pressed={nav.level === 'regiao' && nav.cd_regiao === id} onClick={() => navigate({ level: 'regiao', cd_regiao: id })}>{r.nome}</button>)}</div>
       {!stats?.summary && <p role="status" className="metric-fallback">Indicadores indisponíveis para este recorte. A identificação e a navegação territorial permanecem disponíveis.</p>}
       {error ? <div className="empty-map" role="alert"><h2>Não foi possível abrir a geometria oficial</h2><p>{message}</p><button onClick={() => { loader.clear(); void client.resetQueries({ queryKey: ['cartografia', loader.indexUrl] }); }}>Tentar novamente</button><button onClick={() => navigate({ level: 'pais' })}>Voltar ao Brasil</button></div> :
-        <Suspense fallback={<p role="status">Preparando mapa local…</p>}><MapViewport loader={loader} official officialGeometry={data?.geometry} nav={nav} rows={rows} metric={metric} select={navigate} preview={hover.preview} onMapPreview={hover.fromMap} parentNavigation={parent} /></Suspense>}
+        <Suspense fallback={<p role="status">Preparando mapa local…</p>}><MapViewport loader={loader} official officialGeometry={data?.geometry} nav={nav} rows={rows} metric={metric} select={navigate} preview={hover.preview} onMapPreview={hover.fromMap} parentNavigation={parent} metricContext={definition ? `${unit} · 2022 · ${definition.universo}` : undefined} /></Suspense>}
       {query.isPending && !error && <p role="status">Carregando o recorte selecionado…</p>}
       {stats?.unavailableStatistics && <p role="status" className="notice">{stats.unavailableStatistics}</p>}
+      {theme && data?.geometry.field === 'cd_mun' && <p className="muted">Novos indicadores municipais preparados somente para Florianópolis; os resumos Brasil/regiões/UFs são consolidados oficiais independentes.</p>}
       {data?.unavailableGeometry && <p role="status" className="notice">{data.unavailableGeometry} O contorno do território selecionado permanece visível.</p>}
-      <div className="map-footer" data-testid="official-legend"><strong>{METRICAS_CATALOGO[metric].label} · {metric === 'populacao' ? 'pessoas' : 'domicílios'} · 2022</strong>
-        <p>Quantis R-7 {data?.geometry.field === 'cd_setor' ? 'dos setores do município' : 'do recorte'} · {formatarValorIndicador(scale.min)} a {formatarValorIndicador(scale.max)}</p>
-        {scale.max !== null && <div className="legend-scale">{CHOROPLETH_COLORS.map((c, i) => <div key={c}><span style={{ background: c }} /><small>≤ {formatarValorIndicador(Math.floor(scale.quebras[i] ?? scale.max!))}</small></div>)}</div>}
+      <div className="map-footer" data-testid="official-legend"><strong>{metadadosMetrica(metric).label} · {unit} · 2022</strong>
+        <p>Quantis R-7 {data?.geometry.field === 'cd_setor' ? 'dos setores do município' : 'do recorte'} · {formatarValorIndicador(scale.min, metric)} a {formatarValorIndicador(scale.max, metric)}</p>
+        {definition && <p>Universo: {definition.universo}. {definition.unidade === 'BRL/mês' ? 'Média publicada diretamente; não agregada de médias setoriais.' : `Percentuais no painel sobre ${censusUniverseLabel(definition.denominador)}.`}</p>}
+        {scale.max !== null && <div className="legend-scale">{CHOROPLETH_COLORS.map((c, i) => <div key={c}><span style={{ background: c }} /><small>≤ {formatarValorIndicador(metadadosMetrica(metric).unidade === 'moeda' ? scale.quebras[i] ?? scale.max! : Math.floor(scale.quebras[i] ?? scale.max!), metric)}</small></div>)}</div>}
         <p>Cinza: ausente ou sigilo (distintos no painel). Zero é valor divulgado. Rosa: seleção. {data?.geometry.field === 'cd_mun' ? 'Totais municipais consolidados.' : data?.geometry.field === 'cd_setor' ? 'Cada setor tem seu próprio valor; rosa destaca a seleção.' : 'Totais de cada UF.'}</p></div>
     </section><aside className="analytics" aria-label="Identificação territorial">
       <span className="eyebrow">TERRITÓRIO / IBGE</span><h2>{title ?? 'Carregando…'}</h2>
-      <div className="kpi-grid" data-testid="official-kpis">{(['populacao', 'domicilios'] as const).map(f => <div className="kpi-card" key={f}><span>{METRICAS_CATALOGO[f].label}</span><strong data-testid={`official-${f}`}>{display(stats?.summary?.[f])}</strong><small>{f === 'populacao' ? 'Pessoas residentes' : 'Todas as espécies · inclui vagos e uso ocasional'}</small></div>)}</div>
+      <div className="kpi-grid" data-testid="official-kpis">{(['populacao', 'domicilios'] as const).map(f => <div className="kpi-card" key={f}><span>{metadadosMetrica(f).label}</span><strong data-testid={`official-${f}`}>{display(stats?.summary?.[f])}</strong><small>{f === 'populacao' ? 'Pessoas residentes' : 'Todas as espécies · inclui vagos e uso ocasional'}</small></div>)}</div>
+      <label className="census-theme-select">Tema do Censo <select aria-label="Tema do Censo" value={theme ?? ''} onChange={e => { const first = Object.entries(CENSUS_DEFINITIONS).find(([,m]) => m.tema === e.target.value); setMetrica(first ? `censo_${first[0]}` : baseMetric); }}>
+        <option value="">População e domicílios</option>{Object.entries(CENSUS_THEMES).map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select></label>
+      {theme && <CensusThemePanel level={nav.level} record={themeSummary} theme={theme} loading={thematic.isPending} error={thematic.error ? 'O arquivo temático falhou na validação ou no carregamento. A cartografia foi preservada.' : undefined} />}
       <p className="muted">{data ? `${new Intl.NumberFormat('pt-BR').format(data.geometry.collection.features.length)} ${data.geometry.field === 'cd_setor' ? 'setores censitários' : data.geometry.field === 'cd_mun' ? 'municípios' : 'unidades da federação'} no mapa` : 'Aguardando a malha local.'}</p>
       {selectedSector && <div className="origin-badge" data-testid="sector-neighborhood">Setor censitário: <strong>{selectedSector}</strong><p>Bairro: <strong>{neighborhoodName(identity?.group)}</strong></p><p>Código do bairro: {identity?.group.cd_bairro ?? 'Não informado na fonte'}</p><p>Município IBGE: {'cd_mun' in nav ? nav.cd_mun : ''}</p>{parent && <button className="neighborhood-action" onClick={() => navigate(parent)}>Voltar ao bairro</button>}</div>}
       {stats?.coverage && <p className="notice" data-testid="neighborhood-coverage">Associação municipal setor–bairro: {stats.coverage.com_bairro} de {stats.coverage.total_setores} setores ({new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 2 }).format(stats.coverage.com_bairro / stats.coverage.total_setores)}), em {stats.coverage.bairros} bairros. {stats.coverage.sem_bairro} setores: Bairro não identificado na fonte.</p>}
@@ -106,7 +125,7 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
       </div>}
       <div className="ranking"><h3>Navegar por território</h3><label className="muted" htmlFor="territory-search">Buscar nome ou código</label><input id="territory-search" type="search" value={search} onChange={e => setSearch(e.target.value)} />
         {stats?.bairros && stats.municipalitySummary && 'cd_mun' in nav && <NeighborhoodComparison groups={stats.bairros} municipality={stats.municipalitySummary} coverage={stats.coverage}
-          visibleIds={new Set(neighborhoodOptions.map(([id]) => id))} metric={metric} setMetric={setMetrica} selected={bairrosComparados}
+          visibleIds={new Set(neighborhoodOptions.map(([id]) => id))} metric={baseMetric} setMetric={setMetrica} thematic={definition && themeData && 'cd_mun' in themeData ? { key: thematicKey, theme: definition.tema, bairros: themeData.bairros } : undefined} selected={bairrosComparados}
           add={adicionarBairroComparado} remove={removerBairroComparado} clear={limparComparacao} sourceUrl={stats.index.fontes.populacao.setorial.recibo.url}
           open={id => { hover.clear(); navigate({ level: 'bairro', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun, id_agregacao: id }); }} />}
         <div ref={hover.listRef} role="region" className="ranking-rows official-territories" aria-label="Lista de territórios">{[...sections.entries()].map(([id, section]) => <section className="neighborhood-sector-group" key={id} data-neighborhood-section={section.id}>
@@ -115,7 +134,7 @@ export function OfficialExplorer({ loader }: { loader: DataLoader }) {
         </section>)}</div>
         {rows.length > 0 && !filtered.length && <p role="status">Nenhum território encontrado para a busca.</p>}
         <TerritoryInspector rows={inspectorRows} preview={hover.preview} selected={selectedId ?? null} metric={metric} />
-      </div><div className="source-details"><strong>Fontes e disponibilidade</strong><p>Malhas oficiais IBGE, referência Censo 2022. Renda, PIB e TSE não estão disponíveis neste modo.</p>{stats && <div data-testid="official-sources"><p>Referência estatística: 1º de agosto de 2022 · Dados do Universo.</p>{(['populacao', 'domicilios'] as const).map(f => { const source = stats.index.fontes[f]; const sector = nav.level === 'setor' || nav.level === 'bairro'; return <p key={f}>{METRICAS_CATALOGO[f].label}: {source.fonte} · {source.unidade} · {source.universo}. {sector ? <><a href={source.setorial.recibo.url}>{source.setorial.arquivo}</a> · variável {source.setorial.variavel} · edição {source.setorial.edicao} · <a href={source.setorial.dicionario.url}>Dicionário</a></> : <><a href={source.consolidado.recibo.url}>SIDRA tabela {source.consolidado.tabela}</a> · variável {source.consolidado.variavel} · edição consultada em {source.consolidado.recibo.downloaded_at.slice(0, 10)}</>}</p>; })}<p>Panorama nacional obtido diretamente dos consolidados oficiais; independe das cidades preparadas. Florianópolis: soma setorial conferida contra os totais municipais SIDRA.</p></div>}
+      </div><div className="source-details"><strong>Fontes e disponibilidade</strong><p>Malhas oficiais IBGE, referência Censo 2022. PIB e TSE não estão disponíveis neste modo. Renda somente quando publicada diretamente na fonte do nível selecionado.</p>{stats && <div data-testid="official-sources"><p>Referência estatística: 1º de agosto de 2022 · Dados do Universo.</p>{(['populacao', 'domicilios'] as const).map(f => { const source = stats.index.fontes[f]; const sector = nav.level === 'setor' || nav.level === 'bairro'; return <p key={f}>{metadadosMetrica(f).label}: {source.fonte} · {source.unidade} · {source.universo}. {sector ? <><a href={source.setorial.recibo.url}>{source.setorial.arquivo}</a> · variável {source.setorial.variavel} · edição {source.setorial.edicao} · <a href={source.setorial.dicionario.url}>Dicionário</a></> : <><a href={source.consolidado.recibo.url}>SIDRA tabela {source.consolidado.tabela}</a> · variável {source.consolidado.variavel} · edição consultada em {source.consolidado.recibo.downloaded_at.slice(0, 10)}</>}</p>; })}<p>Panorama nacional obtido diretamente dos consolidados oficiais; independe das cidades preparadas. Florianópolis: soma setorial conferida contra os totais municipais SIDRA.</p></div>}
       {stats?.vinculoBairro && <p data-testid="official-neighborhood-source">Vínculo setor–bairro: CD_SETOR, CD_BAIRRO e NM_BAIRRO iguais no CSV básico 20260520 e no DBF setorial CD2022. <a href={stats.vinculoBairro.recibos.dicionario_malha.url}>Dicionário da malha, aba Setor</a>. Setores sem bairro mantidos em grupo explícito.</p>}
       {stats?.neighborhoodLookupUrl && <p><a href={stats.neighborhoodLookupUrl} target="_blank" rel="noreferrer">Consultar correspondência municipal setor–bairro e cobertura</a></p>}
       {stats && <p><a href={`${import.meta.env.BASE_URL}geo/official/statistics/brasil.json`} target="_blank" rel="noreferrer">Consultar tabelas, variáveis, edições e recibos dos indicadores</a></p>}

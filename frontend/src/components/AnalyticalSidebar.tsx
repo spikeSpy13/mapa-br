@@ -6,9 +6,8 @@ import type { LoadedData } from '../services/dataLoader';
 import type { Navigation } from '../state/navigation';
 import type { IndicadoresMacroECenso, BairroDetalhe } from '../types/contract';
 import type { MetricaAtiva as Metric } from '../store/useGeoStore';
-import { METRICAS_CATALOGO, formatarValorIndicador as format, extrairValorMetrica as measure } from '../lib/geoStats';
+import { metadadosMetrica, formatarValorIndicador as format, extrairValorMetrica as measure } from '../lib/geoStats';
 import type { TerritoryRow as Row } from '../lib/geoStats';
-const metricLabels = Object.fromEntries(Object.entries(METRICAS_CATALOGO).map(([id, meta]) => [id, meta.label])) as Record<Metric, string>;
 const number = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
 const percent = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 2 });
 function Scatter({ rows, select }: { rows: Row[]; select: (nav: Navigation) => void }) {
@@ -84,7 +83,7 @@ export function AnalyticalSidebar({ data, values, bairro, title, nav, demo, rows
             <p className="muted">A seleção usa o identificador do grupo, inclusive quando não há código de bairro oficial.</p></section> : <>
             <section className="ranking"><div className="section-heading"><h3>{nav.level === 'pais' || nav.level === 'regiao' ? 'Comparar UFs' : nav.level === 'uf' ? 'Comparar municípios' : 'Bairros e agrupamentos'}</h3><span>{rows.length} territórios</span></div>
               {rows.length > 0 && <input aria-label="Buscar território" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar nome ou código…" />}
-              <div className="ranking-label"><span>TERRITÓRIO</span><span>{metricLabels[metric].toUpperCase()}</span></div>
+              <div className="ranking-label"><span>TERRITÓRIO</span><span>{metadadosMetrica(metric).label.toUpperCase()}</span></div>
               <div ref={hover.listRef} className="ranking-rows">{ranking.map((r, i) => <button key={r.id} className={`ranking-row territory-interactive${hover.preview?.id === r.id ? ' is-hovered' : ''}`} data-territory-id={r.id} {...hover.handlers(r.id)} onClick={() => navigate(r.nav)}>
                 <span className="rank-number">{String(i + 1).padStart(2, '0')}</span><span className="rank-name"><strong>{r.name}</strong><small>{r.badge ?? r.code}</small></span>
                 <span className="rank-value">{format(measure(r.values, metric), metric)}<i style={{ width: `${max && measure(r.values, metric) != null ? measure(r.values, metric)! / max * 100 : 0}%` }} /></span><span>↗</span>

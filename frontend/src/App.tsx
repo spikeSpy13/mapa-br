@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tan
 import { fetchMunicipioTse } from './services/tseLoader';
 import type { TseState } from './components/TsePanel';
 import { AnalyticalSidebar } from './components/AnalyticalSidebar';
-import { METRICAS_CATALOGO, CHOROPLETH_COLORS as palette, criarEscalaCoropletica, metricaDoMapa, formatarValorIndicador as format, extrairValorMetrica as measure } from './lib/geoStats';
+import { metadadosMetrica, METRICAS_CATALOGO, CHOROPLETH_COLORS as palette, criarEscalaCoropletica, metricaDoMapa, formatarValorIndicador as format, extrairValorMetrica as measure } from './lib/geoStats';
 import type { TerritoryRow as Row } from './lib/geoStats';
 import type { LoadedData } from './services/dataLoader';
 import { buildSectorToGroupMap } from './services/sectorJoin';
@@ -139,9 +139,9 @@ function Explorer({ loader }: { loader: DataLoader }) {
         <div className="map-heading"><div><span className="eyebrow">EXPLORAÇÃO TERRITORIAL / {nav.level.toUpperCase()}</span><h1>{title ?? 'Carregando território…'}</h1></div>
           <span className="level-tag">{({ pais: '01', regiao: '02', uf: '03', municipio: '04', bairro: '05', setor: '05' })[nav.level]} / 05</span></div>
         <div className="map-controls"><label>Colorir por <select value={metric} onChange={e => setMetrica(e.target.value as Metric)}>
-          {Object.entries(metricLabels).map(([key, label]) => <option key={key} value={key}>{label}{!METRICAS_CATALOGO[key as Metric].disponivelEmBairro ? ' (Até Município)' : ''}</option>)}</select></label></div>
+          {Object.entries(metricLabels).filter(([key]) => !metadadosMetrica(key as Metric).oficial).map(([key, label]) => <option key={key} value={key}>{label}{!metadadosMetrica(key as Metric).disponivelEmBairro ? ' (Até Município)' : ''}</option>)}</select></label></div>
         {municipality && <label className="tse-toggle"><input type="checkbox" checked={showTse} onChange={e => setShowTse(e.target.checked)} /> Exibir locais de votação (TSE)</label>}
-        <p className="muted">{METRICAS_CATALOGO[metric].descricao}</p>
+        <p className="muted">{metadadosMetrica(metric).descricao}</p>
         {metric !== mapMetric && <p role="status" className="metric-fallback">O IBGE não calcula PIB para bairros/setores. O mapa e a comparação intramunicipal usam Renda do responsável. A seleção de PIB será retomada ao voltar à UF.</p>}
         {index && cartogram && <div className="region-pills" aria-label="Regiões">{index.regioes.map(r => <button key={r.cd_regiao}
           aria-pressed={nav.level === 'regiao' && nav.cd_regiao === r.cd_regiao} onClick={() => navigate({ level: 'regiao', cd_regiao: r.cd_regiao })}>{r.nm_regiao}</button>)}</div>}
@@ -158,7 +158,7 @@ function Explorer({ loader }: { loader: DataLoader }) {
             <span className="territory-swatch" style={{ backgroundColor: color(measure(r.values, mapMetric)) }} /><small>{r.badge ?? 'Município'}</small>
             <strong>{r.name}</strong><span>{format(measure(r.values, mapMetric), mapMetric)}</span><code>{r.code}</code></button>) :
             <div className="empty-map"><h2>{demo ? 'Detalhamento municipal não disponível nesta amostra' : 'Resumo disponível'}</h2><p>O desdobramento municipal não faz parte do recorte carregado.</p></div>}</div>}
-        <div className="map-footer"><strong>{METRICAS_CATALOGO[mapMetric].label} · quantis</strong><div className="legend"><span>{format(min, mapMetric)}</span><i style={{ background: `linear-gradient(90deg, ${palette.flatMap((color, i) => [`${color} ${i * 100 / palette.length}%`, `${color} ${(i + 1) * 100 / palette.length}%`]).join(", ")})` }} /><span>{format(max, mapMetric)}</span><em>■ sem dado</em></div>
+        <div className="map-footer"><strong>{metadadosMetrica(mapMetric).label} · quantis</strong><div className="legend"><span>{format(min, mapMetric)}</span><i style={{ background: `linear-gradient(90deg, ${palette.flatMap((color, i) => [`${color} ${i * 100 / palette.length}%`, `${color} ${(i + 1) * 100 / palette.length}%`]).join(", ")})` }} /><span>{format(max, mapMetric)}</span><em>■ sem dado</em></div>
           <p>{cartogram ? 'Navegação por botões. Geometrias da demonstração são sintéticas.' :
             'Lista de territórios. Limites oficiais ainda não foram disponibilizados.'}</p>
           {reverse && <span className="map-note">{number.format(reverse.size)} setores vinculados aos grupos deste município</span>}</div>

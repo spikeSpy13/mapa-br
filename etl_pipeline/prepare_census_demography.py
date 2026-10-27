@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Censo 2022 demografia-1: consolidados SIDRA + básico setorial auditado.
+"""Censo 2022: demografia-1 e extensão temática auditada censo-temas-1.
 
-Somente população e domicílios físicos. Sem campos de renda ou imputação.
+Consolidados SIDRA, contagens setoriais e renda publicada diretamente, sem imputação.
 """
 from __future__ import annotations
 import argparse
@@ -86,7 +86,7 @@ def verify_dictionary(path):
             raise ValueError('Dicionário básico mudou; revisar mapeamento')
 
 
-def extract_sectors(rows, ids, territory=None):
+def extract_sectors(rows, ids, territory=None, raw_out=None):
     sectors = {}
     for row in rows:
         if row['CD_MUN'] != '4205407': continue
@@ -94,6 +94,7 @@ def extract_sectors(rows, ids, territory=None):
         if code != row['CD_SETOR'] or not code.startswith('4205407') or code in sectors:
             raise ValueError('Setor duplicado, não canônico ou fora do município')
         if territory is not None: territory[code] = neighborhood_identity(row)
+        if raw_out is not None: raw_out[code] = row
         sectors[code] = {f: measure(row[column], f) for f, column in zip(FIELDS, ('v0001', 'v0002'))}
     compare_inventory(list(sectors), ids, 'demografia vs geometria Florianópolis')
     return sectors
@@ -242,8 +243,8 @@ def prepare(repo: Path):
             raise ValueError(f'Edição/hash {kind} divergente')
         if kind == 'dicionario_basico': verify_dictionary(path)
         else: basic = path
-    territory = {}
-    sectors = extract_sectors(source_rows(basic, encoding='cp1252'), ids, territory)
+    territory, basic_rows = {}, {}
+    sectors = extract_sectors(source_rows(basic, encoding='cp1252'), ids, territory, basic_rows)
     totals = reconcile(sectors, municipalities['4205407'])
     paths = {}
     for kind in ('setores_sc', 'dicionario_malha'):
@@ -294,10 +295,18 @@ def prepare(repo: Path):
     catalog = json.loads(catalog_path.read_text())
     catalog.update(estatisticas='demografia-1', demografia='statistics/brasil.json')
     helper.atomic_json(catalog_path, catalog)
+    from etl_pipeline.census_themes import prepare_themes
+    prepare_themes(repo, detail, basic_rows)
     print(json.dumps(report['reconciliation'], ensure_ascii=False))
     return report
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--repo', type=Path, default=Path(__file__).resolve().parents[1])
-    prepare(p.parse_args().repo.resolve())
+    p.add_argument('--national-themes-only', action='store_true', help='Preparar só consolidados temáticos, sem ler malhas ou recorte municipal')
+    args = p.parse_args()
+    if args.national_themes_only:
+        from etl_pipeline.census_themes import prepare_national_themes
+        print(json.dumps(prepare_national_themes(args.repo.resolve()), ensure_ascii=False))
+    else:
+        prepare(args.repo.resolve())

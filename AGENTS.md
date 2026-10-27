@@ -416,3 +416,23 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
   usam escala comum municipal. Comparação (até três IDs) fica na store existente,
   independente da seleção do mapa; persiste no mesmo município e limpa ao mudar
   de município. Não forçar soma dos percentuais arredondados a 100%.
+
+
+## Temas Censo 2022 — censo-temas-1
+
+- Ler `etl_pipeline/CENSUS_THEMES.md` e o manifesto canônico
+  `etl_pipeline/manifests/census_themes.json`. Este adendo atualiza as antigas
+  indicações de indisponibilidade de temas/renda direta; a demo 2.0 não muda.
+- Estender o preparador demográfico existente via `census_themes.py`, sem outro
+  motor/cache. Nacional temático é SIDRA direto e tem comando independente
+  `--national-themes-only`; nunca somar o recorte municipal para esse panorama.
+- Fixar arquivos e definições por edição. `caracteristicas_domicilio1` corrigido
+  em 21/10/2026: V00003 é unidade de habitação coletiva, DPPO é V00001.
+- Manter inventário 1.004/87 bairros + sem bairro. Os 40 setores sem linha temática
+  continuam ausentes, não zero/sigilo imputado. Subtotal parcial traz cobertura,
+  sem percentual ou cor. Percentual é razão das somas com Decimal/HALF_EVEN.
+- V06004 é exibida diretamente nas fontes oficiais de setor, município e bairro;
+  sem média nova, massa ou peso V06001. Grupo sem bairro e macro renda indisponíveis.
+- Contrato explícito `types/censusThemes.ts` separa contagem inteira, percentual
+  decimal textual e moeda decimal textual. Reusar catálogo, loaders, MapLibre e
+  comparação; carregar uma partição temática apenas quando escolhida.

@@ -336,3 +336,24 @@ O arquivo demográfico antigo continua abrindo, com percentuais indisponíveis a
 o novo preparo. `comparison.spec.ts` cobre ranking, denominadores, limite de três,
 navegação, remoção, mudança de município, dados legados, teclado e toque.
 Veja a metodologia em [CENSUS_DEMOGRAPHY.md](../etl_pipeline/CENSUS_DEMOGRAPHY.md).
+
+
+## Temas oficiais do Censo 2022
+
+**Tema do Censo** organiza sexo/idade, cor ou raça, alfabetização 15+, habitação,
+água, esgoto, lixo e renda publicada. **Colorir por** aplica a variável ao próprio
+setor; painel, tooltip e legenda mostram unidade, universo e referência. O painel
+mostra percentuais e denominadores. Bairros somam contagens compatíveis; parcial
+é subtotal conhecido, sem percentual/cor/barra, com cobertura explícita. Renda é
+somente a média publicada diretamente para setor, bairro ou município, sem peso
+V06001. Ranking e cartões reutilizam a comparação existente.
+
+Os temas são JSONs municipais separados, carregados somente ao escolher o tema;
+o panorama nacional vem diretamente do SIDRA, independente do recorte. Zero,
+X e ausência permanecem distintos. O modo demo não recebe métricas oficiais.
+
+Na raiz, rode `.venv/bin/python etl_pipeline/prepare_census_demography.py` antes
+do build. Para só os consolidados nacionais, use `--national-themes-only`.
+Fontes, todas as variáveis/edições, resultados, limites e comandos completos
+para atualizar e testar no Mac em **mapa-br-spike**:
+[CENSUS_THEMES.md](../etl_pipeline/CENSUS_THEMES.md).

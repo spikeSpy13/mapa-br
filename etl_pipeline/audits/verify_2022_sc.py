@@ -36,7 +36,7 @@ SOURCES = {
 }
 
 
-def source_rows(path: Path, *, encoding: str):
+def source_rows(path: Path, *, encoding: str, required_columns=()):
     with zipfile.ZipFile(path) as package:
         members = [i for i in package.infolist() if i.filename.lower().endswith(".csv")]
         if len(members) != 1:
@@ -44,7 +44,7 @@ def source_rows(path: Path, *, encoding: str):
         with package.open(members[0]) as binary:
             with io.TextIOWrapper(binary, encoding=encoding, errors="strict", newline="") as text:
                 reader = csv.DictReader(text, delimiter=";", strict=True)
-                if not reader.fieldnames or len(reader.fieldnames) != len(set(reader.fieldnames)):
+                if not reader.fieldnames or len(reader.fieldnames) != len(set(reader.fieldnames)) or not set(required_columns) <= set(reader.fieldnames):
                     raise ValueError("Cabeçalho CSV ausente ou duplicado")
                 for row in reader:
                     if None in row or any(v is None for v in row.values()):

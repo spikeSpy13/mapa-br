@@ -240,3 +240,17 @@ h1 { font-size: clamp(24px, 3vw, 40px); letter-spacing: -1.3px; margin: 8px 0 25
 .ranking .compare-toggle input { width: 22px; height: 22px; margin: 5px; accent-color: #85d7ac; cursor: pointer; }
 @media (max-width: 1000px) { .comparison-cards { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .neighborhood-comparison { padding: 12px; } .neighborhood-rank-item { flex-wrap: wrap; gap: 0; } .neighborhood-rank-item .ranking-row { flex-basis: 100%; grid-template-columns: minmax(0, 1fr) 110px; } .compare-toggle { flex-direction: row; min-height: 44px; } }
+.census-theme-select { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 20px 0; font-size: 12px; color: #b9efd2; }
+.census-theme-select select { max-width: 100%; }
+.census-theme-panel { padding: 16px; margin-bottom: 20px; border: 1px solid #35504c; border-radius: 8px; background: #102029; }
+.census-theme-panel h3 { color: #b9efd2; margin-top: 0; }
+.census-theme-values { margin: 0; }
+.census-theme-values > div { padding: 12px 0; border-bottom: 1px solid #2b4148; }
+.census-theme-values dt { color: #b9d2d0; font-size: 12px; }
+.census-theme-values dd { margin: 7px 0 0; font-size: 17px; color: #e6f5eb; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.census-theme-values dd.muted { font-size: 11px; color: #9ab5bf; }
+.comparison-card .census-theme-values dd { font-size: 13px; }
+.comparison-card .census-theme-values dd.muted { font-size: 10px; }
+.official-shell .map-panel { min-width: 0; }
+.official-shell .map-controls select { min-width: 0; flex: 1; }
+.ranking-metric select { max-width: 100%; min-width: 0; }

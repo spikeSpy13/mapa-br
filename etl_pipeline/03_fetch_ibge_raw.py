@@ -47,13 +47,13 @@ def official_url(url: str) -> str:
     return url
 
 
-def atomic_json(path: Path, value) -> None:
+def atomic_json(path: Path, value, *, compact: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, suffix=".tmp", delete=False) as stream:
             temp = Path(stream.name)
-            json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            json.dump(value, stream, ensure_ascii=False, indent=None if compact else 2, separators=(',', ':') if compact else None, allow_nan=False)
             stream.write("\n")
         temp.replace(path)
     finally:

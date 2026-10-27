@@ -3,13 +3,15 @@ import type { ReactNode } from 'react';
 import { createStore } from 'zustand/vanilla';
 import { useStore } from 'zustand';
 import { z } from 'zod';
+import { isCensusMetric, type CensusMetric } from '../lib/censusCatalog';
 import { navigationSearch, parseNavigation, validateNavigation } from '../state/navigation';
 import type { Navigation } from '../state/navigation';
 import { cdUfSchema, cdRegiaoSchema, cdBairroSchema } from '../types/contract';
 
 export type NivelDrillDown = Navigation['level'];
-const metricSchema = z.enum(['renda_media_responsavel', 'pib_per_capita', 'pib_total_bi',
+const baseMetricSchema = z.enum(['renda_media_responsavel', 'pib_per_capita', 'pib_total_bi',
   'populacao', 'domicilios', 'cobertura_renda_proporcao', 'setores_sob_sigilo']);
+const metricSchema = z.union([baseMetricSchema, z.custom<CensusMetric>(isCensusMetric)]);
 export type MetricaAtiva = z.infer<typeof metricSchema>;
 
 export interface GeoState {

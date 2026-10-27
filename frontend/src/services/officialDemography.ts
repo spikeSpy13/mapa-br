@@ -1,3 +1,5 @@
+import { CENSUS_DEFINITIONS } from '../lib/censusCatalog';
+import { censusThemeSchema } from '../types/censusThemes';
 import { DataHttpError, type DataLoader } from './dataLoader';
 import { buildSectorToGroupMap } from './sectorJoin';
 import type { Navigation } from '../state/navigation';
@@ -68,4 +70,21 @@ export async function loadOfficialDemography(loader: DataLoader, path: string | 
     }
   }
   return { status: 'disponiveis', index, summary, municipalitySummary, rows, bairros, vinculoBairro, setores, neighborhoodBySector, coverage, neighborhoodLookupUrl };
+}
+
+/** Temas particionados: usa o mesmo DataLoader; só é chamado ao escolher um tema. */
+export async function loadOfficialTheme(loader: DataLoader, municipality: string | undefined, theme: string, signal: AbortSignal, reference?: { ufs: readonly string[]; setores: readonly string[]; bairros?: Record<string, { cd_setores: string[] }> }) {
+  if (!Object.values(CENSUS_DEFINITIONS).some(m => m.tema === theme)) throw new Error('Tema desconhecido.');
+  const path = `statistics/temas/${theme}/${municipality === '4205407' ? 'municipios/42/4205407.json' : 'brasil.json'}`;
+  try {
+    const data = censusThemeSchema.parse(await loader.request(loader.resolve(path, loader.indexUrl), signal, raw => censusThemeSchema.parse(raw)));
+    if (data.tema !== theme) throw new Error('Resposta de outro tema.');
+    if (reference) {
+      if ('cd_mun' in data) {
+        if (Object.keys(data.setores).length !== reference.setores.length || reference.setores.some(c => !(c in data.setores))) throw new Error('Inventário temático/cartográfico divergente.');
+        if (reference.bairros && (Object.keys(data.bairros).length !== Object.keys(reference.bairros).length || Object.entries(reference.bairros).some(([id,b]) => !(id in data.bairros) || Object.values(data.bairros[id]!).some(c => c.cobertura && c.cobertura.esperados !== b.cd_setores.length)))) throw new Error('Partição temática de bairros divergente.');
+      } else if (Object.keys(data.ufs).length !== reference.ufs.length || reference.ufs.some(c => !(c in data.ufs))) throw new Error('Inventário estadual temático divergente.');
+    }
+    return data;
+  } catch (error) { if (error instanceof DataHttpError && error.status === 404) return null; throw error; }
 }
