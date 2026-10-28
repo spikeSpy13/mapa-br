@@ -19,14 +19,14 @@ export function CensusThemePanel({ record, theme, loading, error, level }: { lev
     {loading ? <p role="status">Carregando o tema selecionado…</p> : error ? <p role="alert">{error}</p> : <CensusThemeValues record={record} theme={theme} />}
     {!loading && !error && !record && <p role="status">Tema indisponível neste território ou arquivo ainda não preparado.</p>}
     <details className="source-details"><summary>Definições, universos e fontes do tema</summary>{metrics.map(([id,m]) => {
-      const published = level !== 'bairro' && level !== 'setor';
-      const sourceKey = m.unidade === 'BRL/mês' ? level === 'bairro' ? 'renda_bairro' : level === 'municipio' ? 'renda_municipio' : 'renda_setor' : m.arquivo;
+      const published = level !== 'bairro' && level !== 'distrito' && level !== 'setor';
+      const sourceKey = m.unidade === 'BRL/mês' ? level === 'distrito' ? 'renda_distrito' : level === 'bairro' ? 'renda_bairro' : level === 'municipio' ? 'renda_municipio' : 'renda_setor' : m.arquivo;
       const f = (CENSUS_PROFILE.arquivos as Record<string,{url:string;arquivo:string;edicao:string}>)[sourceKey]!;
       const q = m.consolidado ? (CENSUS_PROFILE.consultas as Record<string,{url:string;tabela:string;variavel:string}>)[m.consolidado.consulta] : undefined;
-      const moneyUnavailable = m.unidade === 'BRL/mês' && !['municipio','bairro','setor'].includes(level);
+      const moneyUnavailable = m.unidade === 'BRL/mês' && !['municipio','distrito','bairro','setor'].includes(level);
       return <div key={id}><strong>{m.rotulo}</strong><p>Unidade: {m.unidade}. Universo: {m.universo}. Denominador: {censusUniverseLabel(m.denominador)}. {m.nota}</p>
         {moneyUnavailable ? <p>Consolidado compatível não preparado neste nível. Não somar nem ponderar médias sem massa/denominador do mesmo universo.</p> : published && q ? <p><a href={q.url}>SIDRA · tabela {q.tabela}</a> · variável {q.variavel} · ano 2022 · categorias {m.consolidado!.categorias.join(' + ')}. Consolidado oficial direto, independente dos setores preparados.</p> : <p><a href={f.url}>{f.arquivo}</a> · edição {f.edicao}. {m.variaveis.join(' + ')}: {Object.values(m.definicoes).join('; ')}.</p>}
-        <p>{m.unidade === 'BRL/mês' ? 'Média publicada diretamente no nível da fonte. Não agregamos médias setoriais para bairros; sem massa/denominador compatível.' : published ? 'Contagem consolidada oficial; não é a soma do recorte setorial preparado.' : 'Bairros: soma de contagens compatíveis; percentuais sobre a soma dos denominadores. Subtotais parciais não recebem percentuais.'}</p></div>;
+        <p>{m.unidade === 'BRL/mês' ? 'Média publicada diretamente no nível da fonte. Não agregamos médias setoriais para bairros/distritos; sem massa/denominador compatível.' : published ? 'Contagem consolidada oficial; não é a soma do recorte setorial preparado.' : 'Bairros/distritos: soma de contagens compatíveis; percentuais sobre a soma dos denominadores. Subtotais parciais não recebem percentuais.'}</p></div>;
     })}<p><a href={CENSUS_PROFILE.arquivos.dicionario.url}>Dicionário oficial</a> · <a href={CENSUS_PROFILE.errata.url}>Errata de 21/10/2026: V00003</a></p></details>
   </section>;
 }

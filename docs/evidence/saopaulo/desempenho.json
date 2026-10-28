@@ -1,0 +1,303 @@
+{
+  "context": "Chromium headless/Linux, localhost, sem throttling, medições observadas; não são SLA de rede",
+  "viewport": "1440x1000",
+  "municipio_abertura_fria": {
+    "elapsed_wall_ms": 1388,
+    "resources": [
+      {
+        "path": "/assets/index-CWdS5rPd.js",
+        "bytes": 454108,
+        "duration_ms": 32.399999998509884
+      },
+      {
+        "path": "/assets/index-DnkplgXD.css",
+        "bytes": 21708,
+        "duration_ms": 13.700000002980232
+      },
+      {
+        "path": "/assets/MapViewport-BmjRKXay.js",
+        "bytes": 1067300,
+        "duration_ms": 52.5
+      },
+      {
+        "path": "/assets/MapViewport-DNVN2dqC.css",
+        "bytes": 69918,
+        "duration_ms": 3.7000000029802322
+      },
+      {
+        "path": "/geo/official/catalogo.json",
+        "bytes": 1047,
+        "duration_ms": 4.100000001490116
+      },
+      {
+        "path": "/geo/official/ufs.geojson",
+        "bytes": 1972619,
+        "duration_ms": 9.100000001490116
+      },
+      {
+        "path": "/geo/official/ufs.inventory.json",
+        "bytes": 288,
+        "duration_ms": 2.7000000029802322
+      },
+      {
+        "path": "/geo/official/statistics/brasil.json",
+        "bytes": 11133,
+        "duration_ms": 4.5
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.geojson",
+        "bytes": 788646,
+        "duration_ms": 6.199999995529652
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.inventory.json",
+        "bytes": 1650,
+        "duration_ms": 4.300000004470348
+      },
+      {
+        "path": "/geo/official/statistics/uf/35.json",
+        "bytes": 123567,
+        "duration_ms": 3.899999998509884
+      },
+      {
+        "path": "/geo/official/statistics/municipios/35/3550308.json",
+        "bytes": 34774,
+        "duration_ms": 4.699999995529652
+      }
+    ],
+    "decoded_bytes": 4546758
+  },
+  "apos_selecionar_distrito": {
+    "elapsed_wall_ms": 627,
+    "resources": [
+      {
+        "path": "/assets/index-CWdS5rPd.js",
+        "bytes": 454108,
+        "duration_ms": 40.79999999701977
+      },
+      {
+        "path": "/assets/index-DnkplgXD.css",
+        "bytes": 21708,
+        "duration_ms": 20.099999994039536
+      },
+      {
+        "path": "/assets/MapViewport-BmjRKXay.js",
+        "bytes": 1067300,
+        "duration_ms": 54.399999998509884
+      },
+      {
+        "path": "/assets/MapViewport-DNVN2dqC.css",
+        "bytes": 69918,
+        "duration_ms": 9.5
+      },
+      {
+        "path": "/geo/official/catalogo.json",
+        "bytes": 1047,
+        "duration_ms": 6.100000001490116
+      },
+      {
+        "path": "/geo/official/ufs.geojson",
+        "bytes": 1972619,
+        "duration_ms": 16.399999998509884
+      },
+      {
+        "path": "/geo/official/ufs.inventory.json",
+        "bytes": 288,
+        "duration_ms": 4.699999995529652
+      },
+      {
+        "path": "/geo/official/statistics/brasil.json",
+        "bytes": 11133,
+        "duration_ms": 3
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.geojson",
+        "bytes": 788646,
+        "duration_ms": 6.5
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.inventory.json",
+        "bytes": 1650,
+        "duration_ms": 3.899999998509884
+      },
+      {
+        "path": "/geo/official/statistics/uf/35.json",
+        "bytes": 123567,
+        "duration_ms": 6.300000004470348
+      },
+      {
+        "path": "/geo/official/statistics/municipios/35/3550308.json",
+        "bytes": 34774,
+        "duration_ms": 4.799999997019768
+      },
+      {
+        "path": "/geo/official/setores/35/3550308/355030801.geojson",
+        "bytes": 196067,
+        "duration_ms": 5.200000002980232
+      },
+      {
+        "path": "/geo/official/setores/35/3550308/355030801.inventory.json",
+        "bytes": 4020,
+        "duration_ms": 4.699999995529652
+      },
+      {
+        "path": "/geo/official/statistics/municipios/35/3550308/355030801.json",
+        "bytes": 43880,
+        "duration_ms": 10.399999998509884
+      }
+    ],
+    "decoded_bytes": 4790725
+  },
+  "maior_distrito_abertura_fria_e_tema": {
+    "elapsed_wall_ms": 3082,
+    "resources": [
+      {
+        "path": "/assets/index-CWdS5rPd.js",
+        "bytes": 454108,
+        "duration_ms": 30.799999997019768
+      },
+      {
+        "path": "/assets/index-DnkplgXD.css",
+        "bytes": 21708,
+        "duration_ms": 16.899999998509884
+      },
+      {
+        "path": "/assets/MapViewport-BmjRKXay.js",
+        "bytes": 1067300,
+        "duration_ms": 65.69999999552965
+      },
+      {
+        "path": "/assets/MapViewport-DNVN2dqC.css",
+        "bytes": 69918,
+        "duration_ms": 8.799999997019768
+      },
+      {
+        "path": "/geo/official/catalogo.json",
+        "bytes": 1047,
+        "duration_ms": 5.100000001490116
+      },
+      {
+        "path": "/geo/official/ufs.geojson",
+        "bytes": 1972619,
+        "duration_ms": 10
+      },
+      {
+        "path": "/geo/official/ufs.inventory.json",
+        "bytes": 288,
+        "duration_ms": 4
+      },
+      {
+        "path": "/geo/official/statistics/brasil.json",
+        "bytes": 11133,
+        "duration_ms": 3.2000000029802322
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.geojson",
+        "bytes": 788646,
+        "duration_ms": 6.199999995529652
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.inventory.json",
+        "bytes": 1650,
+        "duration_ms": 3.899999998509884
+      },
+      {
+        "path": "/geo/official/statistics/uf/35.json",
+        "bytes": 123567,
+        "duration_ms": 3.399999998509884
+      },
+      {
+        "path": "/geo/official/statistics/municipios/35/3550308.json",
+        "bytes": 34774,
+        "duration_ms": 4.100000001490116
+      },
+      {
+        "path": "/geo/official/setores/35/3550308/355030830.geojson",
+        "bytes": 3285375,
+        "duration_ms": 45.399999998509884
+      },
+      {
+        "path": "/geo/official/setores/35/3550308/355030830.inventory.json",
+        "bytes": 25479,
+        "duration_ms": 9.300000004470348
+      },
+      {
+        "path": "/geo/official/statistics/municipios/35/3550308/355030830.json",
+        "bytes": 264629,
+        "duration_ms": 5.5
+      },
+      {
+        "path": "/geo/official/statistics/temas/sexo_idade/municipios/35/3550308/355030830.json",
+        "bytes": 792365,
+        "duration_ms": 16.600000001490116
+      }
+    ],
+    "decoded_bytes": 8914606
+  },
+  "municipio_movel_abertura_fria": {
+    "elapsed_wall_ms": 1313,
+    "resources": [
+      {
+        "path": "/assets/index-CWdS5rPd.js",
+        "bytes": 454108,
+        "duration_ms": 42.5
+      },
+      {
+        "path": "/assets/index-DnkplgXD.css",
+        "bytes": 21708,
+        "duration_ms": 20.100000001490116
+      },
+      {
+        "path": "/assets/MapViewport-BmjRKXay.js",
+        "bytes": 1067300,
+        "duration_ms": 55.899999998509884
+      },
+      {
+        "path": "/assets/MapViewport-DNVN2dqC.css",
+        "bytes": 69918,
+        "duration_ms": 11.5
+      },
+      {
+        "path": "/geo/official/catalogo.json",
+        "bytes": 1047,
+        "duration_ms": 2.899999998509884
+      },
+      {
+        "path": "/geo/official/ufs.geojson",
+        "bytes": 1972619,
+        "duration_ms": 10
+      },
+      {
+        "path": "/geo/official/ufs.inventory.json",
+        "bytes": 288,
+        "duration_ms": 4.100000001490116
+      },
+      {
+        "path": "/geo/official/statistics/brasil.json",
+        "bytes": 11133,
+        "duration_ms": 5.899999998509884
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.geojson",
+        "bytes": 788646,
+        "duration_ms": 5.5
+      },
+      {
+        "path": "/geo/official/distritos/35/3550308.inventory.json",
+        "bytes": 1650,
+        "duration_ms": 3.1999999955296516
+      },
+      {
+        "path": "/geo/official/statistics/uf/35.json",
+        "bytes": 123567,
+        "duration_ms": 3.9000000059604645
+      },
+      {
+        "path": "/geo/official/statistics/municipios/35/3550308.json",
+        "bytes": 34774,
+        "duration_ms": 2.600000001490116
+      }
+    ],
+    "decoded_bytes": 4546758
+  }
+}

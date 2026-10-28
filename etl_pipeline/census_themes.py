@@ -45,7 +45,7 @@ def verify_dictionary(rows, metrics):
                     raise ValueError(f'Dicionário não confirma {variable}: {definition}')
 
 
-def table_rows(path, spec, scope, expected, municipalities=None):
+def table_rows(path, spec, scope, expected, municipalities=None, columns=None):
     """Lê uma tabela nacional em streaming; só retém o recorte municipal."""
     found = {}
     cities = set(municipalities) if municipalities is not None else {code[:7] for code in expected}
@@ -54,7 +54,7 @@ def table_rows(path, spec, scope, expected, municipalities=None):
         if code[:7] not in cities: continue
         if normalize_code(code, scope) != code or code in found or code not in expected:
             raise ValueError(f'Código duplicado/extra/não canônico: {code}')
-        found[code] = row
+        found[code] = row if columns is None else {k:v for k,v in row.items() if k in columns}
     return found
 
 
@@ -77,6 +77,7 @@ def cell(n, d=None, reason=None):
 
 
 def money(raw, decimal_sep):
+    if raw == '.': return cell({'valor':None,'status':'ausente'}, reason="Marcador '.' na fonte de renda: sem média numérica publicada. Não inferir zero, sigilo ou denominador.")
     n, status = helper.adapter.parse_ibge_numeric(raw, field='V06004', decimal_sep=decimal_sep, allow_sigilo=True)
     return cell({'valor': format(n.quantize(Decimal('.01'), rounding=ROUND_HALF_EVEN), '.2f') if n is not None else None, 'status': status})
 
@@ -174,9 +175,16 @@ def prepare_themes(repo, details, basics):
     for k, spec in specs.items():
         if k.startswith('dicionario'): continue
         if k == 'basico': sources[k] = basic_rows; continue
-        scope = 'cd_bairro' if k == 'renda_bairro' else 'cd_mun' if k == 'renda_municipio' else 'cd_setor'
+        scope = 'cd_dist' if k == 'renda_distrito' else 'cd_bairro' if k == 'renda_bairro' else 'cd_mun' if k == 'renda_municipio' else 'cd_setor'
         expected = group_codes if scope == 'cd_bairro' else set(details) if scope == 'cd_mun' else codes
-        sources[k] = table_rows(paths[k], spec, scope, expected, details)
+        cities = details
+        if k == 'renda_distrito':
+            cities = {c:d for c,d in details.items() if MUNICIPALITIES[c].get('particionar_por_distrito')}
+            expected = {t['cd_distrito'] for d in cities.values() for t in d['territorios_setores'].values()}
+        columns = {spec['codigo'],'NM_BAIRRO','NM_DIST','V06004','V00001'}
+        columns.update(v for m in profile['metricas'].values() if m['arquivo']==k for v in m['variaveis'])
+        if k == 'alfabetizacao': columns.update(f'V{n:05}' for n in range(644,657))
+        sources[k] = table_rows(paths[k], spec, scope, expected, cities, columns)
     if set(sources['renda_bairro']) != group_codes: raise ValueError('Inventário de bairros da renda divergente')
     for detail in details.values():
         for g in detail['bairros'].values():
@@ -195,6 +203,12 @@ def prepare_city_themes(repo, profile, detail, basic_rows, sources, national, re
     specs = profile['arquivos']
     city, uf, codes = detail['cd_mun'], detail['cd_uf'], set(detail['setores'])
     out = repo / 'frontend/public/geo/official/statistics/temas'
+    partitioned = MUNICIPALITIES[city].get('particionar_por_distrito')
+    from etl_pipeline.district_partitions import district_groups
+    districts = district_groups(detail) if partitioned else {}
+    for code,g in districts.items():
+        row = sources['renda_distrito'].get(code)
+        if row and row['NM_DIST'] != g['nome']: raise ValueError(f'Nome distrital da renda divergente: {code}')
     thematic_audit = {'errata': profile['errata'], 'arquivos': {}, 'reconciliacao': {}, 'renda': 'V06004 publicada diretamente em setor/município/bairro. Sem agregação de médias ou peso V06001.'}
     for name, data in sources.items():
         if specs[name].get('codigo') in ('setor','CD_setor','CD_SETOR'):
@@ -246,5 +260,18 @@ def prepare_city_themes(repo, profile, detail, basic_rows, sources, national, re
                 raise ValueError(f'Subtotal conhecido excede consolidado: {key}')
             thematic_audit['reconciliacao'][key] = {'soma_setores':aggregate_all, 'consolidado':official, 'comparacao':'igual' if aggregate_all['status'] == 'divulgada' else 'parcial; não reconcilia X nem ausências'}
         municipal_payload = {**common, 'cd_mun':city, 'municipio':municipality, 'bairros':groups, 'setores':sectors}
+        if partitioned:
+            district_records = {}
+            for code,g in districts.items():
+                records = {}
+                for key,m in metrics.items():
+                    if m['unidade'] == 'BRL/mês':
+                        row = sources['renda_distrito'].get(code)
+                        records[key] = money(row['V06004'], ',') if row else cell(missing, reason='Sem renda distrital publicada compatível. Não agregar médias setoriais.')
+                    else: records[key] = aggregate([sectors[c][key] for c in g['cd_setores']])
+                district_records[code] = records
+                part = {**common,'cd_mun':city,'cd_distrito':code,'municipio':municipality,'distritos':{code:records},'bairros':{},'setores':{c:sectors[c] for c in g['cd_setores']}}
+                helper.atomic_json(out / theme / f'municipios/{uf}/{city}/{code}.json',part,compact=True)
+            municipal_payload.update(distritos=district_records, setores={}, bairros={})
         helper.atomic_json(out / theme / f'municipios/{uf}/{city}.json', municipal_payload, compact=True)
     return thematic_audit

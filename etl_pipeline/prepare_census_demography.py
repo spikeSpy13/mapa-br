@@ -229,7 +229,7 @@ def verify_neighborhood_sources(paths, territory, basic_rows=None):
                 v = cell.find('m:v', ns)
                 if v is not None: values.append(strings[int(v.text)] if cell.get('t') == 's' else v.text)
             rows.append(values)
-        for expected in [['CD_SETOR', 'Geocódigo de Setor Censitário'], ['CD_BAIRRO', 'Código do Bairro'], ['NM_BAIRRO', 'Nome do Bairro']]:
+        for expected in [['CD_SETOR', 'Geocódigo de Setor Censitário'], ['CD_BAIRRO', 'Código do Bairro'], ['NM_BAIRRO', 'Nome do Bairro'], ['CD_DIST','Código do Distrito'], ['NM_DIST','Nome do Distrito']]:
             if expected not in rows: raise ValueError('Dicionário de vínculo bairro mudou')
     with zipfile.ZipFile(paths['setores_uf']) as z:
         def member(ext):
@@ -239,7 +239,7 @@ def verify_neighborhood_sources(paths, territory, basic_rows=None):
         encoding = z.read(member('.cpg')).decode('ascii').strip()
         reader = shapefile.Reader(dbf=io.BytesIO(z.read(member('.dbf'))), encoding=encoding)
         types = {f.name: f.field_type for f in reader.fields[1:]}
-        if any(types.get(f) != 'C' for f in ['CD_SETOR', 'CD_MUN', 'CD_BAIRRO', 'NM_BAIRRO']):
+        if any(types.get(f) != 'C' for f in ['CD_SETOR', 'CD_MUN', 'CD_BAIRRO', 'NM_BAIRRO', 'CD_DIST','NM_DIST','CD_SUBDIST','NM_SUBDIST']):
             raise ValueError('Identificadores/nomes DBF não textuais')
         def records():
             for r in reader.iterRecords():
@@ -323,6 +323,10 @@ def prepare(repo: Path):
     for city, detail in details.items():
         detail.update(metadata)
         folder = destination / f'municipios/{detail["cd_uf"]}'
+        if MUNICIPALITIES[city].get('particionar_por_distrito'):
+            from etl_pipeline.district_partitions import write_district_statistics
+            write_district_statistics(repo, detail)
+            continue
         lookup = neighborhood_lookup(detail['setores'], detail['bairros'], detail['vinculo_bairro'])
         helper.atomic_json(folder / f'{city}.bairros.json', lookup)
         helper.atomic_json(folder / f'{city}.json', detail)

@@ -21,10 +21,10 @@ interface Props {
   metricContext?: string; parentNavigation?: Navigation; preview?: TerritoryPreview; onMapPreview?: (id: string | null) => void;
 }
 interface PointerPreview { id: string; code: string; point: { x: number; y: number }; tse?: { name: string; text: string } }
-const kinds = ['ufs', 'municipios', 'setores'] as const;
-const fields = { ufs: 'cd_uf', municipios: 'cd_mun', setores: 'cd_setor' };
-function kindFor(geo: MapGeometry) { return geo.field === 'cd_setor' ? 'setores' : geo.field === 'cd_mun' ? 'municipios' : 'ufs'; }
-const levelLabel = (row: MapRow) => ({ pais: 'País', regiao: 'Região', uf: 'UF', municipio: 'Município', bairro: 'Agrupamento', setor: 'Setor censitário' })[row.nav.level];
+const kinds = ['ufs', 'municipios', 'distritos', 'setores'] as const;
+const fields = { ufs: 'cd_uf', municipios: 'cd_mun', distritos: 'cd_distrito', setores: 'cd_setor' };
+function kindFor(geo: MapGeometry) { return geo.field === 'cd_distrito' ? 'distritos' : geo.field === 'cd_setor' ? 'setores' : geo.field === 'cd_mun' ? 'municipios' : 'ufs'; }
+const levelLabel = (row: MapRow) => ({ pais: 'País', regiao: 'Região', uf: 'UF', municipio: 'Município', bairro: 'Agrupamento', distrito: 'Distrito', setor: 'Setor censitário' })[row.nav.level];
 
 export function MapViewport({ loader, data, nav, rows, metric, select, tse, official = false, officialGeometry, preview = null, onMapPreview, parentNavigation, metricContext }: Props) {
   const container = useRef<HTMLDivElement>(null), stage = useRef<HTMLDivElement>(null), popup = useRef<HTMLDivElement>(null);
@@ -40,7 +40,7 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
   const latest = useRef({ byId, select, nav, metric, official, onMapPreview, parentNavigation });
   latest.current = { byId, select, nav, metric, official, onMapPreview, parentNavigation };
   const selected = selectedTerritory(nav), scope = navigationSearch(nav);
-  const key = nav.level === 'municipio' || nav.level === 'bairro' || nav.level === 'setor' ? `municipio:${nav.cd_mun}` : scope;
+  const key = nav.level === 'municipio' || nav.level === 'bairro' || nav.level === 'distrito' || nav.level === 'setor' ? `municipio:${nav.cd_mun}` : scope;
 
   function clearPreview(notify = true) {
     if (frame.current !== null) { cancelAnimationFrame(frame.current); frame.current = null; }
@@ -127,7 +127,7 @@ export function MapViewport({ loader, data, nav, rows, metric, select, tse, offi
         if (click) {
           const current = latest.current.nav;
           clearPreview(); dismissed.current = null;
-          latest.current.select(selectedTerritory(current) === row.id && (current.level === 'bairro' || current.level === 'setor') ?
+          latest.current.select(selectedTerritory(current) === row.id && (current.level === 'bairro' || current.level === 'distrito' || current.level === 'setor') ?
             latest.current.parentNavigation ?? { level: 'municipio', cd_uf: current.cd_uf, cd_mun: current.cd_mun } : row.nav); return;
         }
         if (dismissed.current === row.id) return;

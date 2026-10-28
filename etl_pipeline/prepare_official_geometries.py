@@ -59,6 +59,27 @@ def compare_inventory(actual, expected, label):
     return result
 
 
+def display_geometry(g, epsg_area, policy=None):
+    """Reparo opt-in e auditado: mesmo conjunto de limites, sem mudar área."""
+    if g.is_valid: return g, None
+    from shapely import make_valid
+    from shapely.ops import transform
+    from shapely.validation import explain_validity
+    from pyproj import Transformer
+    if policy != 'anel_sem_alterar_limites' or not explain_validity(g).startswith('Ring Self-intersection'):
+        raise ValueError('Geometria inválida sem política de exibição compatível')
+    fixed = make_valid(g)
+    projection = Transformer.from_crs(4674, epsg_area, always_xy=True)
+    area_before = transform(projection.transform, g).area
+    area_after = transform(projection.transform, fixed).area
+    identical = g.boundary.equals(fixed.boundary)
+    if not fixed.is_valid or fixed.is_empty or fixed.geom_type not in {'Polygon','MultiPolygon'} or not identical or abs(area_after-area_before) > .000001:
+        raise ValueError('Reparo mudaria limites/área; publicação bloqueada')
+    return fixed, {'motivo':explain_validity(g),'metodo':'GEOS make_valid linework, somente exibição',
+        'limites_topologicamente_identicos':identical,'area_original_m2':area_before,'area_exibicao_m2':area_after,
+        'diferenca_area_m2':area_after-area_before,'tolerancia_area_m2':.000001}
+
+
 def read_shapes(path, code_field, municipalities=None):
     import shapefile
     from pyproj import CRS
@@ -121,9 +142,13 @@ def write_catalog(output, report):
     """Particiona também os inventários; a abertura não recebe IDs descendentes."""
     helper = importlib.import_module('etl_pipeline.03_fetch_ibge_raw')
     entries = [('ufs.geojson', 'cd_uf')] + [(f'municipios/{u}.geojson', 'cd_mun') for u in PREPARED_UFS] + [(f'setores/{m["cd_uf"]}/{c}.geojson', 'cd_setor') for c,m in MUNICIPALITIES.items()]
+    for city,cfg in MUNICIPALITIES.items():
+        if cfg.get('particionar_por_distrito'):
+            entries.append((f'distritos/{cfg["cd_uf"]}/{city}.geojson','cd_distrito'))
+            entries.extend((f'setores/{cfg["cd_uf"]}/{city}/{d}.geojson','cd_setor') for d in report['municipios'][city]['distritos'])
     for filename, field in entries:
         features = json.loads((output / filename).read_text(encoding='utf-8'))['features']
-        ids = [checked_code(f['properties'][field], field) for f in features]
+        ids = [checked_code(f['properties'][field], 'cd_dist' if field=='cd_distrito' else field) for f in features]
         compare_inventory(ids, ids, filename)
         inventory_file = filename.replace('.geojson', '.inventory.json')
         helper.atomic_json(output / inventory_file, {'ids': sorted(ids)})
@@ -131,8 +156,22 @@ def write_catalog(output, report):
     catalog = {'schema_version': 'cartografia-1', 'referencia': 'Censo 2022', 'estatisticas': 'indisponiveis',
         'ufs': {'arquivo': 'ufs.geojson', 'inventario': 'ufs.inventory.json'},
         'municipios': {u: {'arquivo': f'municipios/{u}.geojson', 'inventario': f'municipios/{u}.inventory.json'} for u in PREPARED_UFS},
-        'setores': {c: {'arquivo': f'../setores/{m["cd_uf"]}/{c}.geojson', 'inventario': f'../setores/{m["cd_uf"]}/{c}.inventory.json'} for c,m in MUNICIPALITIES.items()}}
+        'setores': {c: {'arquivo': f'../setores/{m["cd_uf"]}/{c}.geojson', 'inventario': f'../setores/{m["cd_uf"]}/{c}.inventory.json'} for c,m in MUNICIPALITIES.items() if not m.get('particionar_por_distrito')}}
+    catalog['distritos'] = {c:{'arquivo':f'distritos/{m["cd_uf"]}/{c}.geojson','inventario':f'distritos/{m["cd_uf"]}/{c}.inventory.json'} for c,m in MUNICIPALITIES.items() if m.get('particionar_por_distrito')}
+    if not catalog['distritos']: catalog.pop('distritos')
     helper.atomic_json(output / 'catalogo.json', catalog)
+    for c,m in MUNICIPALITIES.items():
+        if m.get('particionar_por_distrito'):
+            # O monólito só serve à conferência durante a preparação. Não
+            # anunciá-lo como artefato disponível nem deixá-lo na árvore servida.
+            omitted = report.setdefault('monoliticos_nao_servidos', {})
+            # O inventário municipal completo continua sendo a referência do
+            # preparador demográfico; o navegador não o solicita na abertura.
+            for suffix in ('.geojson',):
+                filename = f'setores/{m["cd_uf"]}/{c}{suffix}'
+                omitted[filename] = {**report['files'].pop(filename),
+                    'motivo':'substituído por partições distritais; referência integral preservada em reference/'}
+                (output / filename).unlink()
 
 
 def prepare(cache, output, reference, audit_path):
@@ -151,7 +190,7 @@ def prepare(cache, output, reference, audit_path):
         'bairros': 'join não auditado; sem agrupamento ou atribuição de indicadores', 'exclusions_water_body_denylist': [],
         'transformations': ['dissolve geométrico dos distritos CD2022 por CD_UF e por CD_MUN das UFs configuradas; sem alteração de edição',
             'SIRGAS 2000 EPSG:4674 → WGS84 EPSG:4326, always_xy, sem arredondamento de coordenadas',
-            'referência integral separada da versão de exibição; sem make_valid, buffer ou reparo silencioso'],
+            'referência integral original separada da exibição; reparos somente se configurados, limites idênticos e área verificada, com diagnóstico individual'],
         'files': {}}
     output.mkdir(parents=True, exist_ok=True); reference.mkdir(parents=True, exist_ok=True)
     try:
@@ -195,7 +234,7 @@ def prepare(cache, output, reference, audit_path):
             if not code.startswith(mun) or not mun.startswith(uf): raise ValueError('Município básico incompatível')
             basic[uf][code] = mun
         report['ufs'], report['municipios'] = {}, {}
-        sector_items = {}
+        sector_items, original_sector_items, district_items = {}, {}, {}
         for uf, spec in PREPARED_UFS.items():
             selected_cities = {c for c,m in MUNICIPALITIES.items() if m['cd_uf'] == uf}
             sectors, schema = read_shapes(paths['setores_' + spec['sigla'].lower()], 'CD_SETOR', selected_cities)
@@ -209,7 +248,13 @@ def prepare(cache, output, reference, audit_path):
                 cfg = MUNICIPALITIES[city]
                 selected = [(dict(UF_META[uf], cd_mun=p['CD_MUN'], nm_mun=p['NM_MUN'], cd_setor=c), g) for c,p,g in sectors if p['CD_MUN'] == city]
                 inventory = compare_inventory([p['cd_setor'] for p,_ in selected], [c for c,m in basic[uf].items() if m == city], f'{cfg["nome"]} vs básico')
-                if any(not g.is_valid for _,g in selected): raise ValueError(f'Setor inválido em {cfg["nome"]}; publicação bloqueada')
+                original_sector_items[city] = selected
+                repairs, displayed = [], []
+                for props, geom in selected:
+                    fixed, repair = display_geometry(geom,cfg['epsg_area'],cfg.get('reparo_exibicao'))
+                    if repair: repairs.append({'cd_setor':props['cd_setor'],**repair})
+                    displayed.append((props,fixed))
+                selected = displayed
                 if any(p['nm_mun'] != cfg['nome'] for p,_ in selected): raise ValueError('Nome municipal difere da configuração')
                 mun_geom = next(g for p,g in municipal_items[uf] if p['cd_mun'] == city)
                 projection = Transformer.from_crs(4674, cfg['epsg_area'], always_xy=True)
@@ -217,16 +262,31 @@ def prepare(cache, output, reference, audit_path):
                 spatial = {'method': f'difference vs município integral, EPSG:{cfg["epsg_area"]}', 'tolerance_m2':1,
                     'max_outside_m2':max(r['area_m2'] for r in outside), 'violations':[r for r in outside if r['area_m2'] > 1]}
                 if spatial['violations']: raise ValueError(f'Setores fora do município {city}: {spatial}')
-                report['municipios'][city] = {'nome':cfg['nome'],'inventario':inventory,'spatial_membership':spatial}
+                report['municipios'][city] = {'nome':cfg['nome'],'inventario':inventory,'spatial_membership':spatial,'reparos_exibicao':repairs}
                 sector_items[city] = selected
+                if cfg.get('particionar_por_distrito'):
+                    names = {c:(p['NM_DIST'],geom) for c,p,geom in districts if p['CD_MUN']==city}
+                    district_items[city] = [(dict(UF_META[uf],cd_mun=city,nm_mun=cfg['nome'],cd_distrito=c,nm_distrito=n),geom) for c,(n,geom) in sorted(names.items())]
+                    by_sector = {c:p['CD_DIST'] for c,p,_ in sectors if p['CD_MUN']==city}
+                    report['municipios'][city]['distritos'] = {}
+                    for code,(name,geom) in sorted(names.items()):
+                        part = [(dict(props,cd_distrito=code,nm_distrito=name),g) for props,g in selected if by_sector[props['cd_setor']]==code]
+                        if not part: raise ValueError('Distrito sem setores')
+                        outside_dist = max(transform(projection.transform,g.difference(geom)).area for _,g in part)
+                        if outside_dist > 1: raise ValueError(f'Setor fora do distrito {code}')
+                        report['municipios'][city]['distritos'][code] = {'nome':name,'setores':len(part),'area_externa_max_m2':outside_dist}
+                        sector_items[city+'_'+code] = part
+                        original_sector_items[city+'_'+code] = [(props,g) for props,g in original_sector_items[city] if by_sector[props['cd_setor']]==code]
+                    if set(by_sector.values()) != set(names): raise ValueError('Distritos das malhas divergem')
         # Referências integrais são mantidas para novas validações espaciais.
         wgs = Transformer.from_crs(4674, 4326, always_xy=True)
-        exports = [('ufs.geojson', ufs)] + [(f'municipios/{uf}.geojson', items) for uf,items in municipal_items.items()] + [(f'setores/{MUNICIPALITIES[city]["cd_uf"]}/{city}.geojson', items) for city,items in sector_items.items()]
+        exports = [('ufs.geojson', ufs)] + [(f'municipios/{uf}.geojson', items) for uf,items in municipal_items.items()] + [(f'setores/{MUNICIPALITIES[city.split("_")[0]]["cd_uf"]}/{city.replace("_","/")}.geojson', items) for city,items in sector_items.items()] + [(f'distritos/{MUNICIPALITIES[city]["cd_uf"]}/{city}.geojson',items) for city,items in district_items.items()]
         for filename, items in exports:
             for _, g in items:
                 if not g.is_valid or g.is_empty: raise ValueError(f'Geometria inválida em {filename}')
             refpath = reference / filename
-            helper.atomic_json(refpath, collection(items))
+            ref_items = original_sector_items.get(filename.removeprefix('setores/').split('/',1)[-1].removesuffix('.geojson').replace('/','_'),items) if filename.startswith('setores/') else items
+            helper.atomic_json(refpath, collection(ref_items))
             report['files']['reference/' + filename] = {'sha256_local': helper.sha256_file(refpath), 'bytes': refpath.stat().st_size}
             geometries = [g for _, g in items]
             coverage_valid = bool(coverage_is_valid(geometries))
@@ -258,7 +318,7 @@ def prepare(cache, output, reference, audit_path):
                 'simplification': 'coverage_simplify; adjacência e cobertura verificadas' if simplified is not geometries else 'nenhuma; limites integrais preservados',
                 'tolerance_degrees': (.005 if filename == 'ufs.geojson' else .0001) if simplified is not geometries else None, 'ids_preserved': True}
         report['status'] = 'approved_cartography_only'
-        report['limitations'] = ['Referência bruta preservada no cache; validade geométrica setorial auditada somente nos municípios exportados, sem reparos. A autointerseção conhecida em São José não pertence a estes recortes.', 'Indicadores e bairros são preparados separadamente pelo preparador demográfico.']
+        report['limitations'] = ['Referência bruta preservada no cache; validade geométrica setorial auditada somente nos municípios exportados. Reparos de exibição, quando configurados, estão individualizados em municipios.*.reparos_exibicao; originais preservados. A autointerseção conhecida em São José não pertence a estes recortes.', 'Indicadores, bairros e distritos são preparados separadamente pelo preparador demográfico.']
         write_catalog(output, report)
         helper.atomic_json(output / 'proveniencia.json', report)
         print(json.dumps(report['files'], ensure_ascii=False, indent=2), flush=True)

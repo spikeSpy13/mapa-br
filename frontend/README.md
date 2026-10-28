@@ -393,3 +393,23 @@ A consulta complementar à página de mapas da Seplan retornou HTTP 503/timeout.
 Nenhum vínculo municipal foi estimado. Fontes, cobertura por indicador, resultado
 da investigação e [comandos completos no Mac](../etl_pipeline/BAURU.md) estão
 no relatório; [auditoria estruturada](../etl_pipeline/manifests/bauru.audit.json).
+
+## São Paulo — distritos e setores
+
+São Paulo (`3550308`) acrescenta 96 distritos oficiais e 27.301 setores, mantendo
+as três cidades anteriores. A navegação é município → **distrito** → setor;
+as fontes não publicam bairros para este recorte. Busca por nome de distrito ou
+código setorial, histórico, teclado, toque e retorno preservam essa identidade.
+Não há comparação de bairros inventados para a capital.
+
+A abertura municipal carrega apenas os limites/resumos distritais. Setores e
+estatísticas carregam por distrito; temas sob demanda. Links setoriais sem distrito
+resolvem o pai por índice atributivo separado. São os mesmos DataLoader/React Query
+e a mesma instância MapLibre; links diretos dispensam a malha municipal estadual.
+Contagens parciais, ausência e sigilo continuam explícitos. A renda distrital vem
+de publicação direta, não de média das médias dos setores.
+
+Fontes, inventários, cobertura dos 25 indicadores, medições, capturas e comandos
+para atualizar/preparar no Mac: [SAO_PAULO.md](../etl_pipeline/SAO_PAULO.md).
+Os dados oficiais preparados continuam locais e ignorados pelo Git: execute os
+dois preparadores antes do build. O pull sozinho não baixa esses arquivos.

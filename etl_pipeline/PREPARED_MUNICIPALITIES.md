@@ -2,6 +2,8 @@
 
 Atualização: [BAURU.md](BAURU.md) documenta a terceira cidade, seus bairros e a
 investigação municipal. Esta página conserva a auditoria da inclusão de Agudos.
+O quarto município, São Paulo capital, usa a mesma configuração com partições
+por distrito: fontes, contratos, cobertura e comandos em [SAO_PAULO.md](SAO_PAULO.md).
 
 Entrega sobre **6a8b59c**, auditada em **27/10/2026**, referência Censo **1º/08/2022**.
 Inclui Agudos (`cd_uf="35"`, `cd_mun="3500709"`), preservando Florianópolis.

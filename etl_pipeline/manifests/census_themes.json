@@ -87,6 +87,14 @@
       "edicao": "20260520",
       "codigo": "CD_SETOR",
       "encoding": "cp1252"
+    },
+    "renda_distrito": {
+      "url": "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios_Rendimento_do_Responsavel/Agregados_por_distritos_renda_responsavel_BR_20260508_csv.zip",
+      "sha256": "424b7628d2cc2026c3e63afda04b1a876952ec1a97baa0ab5bc9f8114e56f307",
+      "arquivo": "Agregados_por_distritos_renda_responsavel_BR_20260508_csv.zip",
+      "edicao": "20260508",
+      "codigo": "CD_DIST",
+      "encoding": "cp1252"
     }
   },
   "consultas": {

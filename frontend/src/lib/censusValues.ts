@@ -15,9 +15,9 @@ export function formatCensusPercent(c?: CensusCell) {
 }
 export function censusSummary(data: CensusTheme | null | undefined, nav: Navigation): CensusRecord | undefined {
   if (!data) return undefined;
-  if ('cd_mun' in data) return nav.level === 'setor' ? data.setores[nav.cd_setor] : nav.level === 'bairro' ? data.bairros[nav.id_agregacao] : data.municipio;
+  if ('cd_mun' in data) return nav.level === 'setor' ? data.setores[nav.cd_setor] : nav.level === 'distrito' ? data.distritos?.[nav.cd_distrito] : nav.level === 'bairro' ? data.bairros[nav.id_agregacao] : data.municipio;
   return nav.level === 'pais' ? data.brasil : nav.level === 'regiao' ? data.regioes[nav.cd_regiao] : nav.level === 'uf' ? data.ufs[nav.cd_uf] : 'cd_mun' in nav ? data.municipios[nav.cd_mun] : undefined;
 }
 export function censusRows(data: CensusTheme | null | undefined, field?: string): Record<string,CensusRecord> {
-  return !data ? {} : 'cd_mun' in data ? data.setores : field === 'cd_uf' ? data.ufs : field === 'cd_mun' ? data.municipios : {};
+  return !data ? {} : 'cd_mun' in data ? field === 'cd_distrito' ? data.distritos??{} : data.setores : field === 'cd_uf' ? data.ufs : field === 'cd_mun' ? data.municipios : {};
 }

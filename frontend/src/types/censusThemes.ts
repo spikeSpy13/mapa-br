@@ -31,12 +31,12 @@ const record = z.record(censusCellSchema);
 const receipt = z.object({ url:z.string().url(), url_final:z.string().url(), sha256_local:z.string().regex(/^[a-f0-9]{64}$/), bytes:count, downloaded_at:z.string() }).strict();
 const common = { schema_version:z.literal('censo-temas-1'), referencia:z.literal('2022-08-01'), tema:z.string(), metricas:z.array(z.string()).min(1), fontes:z.record(receipt) };
 const national = z.object({ ...common, brasil:record, regioes:z.record(z.string().regex(/^[1-5]$/),record), ufs:z.record(cdUfSchema,record), municipios:z.record(cdMunSchema,record) }).strict();
-const municipal = z.object({ ...common, cd_mun:cdMunSchema, municipio:record, bairros:z.record(record), setores:z.record(cdSetorSchema,record) }).strict();
+const municipal = z.object({ ...common, cd_mun:cdMunSchema, cd_distrito:z.string().regex(/^\d{9}$/).optional(), distritos:z.record(z.string().regex(/^\d{9}$/),record).optional(), municipio:record, bairros:z.record(record), setores:z.record(cdSetorSchema,record) }).strict();
 export const censusThemeSchema = z.union([national,municipal]).superRefine((p,ctx) => {
   const bad = (message:string) => ctx.addIssue({ code:'custom', message });
   const expected = Object.entries(CENSUS_DEFINITIONS).filter(([, m]) => m.tema === p.tema).map(([id]) => id);
   if (!expected.length || new Set(p.metricas).size !== expected.length || expected.some(k => !p.metricas.includes(k))) bad('Catálogo temático divergente');
-  const records = 'cd_mun' in p ? [p.municipio,...Object.values(p.bairros),...Object.values(p.setores)] : [p.brasil,...Object.values(p.regioes),...Object.values(p.ufs),...Object.values(p.municipios)];
+  const records = 'cd_mun' in p ? [p.municipio,...Object.values(p.bairros),...Object.values(p.setores),...Object.values(p.distritos??{})] : [p.brasil,...Object.values(p.regioes),...Object.values(p.ufs),...Object.values(p.municipios)];
   for (const r of records) {
     if (Object.keys(r).length !== expected.length || expected.some(k => !(k in r))) { bad('Indicadores do registro divergentes'); continue; }
     for (const [k,c] of Object.entries(r)) {
@@ -44,7 +44,25 @@ export const censusThemeSchema = z.union([national,municipal]).superRefine((p,ct
     }
   }
   if ('cd_mun' in p) {
-    if (!preparedMunicipality(p.cd_mun) || !Object.keys(p.setores).length || Object.keys(p.setores).some(c => !c.startsWith(p.cd_mun)) || Object.keys(p.bairros).some(id => id !== `sem_bairro:${p.cd_mun}` && !(id.startsWith('bairro:') && cdBairroSchema.safeParse(id.slice(7)).success && id.slice(7).startsWith(p.cd_mun)))) bad('Inventário municipal temático incompatível');
+    if (!preparedMunicipality(p.cd_mun) || (!Object.keys(p.setores).length && !Object.keys(p.distritos??{}).length) || Object.keys(p.setores).some(c => !c.startsWith(p.cd_mun)) || Object.keys(p.bairros).some(id => id !== `sem_bairro:${p.cd_mun}` && !(id.startsWith('bairro:') && cdBairroSchema.safeParse(id.slice(7)).success && id.slice(7).startsWith(p.cd_mun)))) bad('Inventário municipal temático incompatível');
+    if(p.distritos&&(Object.keys(p.distritos).some(c=>!c.startsWith(p.cd_mun))||!preparedMunicipality(p.cd_mun)?.particionar_por_distrito))bad('Distritos temáticos incompatíveis');
+    if(p.cd_distrito&&(!p.cd_distrito.startsWith(p.cd_mun)||Object.keys(p.distritos??{}).length!==1||!p.distritos?.[p.cd_distrito]||!Object.keys(p.setores).length))bad('Partição temática distrital incompatível');
+    if(p.cd_distrito){
+      for(const key of expected){
+        if(CENSUS_DEFINITIONS[key]?.unidade==='BRL/mês')continue; // Média distrital publicada diretamente.
+        const cells=Object.values(p.setores).map(r=>r[key]!);
+        if(cells.some(c=>!c)){bad('Indicador setorial obrigatório ausente');continue;}
+        if(cells.some(c=>c.status==='parcial'||c.cobertura!==undefined))bad('Observação setorial não pode conter agregado parcial');
+        const known=cells.filter(c=>c.status==='divulgada');
+        const state=known.length===cells.length?'divulgada':known.length?'parcial':cells.some(c=>c.status==='sigilo')?'sigilo':'ausente';
+        const value=known.length?known.reduce((n,c)=>n+(c.valor as number),0):null;
+        const ds=cells.some(c=>c.status_denominador==='sigilo')?'sigilo':cells.some(c=>c.status_denominador!=='divulgada')?'ausente':'divulgada';
+        const denominator=ds==='divulgada'?cells.reduce((n,c)=>n+c.denominador!,0):null;
+        const a=p.distritos?.[p.cd_distrito]?.[key];
+        const coverage={divulgados:known.length,esperados:cells.length,sigilo:cells.filter(c=>c.status==='sigilo').length,ausentes:cells.filter(c=>c.status==='ausente').length};
+        if(!a||a.status!==state||a.valor!==value||a.status_denominador!==ds||a.denominador!==denominator||!a.cobertura||Object.entries(coverage).some(([k,v])=>a.cobertura![k as keyof typeof coverage]!==v))bad('Agregado distrital diverge dos setores/denominadores/cobertura');
+      }
+    }
   } else if (Object.keys(p.ufs).length !== 27 || Object.keys(p.regioes).length !== 5) bad('Panorama nacional temático incompleto');
   const requiredSources = [...('cd_mun' in p ? Object.keys(CENSUS_PROFILE.arquivos) : []), ...Object.keys(CENSUS_PROFILE.consultas).map(k => `sidra_${k}`)];
   if (requiredSources.some(k => !(k in p.fontes))) bad('Proveniência temática incompleta');

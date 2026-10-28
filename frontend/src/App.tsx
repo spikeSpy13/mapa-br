@@ -137,7 +137,7 @@ function Explorer({ loader }: { loader: DataLoader }) {
     <main className="split-screen">
       <section className="map-panel" aria-label="Exploração territorial">
         <div className="map-heading"><div><span className="eyebrow">EXPLORAÇÃO TERRITORIAL / {nav.level.toUpperCase()}</span><h1>{title ?? 'Carregando território…'}</h1></div>
-          <span className="level-tag">{({ pais: '01', regiao: '02', uf: '03', municipio: '04', bairro: '05', setor: '05' })[nav.level]} / 05</span></div>
+          <span className="level-tag">{({ pais: '01', regiao: '02', uf: '03', municipio: '04', bairro: '05', distrito: '05', setor: '05' })[nav.level]} / 05</span></div>
         <div className="map-controls"><label>Colorir por <select value={metric} onChange={e => setMetrica(e.target.value as Metric)}>
           {Object.entries(metricLabels).filter(([key]) => !metadadosMetrica(key as Metric).oficial).map(([key, label]) => <option key={key} value={key}>{label}{!metadadosMetrica(key as Metric).disponivelEmBairro ? ' (Até Município)' : ''}</option>)}</select></label></div>
         {municipality && <label className="tse-toggle"><input type="checkbox" checked={showTse} onChange={e => setShowTse(e.target.checked)} /> Exibir locais de votação (TSE)</label>}

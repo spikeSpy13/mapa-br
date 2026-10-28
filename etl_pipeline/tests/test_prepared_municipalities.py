@@ -29,12 +29,12 @@ class PreparedMunicipalityTests(unittest.TestCase):
         self.assertEqual(measure('-', 'contagem'),{'valor':None,'status':'ausente'})
 
     def test_sector_reader_filters_all_configured_cities_in_a_single_pass(self):
-        codes={'350070905000001','350600305000002','420540705000001'}
+        codes={'350070905000001','350600305000002','355030805000001','420540705000001'}
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/'table.zip'
             def write(text):
                 with zipfile.ZipFile(path,'w') as archive: archive.writestr('table.csv','CD_SETOR;V00001\n'+text)
-            write('350070905000001;0\n420540705000001;X\n350600305000002;5\n355030805000001;3\n')
+            write('350070905000001;0\n420540705000001;X\n350600305000002;5\n355030805000001;3\n355220505000001;7\n')
             rows=table_rows(path,{'codigo':'CD_SETOR','encoding':'utf-8'},'cd_setor',codes,CONFIG['municipios'])
             self.assertEqual(set(rows),codes)
             self.assertEqual(rows['350070905000001']['V00001'],'0')

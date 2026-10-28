@@ -31,6 +31,14 @@ describe('store geográfica compartilhada', () => {
     store.getState().registrarRegioes(brasilSchema.parse(fixtures['brasil.json']).ufs.map(u => u.metadata));
     return store;
   }
+  it('retorna ao distrito textual conhecido mesmo antes da carga dos dados', () => {
+    const store=ready(),actions=store.getState();
+    actions.navigate({level:'setor',cd_uf:'35',cd_mun:'3550308',cd_distrito:'355030801',cd_setor:'355030801000001'});
+    actions.voltarNivel();
+    expect(store.getState().navigation).toEqual({level:'distrito',cd_uf:'35',cd_mun:'3550308',cd_distrito:'355030801'});
+    actions.voltarNivel();
+    expect(store.getState().navigation).toEqual({level:'municipio',cd_uf:'35',cd_mun:'3550308'});
+  });
   it('volta dos cinco níveis e usa a região da UF atual, sem preservar região antiga', () => {
     const store = ready(); const actions = store.getState();
     actions.selecionarRegiao('4'); actions.selecionarUf('35');

@@ -478,3 +478,31 @@ segunda raiz /data paralela à árvore já servida pelo Vite.
 - Agudos e Florianópolis e seus inventários/indicadores continuam preservados.
   Os oito snapshots SIDRA temáticos incluem os três municípios. Básico SP/SC e
   ZIPs nacionais/setoriais continuam os mesmos; não atualizar pins sem conferência.
+
+## São Paulo — distritos e partições progressivas
+
+- Ler `etl_pipeline/SAO_PAULO.md` e `etl_pipeline/manifests/saopaulo.audit.json`. A configuração
+  comum inclui a capital `3550308`, com `particionar_por_distrito: true` e área
+  auditada em EPSG:31983. Inventário observado: 27.301 setores em 96 distritos.
+  CD_DIST/NM_DIST coincidem no CSV/DBF; não há CD_BAIRRO/NM_BAIRRO publicados.
+  Distrito é um nível próprio, com cd_distrito textual; nunca preencher cd_bairro.
+- `demografia-distritos-1` carrega resumo e índice distrital sem setores.
+  `demografia-distrito-1` contém somente os setores do distrito selecionado.
+  `indice-setores-distritos-1` é solicitado apenas para busca exata/link setorial
+  sem distrito. A associação vem de atributos conferidos, nunca do prefixo.
+- Geometria e estatísticas setoriais são particionadas por distrito; temas só
+  carregam quando selecionados. Reusar DataLoader/React Query e uma instância
+  MapLibre, agora com quatro fontes poligonais (e a fonte opcional de pontos TSE).
+  Links diretos da capital não precisam da malha dos 645 municípios de SP.
+- Contagens distritais usam o agregador temático existente, com cobertura explícita,
+  percentuais apenas completos e razão das somas. O cliente verifica inventários,
+  subtotais, denominadores e cobertura contra os setores da partição carregada.
+  Renda distrital é V06004 publicada diretamente no arquivo distrital 20260508;
+  não agregar médias setoriais. Cinco registros setoriais com '.' permanecem
+  ausentes com o marcador original explicado, sem imputação de zero ou sigilo.
+- Três anéis originais inválidos exigem política explícita `reparo_exibicao`:
+  somente autointerseção de anel, make_valid, limites topologicamente idênticos
+  e diferença de área <= 0,000001 m². Originais integrais preservados; diagnósticos
+  por setor no relatório. Outros problemas abortam. Nunca reparar silenciosamente.
+- Os oito snapshots SIDRA incluem as quatro cidades. As três cidades anteriores
+  conservam inventários, valores e geometrias. A demo e seus contratos não mudam.

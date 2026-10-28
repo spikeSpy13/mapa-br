@@ -13,6 +13,8 @@ def validate_configuration(config):
     for code, city in config['municipios'].items():
         if normalize_code(code, 'cd_mun') != code or normalize_code(city['cd_uf'], 'cd_uf') != city['cd_uf'] or not code.startswith(city['cd_uf']):
             raise ValueError('Município/UF não canônico na configuração')
+        if 'particionar_por_distrito' in city and not isinstance(city['particionar_por_distrito'],bool): raise ValueError('Particionamento deve ser booleano')
+        if city.get('reparo_exibicao') not in (None,'anel_sem_alterar_limites'): raise ValueError('Política geométrica desconhecida')
         if city['cd_uf'] not in config['ufs'] or not city['nome'].strip() or not isinstance(city['epsg_area'], int):
             raise ValueError('Metadados municipais incompletos')
     if set(config['ufs']) != {c['cd_uf'] for c in config['municipios'].values()}:

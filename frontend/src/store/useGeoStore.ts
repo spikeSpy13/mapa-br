@@ -99,7 +99,8 @@ export function createGeoStore(browser: Window = window) {
     setMetrica: value => set({ metrica: metricSchema.parse(value) }),
     voltarNivel: () => {
       const nav = get().navigation;
-      if (nav.level === 'bairro' || nav.level === 'setor') get().navigate({ level: 'municipio', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun });
+      if (nav.level === 'setor' && nav.cd_distrito) get().navigate({level:'distrito',cd_uf:nav.cd_uf,cd_mun:nav.cd_mun,cd_distrito:nav.cd_distrito});
+      else if (nav.level === 'bairro' || nav.level === 'distrito' || nav.level === 'setor') get().navigate({ level: 'municipio', cd_uf: nav.cd_uf, cd_mun: nav.cd_mun });
       else if (nav.level === 'municipio') get().navigate({ level: 'uf', cd_uf: nav.cd_uf });
       else if (nav.level === 'uf' && get().regioesPorUf[nav.cd_uf]) get().navigate({ level: 'regiao', cd_regiao: get().regioesPorUf[nav.cd_uf]! });
       else get().irParaPais();

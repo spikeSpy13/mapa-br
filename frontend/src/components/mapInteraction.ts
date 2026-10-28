@@ -1,6 +1,6 @@
 import type { MapGeometry } from '../types/geometry';
 import type { Navigation } from '../state/navigation';
-export const selectedTerritory = (nav: Navigation) => nav.level === 'bairro' ? nav.id_agregacao : nav.level === 'setor' ? nav.cd_setor : null;
+export const selectedTerritory = (nav: Navigation) => nav.level === 'bairro' ? nav.id_agregacao : nav.level === 'distrito' ? nav.cd_distrito : nav.level === 'setor' ? nav.cd_setor : null;
 export function tooltipPosition(point: { x: number; y: number } | undefined, width: number, height: number, tooltipWidth: number, tooltipHeight: number) {
   if (!point) return { left: 10, top: 10 };
   const x = point.x + 14 + tooltipWidth > width - 10 ? point.x - 14 - tooltipWidth : point.x + 14;
@@ -16,7 +16,7 @@ export class PolygonPreview {
   setGeometry(map: FeatureStateMap, geometry?: MapGeometry) {
     this.set(map, null);
     this.byRow.clear();
-    this.source = geometry ? `${geometry.field === 'cd_setor' ? 'setores' : geometry.field === 'cd_mun' ? 'municipios' : 'ufs'}-source` : '';
+    this.source = geometry ? `${geometry.field === 'cd_distrito' ? 'distritos' : geometry.field === 'cd_setor' ? 'setores' : geometry.field === 'cd_mun' ? 'municipios' : 'ufs'}-source` : '';
     if (geometry) for (const feature of geometry.collection.features) {
       const code = feature.properties![geometry.field] as string;
       const row = geometry.rowByFeature.get(code);

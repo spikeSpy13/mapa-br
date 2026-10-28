@@ -72,6 +72,21 @@ describe('novos temas oficiais',()=>{
   const wrong=new DataLoader('https://local.test/geo/official/catalogo.json',vi.fn(async()=>new Response(JSON.stringify(floripa))) as typeof fetch);
   await expect(loadOfficialTheme(wrong,'3500709','sexo_idade',signal,ref('350070905000001'))).rejects.toThrow(/outro município/);
  });
+ it('resumos e partições distritais têm tipos próprios e URLs independentes',async()=>{
+  const n=fixture(),r=n.brasil;const districtRecord=Object.fromEntries(Object.entries(r).map(([k,c])=>[k,{...c,cobertura:{divulgados:1,esperados:1,sigilo:0,ausentes:0}}]));
+  const summary={schema_version:n.schema_version,referencia:n.referencia,tema:n.tema,metricas:n.metricas,fontes:n.fontes,cd_mun:'3550308',municipio:r,bairros:{},setores:{},distritos:{'355030801':districtRecord}};
+  const part={...summary,cd_distrito:'355030801',setores:{'355030801000001':r}};
+  const fetcher=vi.fn(async(url:RequestInfo|URL)=>new Response(JSON.stringify(String(url).includes('/3550308/')?part:summary)));
+  const loader=new DataLoader('https://local.test/geo/official/catalogo.json',fetcher as typeof fetch),signal=new AbortController().signal;
+  const overview=await loadOfficialTheme(loader,'3550308','sexo_idade',signal,{ufs:[],setores:[],distritos:['355030801'],setoresPorDistrito:{'355030801':1}});
+  expect(censusRows(overview,'cd_distrito')['355030801']?.homens?.valor).toBe(1);
+  const bad=structuredClone(part);bad.distritos['355030801']!.homens={...cell(0,0,null),cobertura:{divulgados:1,esperados:1,sigilo:0,ausentes:0}};expect(censusThemeSchema.safeParse(bad).success).toBe(false);
+  const missing=structuredClone(part);missing.setores['355030801000001']={};expect(censusThemeSchema.safeParse(missing).success).toBe(false);
+  const district=await loadOfficialTheme(loader,'3550308','sexo_idade',signal,{ufs:[],setores:['355030801000001'],distritos:['355030801'],distrito:'355030801'});
+  expect(censusSummary(district,{level:'distrito',cd_uf:'35',cd_mun:'3550308',cd_distrito:'355030801'})?.homens?.valor).toBe(1);
+  expect(fetcher.mock.calls.map(c=>String(c[0]))).toEqual(['https://local.test/geo/official/statistics/temas/sexo_idade/municipios/35/3550308.json','https://local.test/geo/official/statistics/temas/sexo_idade/municipios/35/3550308/355030801.json']);
+  await expect(loadOfficialTheme(loader,'3550308','sexo_idade',signal,{ufs:[],setores:['355030801000001'],distritos:['355030802'],distrito:'355030801'})).rejects.toThrow(/distrital/);
+ });
  it('registra somente os 25 indicadores comprovados e mostra rótulos e estados completos',()=>{
   const store=createGeoStore();
   for(const [metric] of censusMetricEntries){store.getState().setMetrica(metric);expect(metadadosMetrica(metric).oficial).toBe(true);}

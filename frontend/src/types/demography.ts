@@ -92,3 +92,17 @@ export const demographicMunicipalitySchema = z.object({ ...metadata, cd_uf: cdUf
     }
   });
 
+
+export const cdDistrictSchema = z.string().regex(/^\d{9}$/);
+const districtSource = neighborhoodSource.omit({campos:true}).extend({campos:z.tuple([z.literal('CD_SETOR'),z.literal('CD_DIST'),z.literal('NM_DIST'),z.literal('CD_SUBDIST'),z.literal('NM_SUBDIST')])}).strict();
+const districtCommon = {tipo_dados:z.literal('oficiais'),referencia:z.literal('2022-08-01'),cd_uf:cdUfSchema,cd_mun:cdMunSchema,fonte_distritos:districtSource};
+export const districtMunicipalitySchema = z.object({...districtCommon,schema_version:z.literal('demografia-distritos-1'),indicadores:demographySchema,total_setores:z.number().int().positive(),arquivo_indice_setores:z.string().min(1),distritos:z.record(cdDistrictSchema,z.object({nome:z.string().min(1),indicadores:demographySchema,total_setores:z.number().int().positive(),arquivo_setores:z.string().min(1),inventario_setores:z.string().min(1),arquivo_estatisticas:z.string().min(1)}).strict())}).strict().superRefine((p,ctx)=>{
+ if(!p.cd_mun.startsWith(p.cd_uf)||!Object.keys(p.distritos).length||Object.keys(p.distritos).some(c=>!c.startsWith(p.cd_mun))||Object.values(p.distritos).reduce((s,d)=>s+d.total_setores,0)!==p.total_setores)ctx.addIssue({code:'custom',message:'Inventário distrital incompatível'});
+ for(const field of ['populacao','domicilios'] as const){const values=Object.values(p.distritos).map(d=>d.indicadores[field]);if(values.some(v=>v.status!=='divulgada')||p.indicadores[field].status!=='divulgada'||values.reduce((s,v)=>s+(v.valor??0),0)!==p.indicadores[field].valor)ctx.addIssue({code:'custom',message:'Distritos não conservam o total municipal'});}
+});
+export type DistrictMunicipality = z.infer<typeof districtMunicipalitySchema>;
+export const districtDetailSchema = z.object({...districtCommon,schema_version:z.literal('demografia-distrito-1'),cd_distrito:cdDistrictSchema,indicadores:demographySchema,setores:z.record(cdSetorSchema,demographySchema),territorios_setores:z.record(cdSetorSchema,z.object({cd_distrito:cdDistrictSchema,nm_distrito:z.string(),cd_subdistrito:z.string().regex(/^\d{11}$/),nm_subdistrito:z.string().nullable()}).strict())}).strict().superRefine((p,ctx)=>{
+ const codes=Object.keys(p.setores);if(!p.cd_mun.startsWith(p.cd_uf)||!p.cd_distrito.startsWith(p.cd_mun)||!codes.length||codes.some(c=>!c.startsWith(p.cd_mun)||p.territorios_setores[c]?.cd_distrito!==p.cd_distrito)||Object.keys(p.territorios_setores).length!==codes.length)ctx.addIssue({code:'custom',message:'Partição distrital incompatível'});
+ for(const field of ['populacao','domicilios'] as const){const values=Object.values(p.setores).map(d=>d[field]);if(values.some(v=>v.status!=='divulgada')||p.indicadores[field].status!=='divulgada'||values.reduce((s,v)=>s+(v.valor??0),0)!==p.indicadores[field].valor)ctx.addIssue({code:'custom',message:'Setores não conservam o distrito'});}
+});
+export const districtSectorIndexSchema = z.object({schema_version:z.literal('indice-setores-distritos-1'),referencia:z.literal('2022-08-01'),cd_mun:cdMunSchema,setores:z.record(cdSetorSchema,cdDistrictSchema)}).strict().refine(p=>Object.entries(p.setores).every(([s,d])=>s.startsWith(p.cd_mun)&&d.startsWith(p.cd_mun)),'Índice setorial de outro município');

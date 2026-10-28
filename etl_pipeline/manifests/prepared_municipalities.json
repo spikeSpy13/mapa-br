@@ -16,6 +16,13 @@
       "cd_uf": "35",
       "nome": "Bauru",
       "epsg_area": 31982
+    },
+    "3550308": {
+      "cd_uf": "35",
+      "nome": "São Paulo",
+      "epsg_area": 31983,
+      "particionar_por_distrito": true,
+      "reparo_exibicao": "anel_sem_alterar_limites"
     }
   },
   "ufs": {
@@ -46,36 +53,36 @@
   },
   "sidra_temas": {
     "sexo": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
-      "sha256": "ca320291ed8cb5dc9c5b5d11a1d4006184ece52dc7f32f1c2cce698b06e41f97"
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/93/p/2022/c2/all/c287/100362/c286/113635?formato=json",
+      "sha256": "b3f22103041a4cd3aacba36923123562eae582e5b9aef75dee8931bd0d16465e"
     },
     "idade": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
-      "sha256": "aaed5e8a9f61d777213064491d8b18009a97ca550514b958605674f4cd4a17a2"
+      "url": "https://apisidra.ibge.gov.br/values/t/9514/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/93/p/2022/c2/6794/c287/93070,93084,93085,93086,93087,93088,93089,93090,93091,93092,93093,93094,93095,93096,93097,93098,49108,49109,60040,60041,6653/c286/113635?formato=json",
+      "sha256": "fd6e0555b047fd5409e5d860a243497c305badc86687913e09b1bb9908bb3b87"
     },
     "raca": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/93/p/2022/c86/all?formato=json",
-      "sha256": "16faedc67e599803b6155291f84d1439bfe857086265181fc586b9560d3f3742"
+      "url": "https://apisidra.ibge.gov.br/values/t/9605/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/93/p/2022/c86/all?formato=json",
+      "sha256": "f69d77f6c1edc449fa846aa7373674190c6762257b7da9d86f0cb9d06e67bb6e"
     },
     "alfabetizacao": {
-      "url": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
-      "sha256": "a654604ede53920de156e9320d6eac012ae811295c021972b3df526c026495f2"
+      "url": "https://apisidra.ibge.gov.br/values/t/9542/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/950/p/2022/c59/all/c2/6794/c86/95251/c287/100362?formato=json",
+      "sha256": "77d9e1d8ffffe0dc0f59816dc02efcf5e8a1ed139e3eb6cd063267401f7f9406"
     },
     "habitacao": {
-      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/617/p/2022/c3/all?formato=json",
-      "sha256": "ef53dd8d2974deeb42efeaf0e5855a484deb95fc9ab0a5d7657e7258e702cbd8"
+      "url": "https://apisidra.ibge.gov.br/values/t/4711/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/617/p/2022/c3/all?formato=json",
+      "sha256": "72438d32a69bfa67c1e8016079c4250d9ea5c45638d1fb067599a9e9294821d4"
     },
     "agua": {
-      "url": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/381/p/2022/c1821/all?formato=json",
-      "sha256": "9c03c8c2b8256653954a5c94de1cdcca1a6656d4ae049b3819ae46edf514be70"
+      "url": "https://apisidra.ibge.gov.br/values/t/6803/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/381/p/2022/c1821/all?formato=json",
+      "sha256": "6bd5b51a112e0c26ef5bf749a6a9c19cffed9fcbbb23719f6c3b54c35d5198df"
     },
     "esgoto": {
-      "url": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/381/p/2022/c11558/all?formato=json",
-      "sha256": "52b3d3114ca583579268b7375c0fa1fc074167032ee69ee38933508c272b4c6e"
+      "url": "https://apisidra.ibge.gov.br/values/t/6805/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/381/p/2022/c11558/all?formato=json",
+      "sha256": "5cd211640fbe0301ffe59a344e06aab09b806d05691196cf0ca44d493abcbb7c"
     },
     "lixo": {
-      "url": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/3500709,3506003,4205407/v/381/p/2022/c67/all?formato=json",
-      "sha256": "8a34d458e2ccdc184e25211ad84c52e005dfcb19db20f8ca20dd161a0cebc2ef"
+      "url": "https://apisidra.ibge.gov.br/values/t/6892/n1/1/n2/all/n3/all/n6/3500709,3506003,3550308,4205407/v/381/p/2022/c67/all?formato=json",
+      "sha256": "06c7134c8a55b381929e2cd97e7894f06cbf5b722ffb8dba21b265dd7f4b55f4"
     }
   }
 }

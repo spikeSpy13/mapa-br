@@ -104,5 +104,7 @@ class CensusThemeTests(unittest.TestCase):
         self.assertEqual(money('10816,47',',')['valor'],'10816.47')
         self.assertEqual(money('2.345','.')['valor'],'2.34')
         self.assertEqual(money('X','.')['status'],'sigilo')
+        self.assertEqual(money('.','.')['status'],'ausente')
+        self.assertIn("Marcador '.'",money('.','.')['motivo'])
         self.assertIsNone(money('0','.')['percentual'])
         self.assertEqual(money('0','.')['valor'],'0.00')
